@@ -2,24 +2,6 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "routes": [
-    {
-      "src": "/admin",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/invoice",
-      "dest": "/invoice.html"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "status": 404,
-      "dest": "/404.html"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
