@@ -13,7 +13,9 @@ const STORAGE_KEYS = {
   theme: 'trendcargo_theme',
   invoices: 'trendcargo_accounting_invoices',
   lastInvoice: 'trendcargo_last_invoice',
-  sheetUrl: 'trendcargo_google_sheet_url'
+  sheetUrl: 'trendcargo_google_sheet_url',
+  flashDeals: 'trendcargo_flash_deals',
+  termsText: 'trendcargo_terms_text'
 };
 
 // نرخ‌های پایه صرافی و ضریب حاشیه امن
@@ -485,6 +487,127 @@ function escapeHTML(str) {
   }[tag] || tag));
 }
 
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast.timerId);
+  showToast.timerId = setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function getStoredFlashDeals() {
+  try {
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.flashDeals) || '[]');
+    if (Array.isArray(list) && list.length) return list;
+  } catch (error) {
+    console.warn('Unable to read flash deals:', error);
+  }
+
+  return [
+    { id: 'FLASH-1', title: 'حراجی سنسور هوشمند', percent: 70, active: true, endAt: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString() },
+    { id: 'FLASH-2', title: 'تخفیف گجت منزل', percent: 60, active: true, endAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString() }
+  ];
+}
+
+function saveFlashDeals(list) {
+  const safeList = Array.isArray(list) ? list : [];
+  localStorage.setItem(STORAGE_KEYS.flashDeals, JSON.stringify(safeList));
+}
+
+function addFlashDeal() {
+  const list = getStoredFlashDeals();
+  list.unshift({
+    id: `FLASH-${Date.now().toString().slice(-4)}`,
+    title: 'حراجی جدید',
+    percent: 50,
+    active: true,
+    endAt: new Date(Date.now() + 1000 * 60 * 60 * 8).toISOString()
+  });
+  saveFlashDeals(list);
+  renderFlashDeals();
+  showToast('حراجی جدید اضافه شد');
+}
+
+function renderFlashDeals() {
+  const host = document.getElementById('flash-deals-list');
+  if (!host) return;
+  const deals = getStoredFlashDeals();
+
+  host.innerHTML = deals.map((deal, index) => `
+    <div class="discount-item">
+      <div class="discount-meta">
+        <strong>${escapeHTML(deal.id)}</strong>
+        <small>${deal.active ? 'فعال' : 'غیرفعال'} · ${Number(deal.percent || 0)}%</small>
+      </div>
+      <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+        <input type="text" class="form-control" style="width:180px;" value="${escapeHTML(deal.title)}" data-flash-index="${index}" data-flash-field="title" />
+        <input type="number" class="form-control" style="width:90px;" value="${Number(deal.percent || 0)}" data-flash-index="${index}" data-flash-field="percent" />
+        <input type="datetime-local" class="form-control" style="width:200px;" value="${deal.endAt ? new Date(deal.endAt).toISOString().slice(0, 16) : ''}" data-flash-index="${index}" data-flash-field="endAt" />
+        <button class="toggle-switch ${deal.active ? 'active' : ''}" data-flash-index="${index}" data-flash-field="active" title="فعال/غیرفعال"></button>
+      </div>
+    </div>
+  `).join('');
+
+  host.querySelectorAll('[data-flash-field="title"]').forEach(input => {
+    input.addEventListener('change', (event) => {
+      const idx = Number(event.target.dataset.flashIndex);
+      const list = getStoredFlashDeals();
+      list[idx].title = event.target.value || 'حراجی جدید';
+      saveFlashDeals(list);
+      renderFlashDeals();
+    });
+  });
+
+  host.querySelectorAll('[data-flash-field="percent"]').forEach(input => {
+    input.addEventListener('change', (event) => {
+      const idx = Number(event.target.dataset.flashIndex);
+      const list = getStoredFlashDeals();
+      list[idx].percent = Number(event.target.value || 0);
+      saveFlashDeals(list);
+      renderFlashDeals();
+    });
+  });
+
+  host.querySelectorAll('[data-flash-field="endAt"]').forEach(input => {
+    input.addEventListener('change', (event) => {
+      const idx = Number(event.target.dataset.flashIndex);
+      const list = getStoredFlashDeals();
+      list[idx].endAt = new Date(event.target.value).toISOString();
+      saveFlashDeals(list);
+      renderFlashDeals();
+    });
+  });
+
+  host.querySelectorAll('[data-flash-field="active"]').forEach(button => {
+    button.addEventListener('click', () => {
+      const idx = Number(button.dataset.flashIndex);
+      const list = getStoredFlashDeals();
+      list[idx].active = !list[idx].active;
+      saveFlashDeals(list);
+      renderFlashDeals();
+    });
+  });
+}
+
+function loadTermsEditor() {
+  const editor = document.getElementById('terms-editor');
+  if (!editor) return;
+  const saved = localStorage.getItem(STORAGE_KEYS.termsText);
+  if (saved && saved.trim()) {
+    editor.value = saved;
+  }
+}
+
+function saveTermsText() {
+  const editor = document.getElementById('terms-editor');
+  if (!editor) return;
+  const value = editor.value.trim();
+  if (!value) return;
+  localStorage.setItem(STORAGE_KEYS.termsText, value);
+  showToast('متن قوانین و ضمانت‌ها ذخیره شد');
+}
+
 // ==========================================================================
 // پاپ‌آپ محصول با گالری ۳ تصویری
 // ==========================================================================
@@ -554,34 +677,35 @@ function calculateCargoPrice() {
 
   if (!currElem || !priceElem || !pkgElem) return;
 
-  const curr = currElem.value;
+  const curr = 'usd';
   const price = parseFloat(priceElem.value) || 0;
   const pkg = pkgElem.value;
 
-  const baseRate = TrendStore.rates.baseRates[curr] || 170;
-  const effectiveRate = baseRate * (TrendStore.rates.exchangeSpreadMultiplier || 1.06);
-  const baseToman = price * effectiveRate;
-  const serviceProfit = baseToman * 0.60;
+  const usdRate = Number(TrendStore.rates.baseRates?.usd || 188000);
+  const productCostToman = price * usdRate;
+  const profitMargin = productCostToman * 0.25;
+  const serviceAndCheckCost = productCostToman * 0.12 + 1800000 + 2500000;
 
-  let shippingUsd = 12;
-  if (pkg === 'single_heavy') shippingUsd = 15;
-  if (pkg === 'bulk_multi') shippingUsd = 5;
+  let weightKg = 0.5;
+  if (pkg === 'single_heavy') weightKg = 2;
+  if (pkg === 'bulk_multi') weightKg = 3.5;
 
-  const shippingToman = shippingUsd * (TrendStore.rates.usdShippingRate || 188000);
-  const total = Math.round((baseToman + serviceProfit + shippingToman) / 10000) * 10000;
+  const firstKgShipping = 3500000;
+  const extraKgShipping = Math.max(0, weightKg - 1) * 2800000;
+  const total = Math.round((productCostToman + profitMargin + serviceAndCheckCost + firstKgShipping + extraKgShipping) / 10000) * 10000;
 
   const resElem = document.getElementById('calc-total-result');
   if (resElem) {
     resElem.innerHTML = `${total.toLocaleString('fa-IR')} <span>تومان</span>`;
   }
 
-  return { total, curr, price };
+  return { total, curr, price, weightKg };
 }
 
 function sendCalculatedQuoteToWhatsApp() {
   const calc = calculateCargoPrice();
   if (!calc) return;
-  const msg = encodeURIComponent(`سلام ترندز کارگو، طبق فرمول سایت برای محصولی با قیمت ${calc.price} (${calc.curr.toUpperCase()}) قیمت تمام‌شده تخمینی ${calc.total.toLocaleString('fa-IR')} تومان محاسبه شد. لطفاً فاکتور نهایی صادر کنید.`);
+  const msg = encodeURIComponent(`سلام ترندز کارگو، قیمت کالا ${calc.price} دلار و وزن تقریبی ${calc.weightKg} کیلو با فرمول هزینه محصول + 25% سود و انجام کار و خرید و بررسی محصول برای مشتری محاسبه شد. قیمت تقریبی نهایی: ${calc.total.toLocaleString('fa-IR')} تومان. لطفاً فاکتور نهایی و زمان تحویل را برایم ارسال کنید.`);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 }
 

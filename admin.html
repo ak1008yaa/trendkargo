@@ -583,7 +583,9 @@
           <div class="panel">
             <div class="panel-header">
               <h3>مدیریت محصولات</h3>
-              <span class="chip">گالری ۳ تصویری</span>
+              <div class="top-actions" style="justify-content:flex-start;">
+                <button class="btn btn-save" onclick="addProductToAdminList()">+ افزودن محصول جدید</button>
+              </div>
             </div>
             <div class="cms-grid" id="product-grid"></div>
           </div>
@@ -606,6 +608,14 @@
               <button class="btn btn-save" onclick="addDiscountRow()">+ کد جدید</button>
             </div>
             <div id="discounts-list" class="discount-list"></div>
+          </div>
+
+          <div class="panel" style="margin-top: 1rem;">
+            <div class="panel-header">
+              <h3>حراجی‌های ساعتی و صاعقه‌ای</h3>
+              <button class="btn btn-save" onclick="addFlashDeal()">+ افزودن حراجی</button>
+            </div>
+            <div id="flash-deals-list" class="discount-list"></div>
           </div>
         </section>
 
@@ -650,6 +660,24 @@
               <label>لینک Web App گوگل شیت</label>
               <input type="url" id="settings-sheet-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" />
             </div>
+
+            <div class="panel" style="margin-top: 1.2rem;">
+              <div class="panel-header">
+                <h3>قوانین، تضمین سلامت و مرجوعی</h3>
+                <button class="btn btn-save" onclick="saveTermsText()">💾 ذخیره متن</button>
+              </div>
+              <div class="form-group">
+                <label>متن قوانین و ضمانت‌ها</label>
+                <textarea id="terms-editor" class="form-control" rows="14">- کلیه کالاها قبل از ارسال از نظر فنی، ظاهری و سایز بررسی می‌شوند.
+- در صورت مغایرت، آسیب فیزیکی یا خطای فروشنده، کالا به‌صورت رسمی در دفتر ارمنستان بررسی و در صورت نیاز تعویض می‌شود.
+- مرجوعی فقط در صورت عدم تطابق، آسیب، یا خطای فروشنده پذیرفته می‌شود.
+- برای کالاهای استفاده‌شده، بدون برچسب، یا آسیب‌دیده، مرجوعی مجاز نیست.
+- هزینه ارسال مرجوعی در صورت خطای فروشنده به عهده ماست و در غیر این صورت به عهده مشتری خواهد بود.
+- زمان تحویل معمولاً ۱۵ تا ۲۱ روز کاری است و در صورت سفارش هم‌زمان چند آیتم، هزینه باربری سرشکن می‌شود.
+- همه‌ی قیمت‌ها به صورت شفاف و بر اساس فرمول کالا + 25% سود + بررسی و ارسال محاسبه می‌شوند.
+- پیگیری سفارش‌ها فقط از طریق واتساپ رسمی انجام می‌شود.</textarea>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -693,6 +721,7 @@
 
     function renderCMS() {
       const grid = document.getElementById('product-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
       TrendStore.products.forEach((p, idx) => {
@@ -741,9 +770,46 @@
             <label>توضیحات کوتاه:</label>
             <textarea class="form-control" id="p-desc-${idx}">${p.desc}</textarea>
           </div>
+          <button class="btn btn-reset" style="width:100%;margin-top:0.5rem;" onclick="removeAdminProduct(${p.id})">حذف محصول</button>
         `;
         grid.appendChild(card);
       });
+
+      renderFlashDeals();
+      loadTermsEditor();
+    }
+
+    function addProductToAdminList() {
+      const baseId = Date.now();
+      const item = {
+        id: baseId,
+        category: 'gadget',
+        catName: 'گجت و دیجیتال',
+        title: 'محصول جدید',
+        price: '۱,۲۰۰,۰۰۰',
+        rawPrice: 1200000,
+        tag: 'محصول جدید',
+        mainImg: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80'
+        ],
+        desc: 'توضیح کوتاه محصول جدید و قابل ویرایش از پنل ادمین.',
+        specs: ['ویژگی ۱', 'ویژگی ۲', 'ویژگی ۳']
+      };
+      TrendStore.products.unshift(item);
+      TrendStore.saveProducts(TrendStore.products);
+      renderCMS();
+      showToast('محصول جدید اضافه شد');
+    }
+
+    function removeAdminProduct(productId) {
+      const next = TrendStore.products.filter(p => p.id !== productId);
+      TrendStore.products = next;
+      TrendStore.saveProducts(next);
+      renderCMS();
+      showToast('محصول حذف شد');
     }
 
     function compressImg(e, pIdx, slotIdx) {
