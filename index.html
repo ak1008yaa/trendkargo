@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ترندز کارگو | خرید مستقیم از تمو، شین و آمازون با خط ارمنستان-تبریز</title>
+  
+  <!-- PWA & Favicons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/x-icon" href="assets/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon_io/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="assets/favicon_io/apple-touch-icon.png">
+
+  <!-- SEO & Geolocation Tags -->
+  <meta name="description" content="ترندز کارگو — خرید مستقیم و مطمئن از Temu, Shein, Amazon و Wildberries با منصفانه‌ترین قیمت، بازرسی و ضمانت مرجوعی در دفتر ارمنستان و ارسال سریع با تیپاکس از تبریز به سراسر ایران.">
+  <meta name="keywords" content="خرید از تمو, خرید از شین در ایران, خرید از آمازون, ترندز کارگو, کارگو ارمنستان به تبریز, واردات گجت تمو, پوشاک شین, Temu Iran, Shein Iran">
+  <meta name="author" content="ترندز کارگو | Trend Cargo">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://trendcargo.com">
+
+  <!-- Hub Tabriz Geolocation -->
+  <meta name="geo.region" content="IR-03">
+  <meta name="geo.placename" content="Tabriz, East Azerbaijan">
+
+  <!-- Mobile App Properties -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#07090e">
+
+  <!-- Fonts & Stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- JSON-LD Structured Data Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "ترندز کارگو | Trend Cargo",
+    "url": "https://trendcargo.com",
+    "logo": "https://trendcargo.com/assets/logo.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+989374443386",
+      "contactType": "customer service",
+      "areaServed": "IR"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  
+  <!-- نوار بالای صفحه PWA -->
+  <aside class="pwa-top-bar" id="pwa-top-bar" role="banner">
+    <div class="container pwa-bar-inner">
+      <div class="pwa-bar-text">
+        <span class="pulse-icon">🔥</span>
+        <span>وب‌اپلیکیشن ترندز کارگو را نصب کنید و از <strong>تخفیفات ۹۰٪ آف لحظه‌ای تمو</strong> سریع‌تر باخبر شوید!</span>
+      </div>
+      <div class="pwa-bar-actions">
+        <button class="btn-install-app" id="btn-pwa-install" onclick="triggerPWAInstall()">
+          <span>نصب اپلیکیشن</span>
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        </button>
+        <button class="pwa-bar-close" id="btn-pwa-close" onclick="closePWABar()" aria-label="بستن اعلان">&times;</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- اعلان زنده سفارشات خریداران -->
+  <div class="live-toast" id="live-toast" role="status" aria-live="polite">
+    <div class="toast-icon">🛍️</div>
+    <div class="toast-content">
+      <strong id="toast-user">کاربر ترندز کارگو</strong>
+      <span id="toast-action">همین حالا سفارشی ثبت کرد</span>
+    </div>
+  </div>
+
+  <!-- دکمه شناور تماس با واتساپ -->
+  <a href="https://wa.me/989374443386?text=سلام%20درخواست%20مشاوره%20و%20ثبت%20سفارش%20دارم" target="_blank" rel="noopener noreferrer" class="whatsapp-btn" aria-label="پشتیبانی آنلاین واتساپ ترندز کارگو">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z" fill-rule="evenodd" clip-rule="evenodd"/>
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-1.46 0-2.83-.34-4.04-.93l-4.48 1.18 1.2-4.36C4.1 14.67 3.5 13.38 3.5 12c0-4.69 3.81-8.5 8.5-8.5s8.5 3.81 8.5 8.5-3.81 8.5-8.5 8.5z"/>
+    </svg>
+  </a>
+
+  <!-- نویگیشن بار اصلی سایت -->
+  <nav class="navbar" id="navbar">
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="Trend Cargo Logo" class="logo-img" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=100&auto=format&fit=crop&q=80'">
+      <a href="#" class="logo-text">TREND <span>CARGO</span></a>
+    </div>
+
+    <div class="nav-links">
+      <a href="#flash-sale">حراجی‌های ۹۰٪ 🔥</a>
+      <a href="#products">۲۰ محصول پرفروش Temu</a>
+      <a href="#instagram-channels">کانال‌های تخصصی</a>
+      <a href="#tech-news">اخبار آینده ۲۰۲۶</a>
+      <a href="#how-it-works">مسیر ترانزیت</a>
+      <a href="#about-us">درباره ما</a>
+      <a href="#terms">قوانین و ضمانت</a>
+    </div>
+
+    <div class="nav-left-group">
+      <!-- ساعت آنالوگ و تاریخ زنده -->
+      <div class="header-clock-widget" id="header-clock" title="ساعت زنده و تقویم میلادی">
+        <div class="analog-clock" aria-hidden="true">
+          <div class="clock-face">
+            <div class="hand hour-hand" id="hour-hand"></div>
+            <div class="hand min-hand" id="min-hand"></div>
+            <div class="hand sec-hand" id="sec-hand"></div>
+            <div class="center-pin"></div>
+          </div>
+        </div>
+        <div class="clock-meta">
+          <div class="clock-date" id="live-gregorian-date">AUG 25, 2026</div>
+          <div class="clock-digital" id="live-digital-time">10:00:00</div>
+        </div>
+      </div>
+
+      <!-- دکمه تغییر تم روز و شب -->
+      <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleAppTheme()" aria-label="تغییر حالت شب و روز" title="تغییر تم روز/شب">
+        <span id="theme-icon">🌙</span>
+      </button>
+
+      <a href="#custom-order" class="btn-compact-order" title="ثبت لینک محصول">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        <span>ثبت لینک</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- بخش هیرو (Hero Section) -->
+  <section id="hero" class="hero">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+
+    <div class="hero-content">
+      <div class="section-badge">🇦🇲 خط مستقیم واردات: هاب ایروان ➔ هاب توزیع تبریز ➔ سراسر ایران</div>
+      
+      <h1>خرید مستقیم از <span class="highlight-cyan">تمو، شین و آمازون</span><br>با تضمین اصالت و <span class="highlight-coral">قیمت کاملاً رقابتی</span></h1>
+      
+      <p class="hero-description">
+        دسترسی بدون واسطه به محصولات اورجینال و ترند روز جهانی؛ کنترل فیزیکی و تست سلامت در ارمنستان، و ارسال پلمپ با تیپاکس از تبریز بدون درگیری با گمرک و پروسه‌های فرسایشی مرجوعی به چین.
+      </p>
+      
+      <div class="platform-chips">
+        <span class="p-chip">TEMU (تمو)</span>
+        <span class="p-chip">SHEIN (شین)</span>
+        <span class="p-chip">AMAZON (آمازون)</span>
+        <span class="p-chip">WILDBERRIES (وایلدبریز)</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#flash-sale" class="btn-primary">
+          <span>مشاهده حراجی‌های لحظه‌ای ۹۰٪</span>
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </a>
+        <a href="#custom-order" class="btn-secondary">استعلام قیمت لینک دلخواه</a>
+      </div>
+
+      <div class="hero-key-points">
+        <div class="point-item">
+          <span class="p-icon">🛡️</span>
+          <div class="p-txt">
+            <strong>مرجوعی در ایروان</strong>
+            <small>تست و تعویض در ارمنستان قبل از ورود به ایران</small>
+          </div>
+        </div>
+        <div class="point-item">
+          <span class="p-icon">💎</span>
+          <div class="p-txt">
+            <strong>سود کاملاً منصفانه</strong>
+            <small>محاسبه با کمترین کارمزد و کرایه اقتصادی</small>
+          </div>
+        </div>
+        <div class="point-item">
+          <span class="p-icon">📸</span>
+          <div class="p-txt">
+            <strong>شفافیت و رهگیری لحظه‌ای</strong>
+            <small>اسکرین‌شات خرید مستقیم پنل خارجی</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- بخش حراجی‌های لحظه‌ای ۹۰٪ -->
+  <section id="flash-sale" class="section-padding container">
+    <div class="flash-sale-banner">
+      <div class="flash-header">
+        <div class="flash-title-group">
+          <span class="flash-tag">⚡ حراجی‌های ساعتی و صاعقه‌ای</span>
+          <h2 class="flash-title">تخفیف‌های ویژه تا ۹۰٪ آف روز</h2>
+          <p>محصولات گلچین‌شده از انبار مرکزی با کمترین تعرفه باربری چمدانی آماده سفارش‌گذاری هستند.</p>
+        </div>
+        
+        <div class="countdown-box">
+          <span class="countdown-label">فرصت باقی‌مانده تا پایان حراج:</span>
+          <div class="countdown-timer" id="flash-timer">
+            <div class="time-part"><span id="hours">۰۸</span><small>ساعت</small></div>
+            <span class="colon">:</span>
+            <div class="time-part"><span id="minutes">۴۲</span><small>دقیقه</small></div>
+            <span class="colon">:</span>
+            <div class="time-part"><span id="seconds">۱۵</span><small>ثانیه</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notify-cta-bar">
+        <span>می‌خواهید آفرهای ۹۰٪ بعدی را قبل از تکمیل ظرفیت با نوتیفیکیشن دریافت کنید؟</span>
+        <button class="btn-enable-notify" id="btn-enable-notify" onclick="enablePushNotifications()">
+          <span>🔔 فعال‌سازی اعلان حراجی‌ها</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- مسیر ترانزیت کالا -->
+  <section id="how-it-works" class="section-padding container">
+    <div class="title-group">
+      <div class="section-badge">شفافیت لجستیک</div>
+      <h2 class="section-title">مراحل ترخیص و تحویل کالا از چین تا ایران</h2>
+      <p class="section-desc">مدت زمان کل: تحویل بین ۱۵ الی ۲۱ روز کاری با بسته‌بندی پلمپ و بیمه کامل مرسوله انجام می‌شود.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <div class="step-icon">🛒</div>
+        <h3 class="step-title">۱. ثبت سفارش ارزی</h3>
+        <p class="step-desc">لینک محصول را می‌فرستید؛ فاکتور صادر شده و خرید مستقیماً با درام در ارمنستان ثبت می‌شود.</p>
+        <span class="step-time-badge">⏳ زمان: همان روز</span>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <div class="step-icon">✈️</div>
+        <h3 class="step-title">۲. ارسال به هاب ایروان</h3>
+        <p class="step-desc">بسته از انبارهای مبدأ تمو به دفتر رسمی ترندز کارگو در شهر ایروان (ارمنستان) ارسال می‌شود.</p>
+        <span class="step-time-badge">⏳ زمان: ۷ الی ۱۴ روز</span>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <div class="step-icon">🔍</div>
+        <h3 class="step-title">۳. بازرسی فنی و تعویض</h3>
+        <p class="step-desc">در دفتر ایروان سلامت فیزیکی و سایز کالا تست شده و در صورت نقص، فوراً در ارمنستان تعویض می‌گردد.</p>
+        <span class="step-time-badge">⏳ زمان: ۱ الی ۳ روز</span>
+      </div>
+
+      <div class="step-card">
+        <div class="step-number">04</div>
+        <div class="step-icon">📦</div>
+        <h3 class="step-title">۴. تحویل اکسپرس از تبریز</h3>
+        <p class="step-desc">مرسوله به هاب تبریز رسیده و همان روز با تیپاکس یا پیشتاز به سراسر کشور ارسال و بارکد پیامک می‌شود.</p>
+        <span class="step-time-badge">⏳ زمان: ۳ الی ۴ روز</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ویترین ۲۰ محصول برتر Temu -->
+  <section id="products" class="section-padding container">
+    <div class="title-group">
+      <div class="section-badge">Top 20 Viral Temu Best Sellers</div>
+      <h2 class="section-title">۲۰ محصول وایرال و پرفروش روز پلتفرم Temu</h2>
+      <p class="section-desc">محصولات منتخب تیک‌تاک و تمو با جزئیات کامل، تست‌شده و آماده ثبت سفارش آنی در واتساپ.</p>
+    </div>
+
+    <div class="products-toolbar">
+      <div class="filter-tabs" role="tablist">
+        <button class="tab-btn active" data-filter="all" role="tab" aria-selected="true">همه محصولات (۲۰)</button>
+        <button class="tab-btn" data-filter="gadget" role="tab" aria-selected="false">⚡ گجت و دیجیتال</button>
+        <button class="tab-btn" data-filter="fashion" role="tab" aria-selected="false">👕 استایل و پوشاک</button>
+        <button class="tab-btn" data-filter="accessory" role="tab" aria-selected="false">🕶️ اکسسوری و کیف</button>
+        <button class="tab-btn" data-filter="lifestyle" role="tab" aria-selected="false">🏠 خانه و لایف‌استایل</button>
+      </div>
+      <div class="search-product-box">
+        <input type="search" id="client-product-search" placeholder="جستجوی سریع در محصولات..." oninput="filterProductsByClientSearch(this.value)">
+      </div>
+    </div>
+
+    <div class="products-grid" id="products-container"></div>
+  </section>
+
+  <!-- کانال‌های اینستاگرام -->
+  <section id="instagram-channels" class="section-padding container">
+    <div class="title-group">
+      <div class="section-badge">مشاهده روزانه ترندها و آنباکسینگ</div>
+      <h2 class="section-title">پیج‌های رسمی اینستاگرام ترندز کارگو</h2>
+      <p class="section-desc">برای مشاهده ویدیوهای تست واقعی، تن‌خور لباس‌ها و استوری‌های حراجی روز ما را دنبال کنید.</p>
+    </div>
+
+    <div class="insta-channels-grid">
+      <!-- پیج استایل -->
+      <div class="insta-card insta-card-style">
+        <div class="insta-badge">👕 مد، فشن و استایل</div>
+        <div class="insta-header">
+          <div class="insta-avatar-box">
+            <img src="assets/logo.png" alt="Trend Cargo Style" class="insta-avatar-img" onerror="this.src='https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=100&auto=format&fit=crop&q=80'">
+            <span class="insta-live-ring"></span>
+          </div>
+          <div class="insta-user-meta">
+            <h3>Trend Cargo Style</h3>
+            <span class="insta-handle">@trendcargo.style</span>
+            <small class="insta-followers">🔥 هودی‌های وینتیج، کارگو و فشن شین</small>
+          </div>
+        </div>
+        <p class="insta-bio">
+          مرجع خرید هودی‌های سنگین اسیدواش، شلوارهای بگ کارگو، کفش‌های چانکی و استایل‌های ترند پینترست از Shein و Temu.
+        </p>
+        <div class="insta-tags">
+          <span>#استریت_ویر</span>
+          <span>#شین_ایران</span>
+          <span>#هودی_اورسایز</span>
+          <span>#کارگو_بگ</span>
+        </div>
+        <a href="https://instagram.com/trendkargo_style" target="_blank" rel="noopener noreferrer" class="btn-insta btn-insta-style">
+          <span>مشاهده و فالو پیج استایل</span>
+        </a>
+      </div>
+
+      <!-- پیج گجت -->
+      <div class="insta-card insta-card-gadget">
+        <div class="insta-badge insta-badge-gadget">⚡ گجت و دنیای تکنولوژی</div>
+        <div class="insta-header">
+          <div class="insta-avatar-box">
+            <img src="assets/logo.png" alt="Trend Cargo Gadget" class="insta-avatar-img" onerror="this.src='https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=100&auto=format&fit=crop&q=80'">
+            <span class="insta-live-ring insta-live-ring-gadget"></span>
+          </div>
+          <div class="insta-user-meta">
+            <h3>Trend Cargo Gadget</h3>
+            <span class="insta-handle insta-handle-gadget">@trendcargo.gadget</span>
+            <small class="insta-followers">🚀 گجت‌های هوشمند و وایرال تیک‌تاک</small>
+          </div>
+        </div>
+        <p class="insta-bio">
+          معرفی و تست آنباکس پرینترهای حرارتی جیبی، پایه‌های هوش مصنوعی تعقیب سوژه، شارژرهای وایرلس و گجت‌های دسکتاپ.
+        </p>
+        <div class="insta-tags">
+          <span>#گجت_هوشمند</span>
+          <span>#تمو_ایران</span>
+          <span>#ست_آپ_دسکتاپ</span>
+          <span>#گجت_تیک_تاک</span>
+        </div>
+        <a href="https://instagram.com/trendkargo_gajet" target="_blank" rel="noopener noreferrer" class="btn-insta btn-insta-gadget">
+          <span>مشاهده و فالو پیج گجت</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ماشین‌حساب آنلاین قیمت تمام شده -->
+  <section id="calculator" class="section-padding container">
+    <div class="calculator-box">
+      <div class="section-badge">محاسبه‌گر منصفانه و شفاف</div>
+      <h2 class="section-title calculator-title">محاسبه‌گر قیمت تمام‌شده تحویل ایران</h2>
+      <p class="section-desc calculator-desc">قیمت کالا در سایت مبدأ را وارد کنید تا قیمت تخمینی تحویل درب منزل برای شما محاسبه شود.</p>
+
+      <div class="calc-grid">
+        <div class="calc-input-item">
+          <label for="calc-currency">واحد ارز در سایت خارجی:</label>
+          <select id="calc-currency" class="calc-input" onchange="calculateCargoPrice()">
+            <option value="amd" selected>درام ارمنستان (AMD ֏) - تمو / وایلدبریز</option>
+            <option value="usd">دلار آمریکا ($) - شین / آمازون</option>
+            <option value="try">لیر ترکیه (₺) - ترندیول / زارا</option>
+          </select>
+        </div>
+
+        <div class="calc-input-item">
+          <label for="calc-price">قیمت کالا در سایت مبدأ:</label>
+          <input type="number" id="calc-price" class="calc-input" placeholder="مثلاً: 12000" value="12000" oninput="calculateCargoPrice()">
+        </div>
+
+        <div class="calc-input-item">
+          <label for="calc-package-type">نوع مرسوله و وزن تقریبی:</label>
+          <select id="calc-package-type" class="calc-input" onchange="calculateCargoPrice()">
+            <option value="single_light" selected>تک محصول سبک (پوشاک، اکسسوری، گجت)</option>
+            <option value="single_heavy">تک محصول سنگین / حجیم (کاپشن، کفش، هیتر)</option>
+            <option value="bulk_multi">سبد خرید چندتایی (بیش از ۳ آیتم / اقتصادی)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="calc-saving-tip">
+        <span>💡 <strong>سود منصفانه و سرشکن شدن باربری:</strong> تمام قیمت‌های ترندز کارگو رقابتی هستند؛ در صورت ثبت سفارش همزمان چند آیتم، هزینه باربری سرشکن شده و ارزان‌تر خواهد شد!</span>
+      </div>
+
+      <div class="calc-result-box">
+        <div class="calc-res-label">قیمت تخمینی نهایی تحویل در تبریز:</div>
+        <div class="calc-res-amount" id="calc-total-result">در حال محاسبه...</div>
+        <p class="calc-note">* کرایه تیپاکس از هاب تبریز به نشانی شما به صورت پس‌کرایه خواهد بود.</p>
+        <button class="btn-primary calc-quote-button" id="btn-calc-quote" onclick="sendCalculatedQuoteToWhatsApp()">
+          <span>استعلام نهایی و ثبت در واتساپ</span>
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- اخبار تکنولوژی و آینده ۲۰۲۶ -->
+  <section id="tech-news" class="section-padding container">
+    <div class="title-group">
+      <div class="section-badge">نوآوری‌های فردا</div>
+      <h2 class="section-title">اخبار تکنولوژی و گجت‌های آینده ۲۰۲۶</h2>
+      <p class="section-desc">گزارش و تحلیل تازه‌ترین گجت‌های هوشمند و سخت‌افزارهای سال ۲۰۲۶.</p>
+    </div>
+    <div class="tech-news-grid" id="tech-news-container"></div>
+  </section>
+
+  <!-- درباره ما -->
+  <section id="about-us" class="section-padding container">
+    <div class="about-grid">
+      <div class="about-text-content">
+        <div class="section-badge">داستان ترندز کارگو</div>
+        <h2 class="section-title about-title">پلی مستقیم بین شما و ترندهای معتبر دنیا</h2>
+        <p class="about-p">
+          <strong>ترندز کارگو (Trend Cargo)</strong> با هدف عرضه مستقیم و باکیفیت ترندهای خارجی بدون واسطه‌های غیرضروری و با کمترین کارمزد راه‌اندازی شده است.
+        </p>
+        <p class="about-p">
+          تیم ما با داشتن دفتر بازرسی اختصاصی در <strong>ایروان (ارمنستان)</strong> و هاب توزیع اکسپرس در <strong>تبریز</strong>، تضمین می‌کند که هر کالا پیش از ورود به کشور بررسی شود. در صورت وجود هرگونه مشکل، کالا بلافاصله در ارمنستان تعویض می‌گردد تا مشتری ایرانی هرگز درگیر پروسه پیچیده ارسال به چین نباشد.
+        </p>
+        <div class="about-metrics">
+          <div class="metric-item">
+            <strong>قیمت رقابتی</strong>
+            <span>حداقل کارمزد و سود منصفانه</span>
+          </div>
+          <div class="metric-item">
+            <strong>مرجوعی در ایروان</strong>
+            <span>بدون درگیری خریدار با مبدأ چین</span>
+          </div>
+          <div class="metric-item">
+            <strong>۷ روز ضمانت</strong>
+            <span>تست و تضمین سلامت فیزیکی</span>
+          </div>
+        </div>
+      </div>
+      <div class="about-image-wrapper">
+        <div class="about-logo-backdrop">
+          <img src="assets/logo.png" alt="لوگوی ترندز کارگو" class="about-brand-logo" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&auto=format&fit=crop&q=80'">
+        </div>
+        <div class="about-floating-card">
+          <div class="f-flag">🇦🇲 ➔ 🇮🇷</div>
+          <h4>مسیر مستقیم و امن</h4>
+          <p>ارسال پلمپ، تضمین‌شده و سریع از دفتر تبریز به سراسر کشور</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- فرم ثبت استعلام لینک مستقیم -->
+  <section id="custom-order" class="section-padding container">
+    <div class="custom-order-box">
+      <div class="section-badge section-badge-coral">استعلام آنی هر نوع لینک</div>
+      <h3>ثبت سفارش از طریق لینک مستقیم تمو، شین، آمازون و...</h3>
+      <p>کافیست لینک هر کالایی را در کادر زیر وارد کنید تا فاکتور رسمی قیمت تمام‌شده در واتساپ برای شما صادر شود.</p>
+      
+      <div class="link-input-group">
+        <input type="url" id="user-product-link" class="link-input" placeholder="لینک محصول خارجی را اینجا Paste کنید..." />
+        <button class="btn-submit-link" id="btn-submit-link" onclick="submitCustomLink()">
+          <span>استعلام قیمت در واتساپ</span>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- قوانین، سوالات متداول و ضمانت مرجوعی -->
+  <section id="terms" class="section-padding container terms-section">
+    <div class="title-group">
+      <div class="section-badge">شفافیت کامل و تعهدات</div>
+      <h2 class="section-title">قوانین، ضمانت سلامت و مرجوعی</h2>
+      <p class="section-desc">پاسخ به سوالات متداول درباره زمان‌بندی، مرجوعی در مبدا ارمنستان و تضمین اصالت.</p>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-item">
+        <button class="accordion-header">
+          ۱. فرآیند بازرسی کیفی و مرجوعی در دفتر ارمنستان چگونه انجام می‌شود؟
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-content">
+          <p>تمام کالاها به محض ورود به هاب ایروان بازگشایی و از نظر سلامت فیزیکی، سایز، رنگ و تطابق با سفارش تست می‌شوند. در صورت هرگونه نقص، <strong>کالا از همان ارمنستان به فروشنده تمو مرجوع و تعویض می‌گردد</strong> و محصول کاملاً سالم به ایران ارسال می‌شود.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-header">
+          ۲. دلیل قیمت رقابتی و پایین‌تر ترندز کارگو چیست؟
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-content">
+          <p>ما به دلیل خرید مستقیم با ارز درام در ارمنستان و حذف واسطه‌های متعدد دبی و ترکیه، باربری را به صورت مستقیم و اقتصادی از مرز نوردوز به تبریز انجام می‌دهیم.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <button class="accordion-header">
+          ۳. زمان تحویل سفارش چقدر است؟
+          <span class="accordion-icon">+</span>
+        </button>
+        <div class="accordion-content">
+          <p>میانگین زمان تحویل ۱۵ الی ۲۱ روز کاری است (۷ الی ۱۴ روز ارسال به ارمنستان + ۲ روز بازرسی کیفی + ۳ الی ۴ روز ترخیص و ارسال پستی از تبریز).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- مودال جزئیات محصول با گالری ۳ تصویری -->
+  <div class="product-modal-backdrop" id="product-modal-backdrop" onclick="closeProductModal(event)" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="product-modal-dialog" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeProductModal()" aria-label="بستن پنجره">&times;</button>
+      
+      <div class="modal-body-grid">
+        <div class="modal-gallery">
+          <div class="modal-main-img-box">
+            <img id="modal-main-image" src="" alt="تصویر اصلی محصول">
+            <span class="modal-badge" id="modal-badge-tag">پرفروش</span>
+          </div>
+          <div class="modal-thumbnails" id="modal-thumbnails-container"></div>
+        </div>
+
+        <div class="modal-info">
+          <div class="modal-category-tag" id="modal-cat-name">دسته بندی</div>
+          <h2 class="modal-product-title" id="modal-title">عنوان محصول</h2>
+          
+          <div class="modal-price-box">
+            <span class="modal-price-label">قیمت تمام‌شده تحویل در تبریز:</span>
+            <div class="modal-price-val" id="modal-price">۰ <span>تومان</span></div>
+          </div>
+
+          <p class="modal-full-desc" id="modal-desc">توضیحات کامل محصول...</p>
+
+          <div class="modal-specs-box">
+            <h4>مشخصات فنی و اصالت:</h4>
+            <ul id="modal-specs-list"></ul>
+          </div>
+
+          <div class="modal-delivery-notice">
+            <span>✈️ تحویل ۱۵ الی ۲۱ روز کاری | تست سلامت در دفتر ارمنستان ➔ ارسال مستقیم از تبریز</span>
+          </div>
+
+          <a href="#" id="modal-wa-btn" target="_blank" rel="noopener noreferrer" class="modal-btn-order-wa">
+            <span>ثبت سفارش این محصول در واتساپ</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال اخبار تکنولوژی -->
+  <div class="news-modal-backdrop" id="news-modal-backdrop" onclick="closeNewsModal(event)" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="news-modal-dialog" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeNewsModal()" aria-label="بستن">&times;</button>
+      <div class="news-modal-hero-img">
+        <img id="news-modal-img" src="" alt="تصویر خبر">
+        <span class="news-modal-cat" id="news-modal-cat">تکنولوژی</span>
+      </div>
+      <div class="news-modal-content">
+        <div class="news-modal-meta">
+          <span id="news-modal-date">تاریخ</span> • <span id="news-modal-readtime">زمان مطالعه: ۳ دقیقه</span>
+        </div>
+        <h2 class="news-modal-title" id="news-modal-title">تیتر گزارش</h2>
+        <div class="news-modal-body" id="news-modal-body"></div>
+        <div class="news-modal-specs" id="news-modal-specs"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال راهنمای نصب PWA -->
+  <div class="universal-install-modal" id="universal-install-modal" onclick="closeInstallModal()" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="install-box" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeInstallModal()">&times;</button>
+      <div class="install-icon">📲</div>
+      <h3 id="install-modal-title">نصب اپلیکیشن ترندز کارگو</h3>
+      <p id="install-modal-desc">دسترسی سریع‌تر بدون نیاز به مرورگر و دریافت نوتیفیکیشن حراجی‌های ۹۰٪ آف.</p>
+      <div class="install-steps-content" id="install-steps-content"></div>
+      <button class="btn-primary install-confirm-button" onclick="closeInstallModal()">متوجه شدم</button>
+    </div>
+  </div>
+
+  <!-- فوتر رسمی -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-logo">TREND <span>CARGO</span></div>
+          <p class="footer-about-text">
+            خرید مستقیم و بدون واسطه از پلتفرم‌های Temu, Shein, Amazon با تضمین بازرسی فیزیکی در هاب ایروان و ارسال مطمئن از تبریز.
+          </p>
+          <div class="footer-trust-tags">
+            <span>🇦🇲 هاب بازرسی ایروان</span>
+            <span>🇮🇷 هاب توزیع تبریز</span>
+            <span>📦 ارسال با تیپاکس و پست</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">دسترسی سریع</h4>
+          <ul class="footer-links">
+            <li><a href="#flash-sale">حراجی‌های ۹۰٪ آف</a></li>
+            <li><a href="#products">۲۰ محصول پرفروش Temu</a></li>
+            <li><a href="#calculator">محاسبه‌گر قیمت تمام شده</a></li>
+            <li><a href="#about-us">درباره ترندز کارگو</a></li>
+            <li><a href="#terms">قوانین و ضمانت مرجوعی</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">سایت‌های تحت پوشش</h4>
+          <ul class="footer-links">
+            <li><a href="#https://www.temu.com/">خرید مستقیم از Temu (تمو)</a></li>
+            <li><a href="#https://m.shein.com/">خرید مستقیم از Shein (شین)</a></li>
+            <li><a href="#https://www.amazon.com/">خرید از Amazon </a></li>
+            <li><a href="#https://www.wildberries.ru/">خرید از Wildberries</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="footer-title">پشتیبانی و ارتباط</h4>
+          <p class="footer-support-text">پشتیبانی و ثبت سفارش ارزی: همه‌روزه ۹ الی ۲۳</p>
+          <div class="footer-contact-item">
+            <span>شماره واتساپ رسمی:</span>
+            <strong dir="ltr"><a href="https://wa.me/989374443386" class="footer-whatsapp-link">+98 937 444 3386</a></strong>
+          </div>
+          <div class="footer-contact-item" style="margin-top: 8px;">
+            <span>دفتر توزیع ایران:</span>
+            <strong>تبریز</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© ۲۰۲۶ Trend Cargo (ترندز کارگو). تمامی حقوق محفوظ است.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
+
