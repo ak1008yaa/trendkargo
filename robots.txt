@@ -1,0 +1,22 @@
+
+User-agent: *
+Allow: /
+Disallow: /assets/private/
+
+# AI Crawlers for GEO Search
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://trendcargo.com/sitemap.xml
