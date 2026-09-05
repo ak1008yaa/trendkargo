@@ -8,6 +8,7 @@
 const WHATSAPP_NUMBER = "989374443386";
 const STORAGE_KEYS = {
   products: 'trendcargo_custom_products',
+  specialOffer: 'trendcargo_special_offer',
   news: 'trendcargo_custom_news',
   rates: 'trendcargo_custom_rates',
   theme: 'trendcargo_theme',
@@ -121,8 +122,123 @@ const top20Products = [
     ],
     desc: "ماگ دوجداره استیل ۱.۲ لیتری با دسته ارگونومیک، درب عایق ضد نشت و حفظ دمای یخ تا ۳۰ ساعت.",
     specs: ["گنجایش: ۴۰ اونس (۱۱۸۰ میلی‌لیتر)", "متریال: استیل ضد زنگ دوجداره ۳۰۴ غذایی", "پایه باریک مناسب جا لیوانی خودرو"]
+  },
+  {
+    id: 11, category: "gadget", catName: "گجت و دیجیتال", title: "هدست گیمینگ بی‌سیم نویزکنسلینگ اورایر",
+    price: "۲,۹۸۰,۰۰۰", rawPrice: 2980000, tag: "ترند گیمینگ", mainImg: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "هدفون اورایر با نویزکنسلینگ اکتیو، صدای فرکانس‌بالا و میکروفون حذف نویز محیط مناسب گیم و کال‌های طولانی.",
+    specs: ["اتصال: بلوتوث ۵.۳ با تاخیر زیر ۶۰ میلی‌ثانیه", "باتری: ۴۰ ساعت پخش مداوم با شارژ سریع Type-C", "پد گوش طبی با فوم حافظه‌دار برای استفاده طولانی"]
+  },
+  {
+    id: 12, category: "gadget", catName: "گجت و دیجیتال", title: "ساعت هوشمند آمولد با پایش ضربان و اکسیژن خون",
+    price: "۲,۱۵۰,۰۰۰", rawPrice: 2150000, tag: "پرفروش هدیه", mainImg: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "اسمارت واچ نمایشگر آمولد گرد با بیش از ۱۰۰ حالت ورزشی، پایش خواب و اعلان‌های هوشمند فارسی.",
+    specs: ["نمایشگر: آمولد ۱.۴ اینچی همیشه‌روشن", "سنسورها: ضربان قلب، SpO2 و پایش خواب", "مقاومت: ضدآب IP68 با باتری ۷ روزه"]
+  },
+  {
+    id: 13, category: "gadget", catName: "گجت و دیجیتال", title: "کیبورد مکانیکال RGB هات‌سواپ قابل شستشو",
+    price: "۲,۷۵۰,۰۰۰", rawPrice: 2750000, tag: "ست‌آپ حرفه‌ای", mainImg: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1527814050087-3793815479db?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "کیبورد ۷۵٪ مکانیکال با سوییچ هات‌سواپ، نورپردازی RGB پریمیوشن و بدنه فلزی برای استیم و تایپ حرفه‌ای.",
+    specs: ["سوییچ: قرمز خطی هات‌سواپ قابل تعویض", "اتصال: سه‌حالته بلوتوث، ۲.۴G و سیمی Type-C", "بدنه آلومینیومی با فوم عایق صدای تایپ"]
+  },
+  {
+    id: 14, category: "fashion", catName: "استایل و پوشاک", title: "کتانی رانینگ مش نخی بالشتکی سبک تک‌رنگ",
+    price: "۲,۲۹۰,۰۰۰", rawPrice: 2290000, tag: "استایل اسپرت", mainImg: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "کتانی رانینگ روزمره با رویه مش تنفسی و کفی فوم مموری؛ سبک، راحت و مناسب پیاده‌روی طولانی و استایل اسپرت.",
+    specs: ["کفی: فوم مموری قابل تعویض ضدبو", "وزن: حدود ۲۸۰ گرم برای هر لنگه", "سایزبندی: ۳۹ تا ۴۴ استاندارد"]
+  },
+  {
+    id: 15, category: "fashion", catName: "استایل و پوشاک", title: "کت بامبر پایلینگ ضدآب و باد اورسایز",
+    price: "۲,۵۵۰,۰۰۰", rawPrice: 2550000, tag: "ضد آب و باد", mainImg: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "بامبر جکت پاییزه با روکش ضدآب، آستر توری و بندهای تنظیم کمر؛ مناسب استایل استریت و سفر.",
+    specs: ["روکش: پلی‌استر ضدآب با پوشش پوسته‌ای", "آستر: توری تنفسی با جیب داخلی زیپ‌دار", "سایزبندی: M تا XXL فیت آزاد"]
+  },
+  {
+    id: 16, category: "accessory", catName: "اکسسوری و کیف", title: "بک‌پک ضدآب لپ‌تاپی با پورت شارژ USB",
+    price: "۱,۳۵۰,۰۰۰", rawPrice: 1350000, tag: "محبوب دانشجویی", mainImg: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "کوله اداری و دانشجویی با محفظه ضربه‌گیر لپ‌تاپ ۱۵.۶ اینچ، جنس ضدآب و پورت شارژ USB بیرونی.",
+    specs: ["گنجایش: ۲۵ لیتر با ۱۲ جیب داخلی و خارجی", "محفظه لپ‌تاپ: ضربه‌گیر تا سایز ۱۵.۶ اینچ", "کمربند سینه + پشت پنل ضدتعریق"]
+  },
+  {
+    id: 17, category: "accessory", catName: "اکسسوری و کیف", title: "عینک آفتابی پلاریزه یووی ۴۰۰ فریم فلزی",
+    price: "۹۸۰,۰۰۰", rawPrice: 980000, tag: "یووی ۴۰۰ اصل", mainImg: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "عینک آفتابی با لنز پلاریزه حذف انعکاس و محافظت کامل UV400؛ همراه با کیف سخت و دستمال مخصوص.",
+    specs: ["لنز: پلاریزه با پوشش ضدخش و UV400", "فریم: فلزی سبک با پد بینی سیلیکونی", "همراه: کیف سخت، دستمال و کارت تست اصل"]
+  },
+  {
+    id: 18, category: "accessory", catName: "اکسسوری و کیف", title: "کیف دستی مینیمال زنانه با بند شانه جداشدنی",
+    price: "۱,۶۸۰,۰۰۰", rawPrice: 1680000, tag: "ترند مینیمال", mainImg: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "کیف دستی بافت مینیمال با آستر پارچه‌ای، سه محفظه و بند شانه قابل جدا شدن؛ مناسب استایل روزمره و مجلسی.",
+    specs: ["جنس: چرم مصنوعی درجه یک ضدخط‌وخش", "ابعاد: ۲۶×۱۸×۹ سانتی‌متر", "بند شانه: قابل تنظیم و جداشدنی"]
+  },
+  {
+    id: 19, category: "lifestyle", catName: "خانه و لایف‌استایل", title: "بطری آب استیل ترمو ۱ لیتری دوجداره بدنه چسبی",
+    price: "۸۵۰,۰۰۰", rawPrice: 850000, tag: "همراه سفر", mainImg: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "بطری استیل ضدزنگ دوجداره با ماندگاری سردی ۲۴ ساعت و گرمی ۱۲ ساعت؛ درب ضدنشت و بدنه روکش پودری.",
+    specs: ["ظرفیت: ۱ لیتر با درب بسته‌بندی ضدنشت", "متریال: استیل ۳۰۴ غذایی دوجداره خلأ", "بدنه: روکش پودری ضدلغزش و ضدعرق"]
+  },
+  {
+    id: 20, category: "lifestyle", catName: "خانه و لایف‌استایل", title: "رینگ لایت حلقه‌ای خودی با پایه و ریموت تیک‌تاک",
+    price: "۱,۴۵۰,۰۰۰", rawPrice: 1450000, tag: "وایرال تیک‌تاک", mainImg: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&auto=format&fit=crop&q=80",
+    gallery: [
+      "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80"
+    ],
+    desc: "رینگ لایت ۱۲ اینچی با ۳ حالت رنگ و ۱۰ سطح شدت نور، پایه تلسکوپی تا ۲ متر و ریموت شاتر بلوتوثی.",
+    specs: ["نور: ۳ حالت سفید، گرم و مخلوط با دیمر ۱۰ مرحله", "پایه: تلسکوپی تا ۲ متر با سر چرخان ۳۶۰", "ریموت: بلوتوث شاتر سازگار با iOS و اندروید"]
   }
 ];
+
+// محصول تخفیف ویژه (ویترین حراجی لحظه‌ای — قابل ویرایش از پنل ادمین)
+const specialOfferProduct = {
+  id: 101, category: "special", catName: "تخفیف ویژه", title: "ایرباد بلوتوث ۵.۳ پرو با نویزکنسلینگ فعال",
+  price: "۸۹۰,۰۰۰", rawPrice: 890000, oldPrice: "۱,۷۸۰,۰۰۰", discountPercent: 50,
+  tag: "تخفیف ویژه ۵۰٪", mainImg: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
+  gallery: [
+    "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=600&auto=format&fit=crop&q=80"
+  ],
+  desc: "ایرباد وایرلس با نویزکنسلینگ فعال (ANC)، صدای بیس عمیق، دکمه لمسی و جعبه شارژ نمایش‌دار؛ پیشنهاد حراج هفته ترندز کارگو.",
+  specs: ["نویزکنسلینگ فعال ANC تا ۳۵ دسی‌بل", "باتری: ۶ ساعت پخش + ۲۴ ساعت با کیس شارژ", "مقاومت: ضدتعریق IPX5 با حالت گیم کم‌تاخیر"]
+};
 
 // اخبار تکنولوژی ۲۰۲۶
 const techNewsList = [
@@ -157,10 +273,14 @@ const techNewsList = [
 // ==========================================================================
 const TrendStore = {
   products: [],
+  specialOffer: null,
   rates: { ...CURRENCY_CONFIG },
 
   init() {
-    this.products = this.loadStorage(STORAGE_KEYS.products, top20Products);
+    const storedProducts = this.loadStorage(STORAGE_KEYS.products, null);
+    this.products = Array.isArray(storedProducts) ? storedProducts : JSON.parse(JSON.stringify(top20Products));
+    const storedOffer = this.loadStorage(STORAGE_KEYS.specialOffer, null);
+    this.specialOffer = (storedOffer && !Array.isArray(storedOffer)) ? storedOffer : JSON.parse(JSON.stringify(specialOfferProduct));
     this.rates = this.loadStorage(STORAGE_KEYS.rates, CURRENCY_CONFIG);
     const savedRates = this.loadStorage('trendcargo_last_exchange_rates', null);
     if (savedRates && typeof savedRates === 'object') {
@@ -185,6 +305,15 @@ const TrendStore = {
       localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(this.products));
     } catch (error) {
       console.warn('Unable to persist product list:', error);
+    }
+  },
+
+  saveSpecialOffer(newOffer) {
+    this.specialOffer = (newOffer && typeof newOffer === 'object') ? newOffer : this.specialOffer;
+    try {
+      localStorage.setItem(STORAGE_KEYS.specialOffer, JSON.stringify(this.specialOffer));
+    } catch (error) {
+      console.warn('Unable to persist special offer:', error);
     }
   },
 
@@ -456,9 +585,9 @@ function renderProducts(items) {
       </div>
       <div class="product-category">${escapeHTML(p.catName)}</div>
       <h3 class="product-title">${escapeHTML(p.title)}</h3>
-      <p class="product-desc">${escapeHTML(p.desc.slice(0, 75))}...</p>
+      <p class="product-desc">${escapeHTML((p.desc || '').slice(0, 75))}...</p>
       <div class="product-footer">
-        <div class="product-price">${p.price} <span>تومان</span></div>
+        <div class="product-price">${p.oldPrice ? `<del>${escapeHTML(p.oldPrice)}</del>` : ''}${p.price} <span>تومان</span></div>
         <button class="btn-quick-view">
           <span>مشاهده و سفارش</span>
         </button>
@@ -471,9 +600,9 @@ function renderProducts(items) {
 function filterProductsByClientSearch(query) {
   const q = (query || '').toLowerCase().trim();
   const filtered = TrendStore.products.filter(p => 
-    p.title.toLowerCase().includes(q) || 
-    p.catName.toLowerCase().includes(q) || 
-    p.tag.toLowerCase().includes(q)
+    String(p.title || '').toLowerCase().includes(q) || 
+    String(p.catName || '').toLowerCase().includes(q) || 
+    String(p.tag || '').toLowerCase().includes(q)
   );
   renderProducts(filtered);
 }
@@ -491,19 +620,22 @@ function escapeHTML(str) {
 const modalBackdrop = document.getElementById('product-modal-backdrop');
 
 function openProductModal(productId) {
-  const product = TrendStore.products.find(p => p.id === productId);
+  const product = TrendStore.products.find(p => p.id === productId) ||
+    (TrendStore.specialOffer && TrendStore.specialOffer.id === productId ? TrendStore.specialOffer : null);
   if (!product || !modalBackdrop) return;
 
-  const images = product.gallery && product.gallery.length > 0 ? product.gallery : [product.mainImg];
+  const fallbackImg = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80';
+  const images = (product.gallery && product.gallery.length > 0 ? product.gallery : [product.mainImg]).filter(Boolean);
+  if (!images.length) images.push(fallbackImg);
   const mainImgElem = document.getElementById('modal-main-image');
   mainImgElem.src = images[0];
-  mainImgElem.onerror = () => { mainImgElem.src = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'; };
+  mainImgElem.onerror = () => { mainImgElem.src = fallbackImg; };
 
-  document.getElementById('modal-badge-tag').innerText = product.tag;
-  document.getElementById('modal-cat-name').innerText = product.catName;
-  document.getElementById('modal-title').innerText = product.title;
-  document.getElementById('modal-price').innerHTML = `${product.price} <span>تومان</span>`;
-  document.getElementById('modal-desc').innerText = product.desc;
+  document.getElementById('modal-badge-tag').innerText = product.tag || '';
+  document.getElementById('modal-cat-name').innerText = product.catName || '';
+  document.getElementById('modal-title').innerText = product.title || '';
+  document.getElementById('modal-price').innerHTML = `${product.oldPrice ? `<del class="modal-old-price">${escapeHTML(product.oldPrice)}</del> ` : ''}${product.price} <span>تومان</span>`;
+  document.getElementById('modal-desc').innerText = product.desc || '';
 
   const thumbContainer = document.getElementById('modal-thumbnails-container');
   thumbContainer.innerHTML = '';
@@ -561,14 +693,15 @@ function calculateCargoPrice() {
   const baseRate = TrendStore.rates.baseRates[curr] || 170;
   const effectiveRate = baseRate * (TrendStore.rates.exchangeSpreadMultiplier || 1.06);
   const baseToman = price * effectiveRate;
-  const serviceProfit = baseToman * 0.60;
+  const serviceProfit = baseToman * 0.25;
+  const transferFee = baseToman * 0.01;
 
   let shippingUsd = 12;
   if (pkg === 'single_heavy') shippingUsd = 15;
   if (pkg === 'bulk_multi') shippingUsd = 5;
 
-  const shippingToman = shippingUsd * (TrendStore.rates.usdShippingRate || 188000);
-  const total = Math.round((baseToman + serviceProfit + shippingToman) / 10000) * 10000;
+  const shippingToman = Math.max(3500000, shippingUsd * (TrendStore.rates.usdShippingRate || 188000));
+  const total = Math.round((baseToman + serviceProfit + transferFee + shippingToman) / 10000) * 10000;
 
   const resElem = document.getElementById('calc-total-result');
   if (resElem) {
@@ -661,6 +794,115 @@ function closeNewsModal(event) {
 }
 
 // ==========================================================================
+// محصول تخفیف ویژه (ویترین حراجی لحظه‌ای)
+// ==========================================================================
+function toFaDigits(value) {
+  const faDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return String(value).replace(/\d/g, (d) => faDigits[Number(d)]);
+}
+
+function renderSpecialOffer() {
+  const container = document.getElementById('special-offer-container');
+  const offer = TrendStore.specialOffer;
+  if (!container || !offer) return;
+
+  const displayImg = (offer.gallery && offer.gallery.length > 0 ? offer.gallery[0] : offer.mainImg) || '';
+  const waText = encodeURIComponent(`سلام تیم ترندز کارگو، درخواست ثبت سفارش محصول تخفیف ویژه «${offer.title || ''}» به مبلغ ${offer.price || ''} تومان را دارم.`);
+
+  container.innerHTML = `
+    <div class="special-offer-card">
+      <img src="${displayImg}" alt="${escapeHTML(offer.title || 'محصول تخفیف ویژه')}" class="special-offer-img" loading="lazy" onclick="openProductModal(${Number(offer.id)})"
+        onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
+      <div class="special-offer-body">
+        <span class="special-offer-badge">🔥 ${escapeHTML(offer.tag || 'تخفیف ویژه')}${offer.discountPercent ? ' | ' + toFaDigits(offer.discountPercent) + '٪ آف' : ''}</span>
+        <h3 class="special-offer-title" onclick="openProductModal(${Number(offer.id)})">${escapeHTML(offer.title || '')}</h3>
+        <p class="special-offer-desc">${escapeHTML(offer.desc || '')}</p>
+        <div class="special-price-row">
+          ${offer.oldPrice ? `<del>${escapeHTML(offer.oldPrice)}</del>` : ''}
+          <span class="special-price">${offer.price} <small>تومان</small></span>
+        </div>
+        <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn-primary special-offer-cta">
+          <span>سفارش با تخفیف ویژه</span>
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+// ==========================================================================
+// تایمر شمارش معکوس حراجی (ریست روزانه در پایان شب)
+// ==========================================================================
+function startFlashCountdown() {
+  const hoursElem = document.getElementById('hours');
+  const minutesElem = document.getElementById('minutes');
+  const secondsElem = document.getElementById('seconds');
+  if (!hoursElem || !minutesElem || !secondsElem) return;
+
+  const tick = () => {
+    const now = new Date();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    let diff = Math.max(0, Math.floor((endOfDay - now) / 1000));
+
+    const hours = Math.floor(diff / 3600); diff %= 3600;
+    const minutes = Math.floor(diff / 60);
+    const seconds = diff % 60;
+
+    hoursElem.textContent = toFaDigits(String(hours).padStart(2, '0'));
+    minutesElem.textContent = toFaDigits(String(minutes).padStart(2, '0'));
+    secondsElem.textContent = toFaDigits(String(seconds).padStart(2, '0'));
+  };
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ==========================================================================
+// توست اطلاع‌رسانی چرخشی (اطلاعات واقعی خدمات)
+// ==========================================================================
+function startLiveToasts() {
+  const toast = document.getElementById('live-toast');
+  if (!toast) return;
+
+  const messages = [
+    { user: 'پشتیبانی ترندز کارگو', action: 'آنلاین هستیم — همه‌روزه ۹ الی ۲۳ پاسخگوی شما' },
+    { user: 'ارسال اکسپرس تیپاکس', action: 'از هاب تبریز به سراسر ایران با بارکد پیامکی' },
+    { user: 'بازرسی در ایروان', action: 'تست سلامت کالا قبل از ورود به ایران' },
+    { user: 'تخفیف ویژه امروز', action: 'پیشنهاد حراج را از بخش حراجی‌ها ببینید' }
+  ];
+
+  let index = 0;
+  const showNext = () => {
+    const userElem = document.getElementById('toast-user');
+    const actionElem = document.getElementById('toast-action');
+    if (userElem && actionElem) {
+      userElem.textContent = messages[index].user;
+      actionElem.textContent = messages[index].action;
+    }
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 6000);
+    index = (index + 1) % messages.length;
+  };
+
+  setTimeout(showNext, 4000);
+  setInterval(showNext, 14000);
+}
+
+// ==========================================================================
+// ثبت سرویس‌ورکر (PWA — فقط در صفحه اصلی و روی HTTPS)
+// ==========================================================================
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) return;
+  if (!/\/(index\.html)?$/.test(location.pathname)) return;
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('Service worker registration failed:', error);
+    });
+  });
+}
+
+// ==========================================================================
 // مدیریت PWA و نوتیفیکیشن
 // ==========================================================================
 let deferredPrompt = null;
@@ -712,12 +954,23 @@ function enablePushNotifications() {
 document.addEventListener('DOMContentLoaded', () => {
   initAppTheme();
   renderProducts();
+  renderSpecialOffer();
   renderTechNews();
+  renderTestimonials();
+  initTestimonialsSlider();
+  initTestimonialForm();
   calculateCargoPrice();
   updateHeaderClock();
-fetchTgjuLiveRates().catch(() => {});
-setInterval(() => fetchTgjuLiveRates().catch(() => {}), 60 * 60 * 1000);
-setInterval(updateHeaderClock, 1000);
+  startFlashCountdown();
+  startLiveToasts();
+  registerServiceWorker();
+  fetchTgjuLiveRates().catch(() => {});
+  setInterval(() => fetchTgjuLiveRates().catch(() => {}), 60 * 60 * 1000);
+  setInterval(updateHeaderClock, 1000);
+
+  // برچسب تعداد محصولات در تب «همه محصولات»
+  const allTab = document.querySelector('.filter-tabs .tab-btn[data-filter="all"]');
+  if (allTab) allTab.textContent = `همه محصولات (${toFaDigits(TrendStore.products.length)})`;
 
   // حذف پرلودر
   const preloader = document.getElementById('preloader');
@@ -756,3 +1009,212 @@ setInterval(updateHeaderClock, 1000);
     if (nav) nav.classList.toggle('scrolled', window.scrollY > 30);
   });
 });
+
+// ==========================================================================
+// ??? ????? ??????? (Testimonials)
+// ==========================================================================
+const STORAGE_KEYS_TESTIMONIALS = "trendcargo_testimonials";
+
+const defaultTestimonials = [
+  {
+    id: 1, name: "???? ?????", city: "?????", rating: 5,
+    text: "????? ?????????? ???! ????? ?? ?? ?? ??? ????? ?? ????????? ???? ? ?? ?????? ???? ???? ????. ?????? ???? ??? ?? ????? ????? ?? ???? ??????. ????? ?????? ????? ?????.",
+    date: "????/??/??", verified: true
+  },
+  {
+    id: 2, name: "???? ?????", city: "?????", rating: 5,
+    text: "?? ????? ????? ?? ??? ? ??? ???? ? ?? ??? ?? ????? ?????? ????? ?????. ??????? ?????? ??????? ??? ? ???????? ???? ?????? ???.",
+    date: "????/??/??", verified: true
+  },
+  {
+    id: 3, name: "????? ?????", city: "??????", rating: 5,
+    text: "????? ??? ??? ?? ????? ???? ??????? ? ??? ????? ???? ??? ??? ??? ???? ???. ?????? ?? ?? ?????? ????? ??? ? ???? ??? ????? ????.",
+    date: "????/??/??", verified: true
+  },
+  {
+    id: 4, name: "???? ?????", city: "????", rating: 4,
+    text: "???? ????? ???? ??? ? ???? ?? ?????? ????? ????????? ??? ???. ??? ???????? ???? ??????? ????? ???. ?? ?? ??????? ??????.",
+    date: "????/??/??", verified: true
+  },
+  {
+    id: 5, name: "???? ?????", city: "?????", rating: 5,
+    text: "????? ??? ????? ???? ? ?? ??? ????? ???? ?????. ??????? ?????? ???? ?? ?????? ?? ???? ????? ?? ???? ??????.",
+    date: "????/??/??", verified: true
+  },
+  {
+    id: 6, name: "??? ?????", city: "???", rating: 5,
+    text: "???????? ????? ????? ???? ?? ?????? ???? ?????. ?? ???? ????? ?? ?????? ??? ??? ??????? ? ???? ????? ??. ????? ?? ???.",
+    date: "????/??/??", verified: true
+  }
+];
+
+function getTestimonials() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS_TESTIMONIALS);
+    if (stored) return JSON.parse(stored);
+    localStorage.setItem(STORAGE_KEYS_TESTIMONIALS, JSON.stringify(defaultTestimonials));
+    return defaultTestimonials;
+  } catch {
+    return defaultTestimonials;
+  }
+}
+
+function saveTestimonials(testimonials) {
+  localStorage.setItem(STORAGE_KEYS_TESTIMONIALS, JSON.stringify(testimonials));
+}
+
+function renderTestimonials() {
+  const track = document.getElementById("testimonials-track");
+  const dotsContainer = document.getElementById("testimonial-dots");
+  if (!track) return;
+
+  const testimonials = getTestimonials();
+  const approved = testimonials.filter(t => t.approved !== false);
+
+  track.innerHTML = approved.map(t => `
+    <div class="testimonial-card">
+      <div class="testimonial-header">
+        <div class="testimonial-avatar">${t.name.charAt(0)}</div>
+        <div class="testimonial-info">
+          <div class="testimonial-name">${escapeHTML(t.name)}</div>
+          <div class="testimonial-city">?? ${escapeHTML(t.city)}</div>
+        </div>
+        <div class="testimonial-stars">${'?'.repeat(t.rating)}${'u2606'.repeat(5 - t.rating)}</div>
+      </div>
+      <p class="testimonial-text">${escapeHTML(t.text)}</p>
+      ${t.verified ? '<span class="testimonial-verified">? ???? ????? ???</span>' : ""}
+      <div class="testimonial-date">${t.date || ""}</div>
+    </div>
+  `).join("");
+
+  // Dots
+  if (dotsContainer) {
+    dotsContainer.innerHTML = approved.map((_, i) =>
+      `<button class="testimonial-dot ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="?????? ${toFaDigits(i + 1)}"></button>`
+    ).join("");
+    dotsContainer.querySelectorAll(".testimonial-dot").forEach(dot => {
+      dot.addEventListener("click", () => {
+        const idx = Number(dot.dataset.index);
+        scrollToTestimonial(idx);
+      });
+    });
+  }
+}
+
+function scrollToTestimonial(index) {
+  const track = document.getElementById("testimonials-track");
+  if (!track) return;
+  const cards = track.querySelectorAll(".testimonial-card");
+  if (cards[index]) {
+    const cardWidth = cards[index].offsetWidth + 24;
+    track.scrollTo({ left: cardWidth * index, behavior: "smooth" });
+    document.querySelectorAll(".testimonial-dot").forEach((d, i) => {
+      d.classList.toggle("active", i === index);
+    });
+  }
+}
+
+function initTestimonialsSlider() {
+  const prevBtn = document.getElementById("testimonial-prev");
+  const nextBtn = document.getElementById("testimonial-next");
+  const track = document.getElementById("testimonials-track");
+  if (!track) return;
+
+  let currentIndex = 0;
+  const testimonials = getTestimonials().filter(t => t.approved !== false);
+
+  const updateNav = () => {
+    const cards = track.querySelectorAll(".testimonial-card");
+    const scrollLeft = track.scrollLeft;
+    const cardWidth = cards[0] ? cards[0].offsetWidth + 24 : 300;
+    currentIndex = Math.round(scrollLeft / cardWidth);
+    document.querySelectorAll(".testimonial-dot").forEach((d, i) => {
+      d.classList.toggle("active", i === currentIndex);
+    });
+  };
+
+  track.addEventListener("scroll", updateNav);
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => scrollToTestimonial(Math.max(0, currentIndex - 1)));
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => scrollToTestimonial(Math.min(testimonials.length - 1, currentIndex + 1)));
+  }
+}
+
+function initTestimonialForm() {
+  const modal = document.getElementById("testimonial-modal");
+  const openBtn = document.getElementById("btn-open-testimonial-form");
+  const closeBtn = document.getElementById("btn-close-testimonial-modal");
+  const form = document.getElementById("testimonial-form");
+  const starBtns = document.querySelectorAll(".star-btn");
+  const ratingInput = document.getElementById("testimonial-rating");
+
+  if (!modal || !form) return;
+
+  if (openBtn) {
+    openBtn.addEventListener("click", () => {
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    });
+  }
+
+  const closeModal = () => {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+
+  starBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const value = Number(btn.dataset.value);
+      ratingInput.value = value;
+      starBtns.forEach(b => {
+        b.classList.toggle("active", Number(b.dataset.value) <= value);
+      });
+    });
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("testimonial-name").value.trim();
+    const city = document.getElementById("testimonial-city").value.trim();
+    const text = document.getElementById("testimonial-text").value.trim();
+    const rating = Number(ratingInput.value);
+
+    if (text.length < 20) return;
+
+    const testimonials = getTestimonials();
+    const now = new Date();
+    const jalaali = { year: 1405, month: 6, day: 20 }; // simplified
+    testimonials.unshift({
+      id: Date.now(),
+      name, city, text, rating,
+      date: `${jalaali.year}/${String(jalaali.month).padStart(2, '0')}/${String(jalaali.day).padStart(2, '0')}`,
+      verified: false,
+      approved: false
+    });
+    saveTestimonials(testimonials);
+
+    form.reset();
+    starBtns.forEach(b => b.classList.toggle("active", Number(b.dataset.value) <= 5));
+    ratingInput.value = 5;
+    closeModal();
+
+    // Show success toast
+    const toast = document.getElementById("live-toast");
+    if (toast) {
+      const userEl = document.getElementById("toast-user");
+      const actionEl = document.getElementById("toast-action");
+      if (userEl) userEl.textContent = "? ??? ??? ??? ??";
+      if (actionEl) actionEl.textContent = "?? ?? ????? ??? ??? ????? ???? ????? ??";
+      toast.classList.add("active");
+      setTimeout(() => toast.classList.remove("active"), 5000);
+    }
+  });
+}

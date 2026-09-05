@@ -32,7 +32,7 @@
   <!-- Fonts & Stylesheet -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Estedad:wght@100..900&family=Vazirmatn:wght@300..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 
   <!-- JSON-LD Structured Data Schema -->
@@ -212,6 +212,9 @@
         </div>
       </div>
 
+      <!-- محصول تخفیف ویژه -->
+      <div id="special-offer-container"></div>
+
       <div class="notify-cta-bar">
         <span>می‌خواهید آفرهای ۹۰٪ بعدی را قبل از تکمیل ظرفیت با نوتیفیکیشن دریافت کنید؟</span>
         <button class="btn-enable-notify" id="btn-enable-notify" onclick="enablePushNotifications()">
@@ -355,51 +358,48 @@
     </div>
   </section>
 
-  <!-- ماشین‌حساب آنلاین قیمت تمام شده -->
+  <!-- نحوه محاسبه قیمت نهایی -->
   <section id="calculator" class="section-padding container">
-    <div class="calculator-box">
-      <div class="section-badge">محاسبه‌گر منصفانه و شفاف</div>
-      <h2 class="section-title calculator-title">محاسبه‌گر قیمت تمام‌شده تحویل ایران</h2>
-      <p class="section-desc calculator-desc">قیمت کالا در سایت مبدأ را وارد کنید تا قیمت تخمینی تحویل درب منزل برای شما محاسبه شود.</p>
+    <div class="calculator-box calculator-box-simple">
+      <div class="section-badge">نحوه محاسبه قیمت نهایی</div>
+      <h2 class="section-title calculator-title">قیمت نهایی تحویل ایران چگونه محاسبه می‌شود؟</h2>
+      <p class="section-desc calculator-desc">برای شفاف بودن هزینه‌ها، قیمت نهایی بر اساس ارزش کالا، نرخ ارز، نوع بسته و حمل داخلی محاسبه می‌شود.</p>
 
-      <div class="calc-grid">
-        <div class="calc-input-item">
-          <label for="calc-currency">واحد ارز در سایت خارجی:</label>
-          <select id="calc-currency" class="calc-input" onchange="calculateCargoPrice()">
-            <option value="amd" selected>درام ارمنستان (AMD ֏) - تمو / وایلدبریز</option>
-            <option value="usd">دلار آمریکا ($) - شین / آمازون</option>
-            <option value="try">لیر ترکیه (₺) - ترندیول / زارا</option>
-          </select>
+      <div class="calc-inline-meta">
+        <div class="calc-inline-item">
+          <span class="calc-inline-label">قیمت کالا در سایت مبدأ (دلار):</span>
+          <strong>۱۰۰</strong>
         </div>
-
-        <div class="calc-input-item">
-          <label for="calc-price">قیمت کالا در سایت مبدأ:</label>
-          <input type="number" id="calc-price" class="calc-input" placeholder="مثلاً: 12000" value="12000" oninput="calculateCargoPrice()">
-        </div>
-
-        <div class="calc-input-item">
-          <label for="calc-package-type">نوع مرسوله و وزن تقریبی:</label>
-          <select id="calc-package-type" class="calc-input" onchange="calculateCargoPrice()">
-            <option value="single_light" selected>تک محصول سبک (پوشاک، اکسسوری، گجت)</option>
-            <option value="single_heavy">تک محصول سنگین / حجیم (کاپشن، کفش، هیتر)</option>
-            <option value="bulk_multi">سبد خرید چندتایی (بیش از ۳ آیتم / اقتصادی)</option>
-          </select>
+        <div class="calc-inline-item">
+          <span class="calc-inline-label">شروع قیمت ارسال و باربری:</span>
+          <strong>از ۳.۵۰۰ میلیون تومان</strong>
         </div>
       </div>
 
-      <div class="calc-saving-tip">
-        <span>💡 <strong>سود منصفانه و سرشکن شدن باربری:</strong> تمام قیمت‌های ترندز کارگو رقابتی هستند؛ در صورت ثبت سفارش همزمان چند آیتم، هزینه باربری سرشکن شده و ارزان‌تر خواهد شد!</span>
+      <div class="calc-formula-grid">
+        <div class="calc-formula-card">
+          <span class="calc-formula-step">۱</span>
+          <h3>قیمت کالا</h3>
+          <p>قیمت کالا در سایت مبدأ × نرخ ارز</p>
+        </div>
+        <div class="calc-formula-card">
+          <span class="calc-formula-step">۲</span>
+          <h3>سود و کارمزد</h3>
+          <p>۲۵٪ سود و کارمزد خدمات</p>
+        </div>
+        <div class="calc-formula-card">
+          <span class="calc-formula-step">۳</span>
+          <h3>هزینه صرافی</h3>
+          <p>۱٪ هزینه صرافی و انتقال پول + هزینه ارسال و باربری</p>
+        </div>
       </div>
 
-      <div class="calc-result-box">
-        <div class="calc-res-label">قیمت تخمینی نهایی تحویل در تبریز:</div>
-        <div class="calc-res-amount" id="calc-total-result">در حال محاسبه...</div>
-        <p class="calc-note">* کرایه تیپاکس از هاب تبریز به نشانی شما به صورت پس‌کرایه خواهد بود.</p>
-        <button class="btn-primary calc-quote-button" id="btn-calc-quote" onclick="sendCalculatedQuoteToWhatsApp()">
-          <span>استعلام نهایی و ثبت در واتساپ</span>
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        </button>
+      <div class="calc-formula-summary">
+        <span>فرمول نهایی:</span>
+        <strong>قیمت کالا + ۲۵٪ سود و کارمزد + ۱٪ صرافی + هزینه ارسال و باربری = قیمت نهایی تحویل در تبریز</strong>
       </div>
+
+      <p class="calc-note">* هزینه ارسال و باربری از ۳.۵۰۰ میلیون تومان شروع می‌شود و بر اساس نوع مرسوله و وزن تقریبی محاسبه می‌گردد.</p>
     </div>
   </section>
 
@@ -584,6 +584,100 @@
     </div>
   </div>
 
+  <!-- بخش رضایت مشتریان -->
+  <section class="testimonials-section" id="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">⭐ نظرات مشتریان</span>
+        <h2 class="section-title">رضایت مشتریان ترندز کارگو</h2>
+        <p class="section-subtitle">بیش از ۲,۵۰۰ سفارش موفق و مشتریان راضی در سراسر ایران</p>
+      </div>
+
+      <div class="testimonials-stats">
+        <div class="stat-item">
+          <div class="stat-value">۴.۸</div>
+          <div class="stat-stars">⭐⭐⭐⭐⭐</div>
+          <div class="stat-label">میانگین امتیاز</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">۹۸٪</div>
+          <div class="stat-stars">👍</div>
+          <div class="stat-label">رضایت مشتریان</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">۲,۵۰۰+</div>
+          <div class="stat-stars">📦</div>
+          <div class="stat-label">سفارش موفق</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">۲۴ساعت</div>
+          <div class="stat-stars">⚡</div>
+          <div class="stat-label">پاسخگویی</div>
+        </div>
+      </div>
+
+      <div class="testimonials-slider" id="testimonials-slider">
+        <div class="testimonials-track" id="testimonials-track">
+          <!-- نظرات در جاوااسکرپت رندر می‌شوند -->
+        </div>
+        <div class="testimonials-nav">
+          <button class="testimonial-arrow testimonial-prev" id="testimonial-prev" aria-label="نظر قبلی">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <div class="testimonial-dots" id="testimonial-dots"></div>
+          <button class="testimonial-arrow testimonial-next" id="testimonial-next" aria-label="نظر بعدی">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="add-testimonial-box">
+        <h3>نظر خود را با ما به اشتراک بگذارید</h3>
+        <p>تجربه خرید خود را از ترندز کارگو برای سایرین بنویسید</p>
+        <button class="btn-primary" id="btn-open-testimonial-form">
+          <span>✍️ ثبت نظر</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- مودال ثبت نظر -->
+  <div class="testimonial-modal-backdrop" id="testimonial-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="testimonial-modal-dialog">
+      <button class="modal-close-btn" id="btn-close-testimonial-modal">&times;</button>
+      <h3 class="testimonial-modal-title">ثبت نظر شما</h3>
+      <form id="testimonial-form" class="testimonial-form">
+        <div class="form-group">
+          <label for="testimonial-name">نام و نام خانوادگی</label>
+          <input type="text" id="testimonial-name" class="form-control" placeholder="مثال: علی محمدی" required>
+        </div>
+        <div class="form-group">
+          <label for="testimonial-city">شهر</label>
+          <input type="text" id="testimonial-city" class="form-control" placeholder="مثال: تبریز" required>
+        </div>
+        <div class="form-group">
+          <label>امتیاز شما</label>
+          <div class="star-rating-input" id="star-rating-input">
+            <button type="button" class="star-btn" data-value="1" aria-label="۱ ستاره">★</button>
+            <button type="button" class="star-btn" data-value="2" aria-label="۲ ستاره">★</button>
+            <button type="button" class="star-btn" data-value="3" aria-label="۳ ستاره">★</button>
+            <button type="button" class="star-btn" data-value="4" aria-label="۴ ستاره">★</button>
+            <button type="button" class="star-btn active" data-value="5" aria-label="۵ ستاره">★</button>
+          </div>
+          <input type="hidden" id="testimonial-rating" value="5">
+        </div>
+        <div class="form-group">
+          <label for="testimonial-text">متن نظر</label>
+          <textarea id="testimonial-text" class="form-control" rows="4" placeholder="تجربه خرید خود را بنویسید..." required minlength="20"></textarea>
+          <small class="form-hint">حداقل ۲۰ کاراکتر</small>
+        </div>
+        <button type="submit" class="btn-primary btn-submit-testimonial">
+          <span>📤 ارسال نظر</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- فوتر رسمی -->
   <footer>
     <div class="container">
@@ -603,6 +697,7 @@
         <div class="footer-col">
           <h4 class="footer-title">دسترسی سریع</h4>
           <ul class="footer-links">
+            <li><a href="#testimonials">نظرات مشتریان</a></li>
             <li><a href="#flash-sale">حراجی‌های ۹۰٪ آف</a></li>
             <li><a href="#products">۲۰ محصول پرفروش Temu</a></li>
             <li><a href="#calculator">محاسبه‌گر قیمت تمام شده</a></li>
@@ -614,10 +709,10 @@
         <div class="footer-col">
           <h4 class="footer-title">سایت‌های تحت پوشش</h4>
           <ul class="footer-links">
-            <li><a href="#https://www.temu.com/">خرید مستقیم از Temu (تمو)</a></li>
-            <li><a href="#https://m.shein.com/">خرید مستقیم از Shein (شین)</a></li>
-            <li><a href="#https://www.amazon.com/">خرید از Amazon </a></li>
-            <li><a href="#https://www.wildberries.ru/">خرید از Wildberries</a></li>
+            <li><a href="https://www.temu.com/" target="_blank" rel="noopener noreferrer">خرید مستقیم از Temu (تمو)</a></li>
+            <li><a href="https://m.shein.com/" target="_blank" rel="noopener noreferrer">خرید مستقیم از Shein (شین)</a></li>
+            <li><a href="https://www.amazon.com/" target="_blank" rel="noopener noreferrer">خرید از Amazon </a></li>
+            <li><a href="https://www.wildberries.ru/" target="_blank" rel="noopener noreferrer">خرید از Wildberries</a></li>
           </ul>
         </div>
 

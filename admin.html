@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>پنل مدیریت و ویرایشگر ۳ تصویری | Trend Cargo CMS</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon_io/favicon-32x32.png">
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Estedad:wght@100..900&family=Vazirmatn:wght@300..900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-dark: #050b16;
@@ -27,7 +27,7 @@
       --radius: 20px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Estedad', 'Vazirmatn', sans-serif; }
     html { scroll-behavior: smooth; }
     body {
       background:
@@ -418,6 +418,33 @@
       .metrics-grid, .cms-grid { grid-template-columns: 1fr; }
       .sidebar { padding: 0.9rem; }
       .brand-box .title { font-size: 1.4rem; }
+      .testimonials-admin-list { max-height: none; }
+    /* Testimonials Admin Styles */
+    .testimonials-admin-list { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem; max-height: 500px; overflow-y: auto; }
+    .testimonial-admin-card {
+      display: flex; align-items: flex-start; gap: 1rem; padding: 1rem;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 16px; transition: border-color 0.2s ease;
+    }
+    .testimonial-admin-card.pending { border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.03); }
+    .testimonial-admin-avatar {
+      width: 42px; height: 42px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 1rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--cyan), #0284c7); color: #fff; flex-shrink: 0;
+    }
+    .testimonial-admin-info { flex: 1; min-width: 0; }
+    .testimonial-admin-name { font-weight: 700; font-size: 0.9rem; }
+    .testimonial-admin-meta { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .testimonial-admin-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; }
+    .testimonial-admin-stars { color: #fbbf24; font-size: 0.8rem; }
+    .testimonial-admin-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn-approve { background: var(--green-soft); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; }
+    .btn-reject { background: rgba(239,68,68,0.08); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 700; }
+    .badge-pending { display: inline-block; background: rgba(251, 191, 36, 0.15); color: #fbbf24; padding: 0.15rem 0.5rem; border-radius: 50px; font-size: 0.65rem; font-weight: 700; }
+    .badge-approved { display: inline-block; background: var(--green-soft); color: var(--green); padding: 0.15rem 0.5rem; border-radius: 50px; font-size: 0.65rem; font-weight: 700; }
+    .no-testimonials { text-align: center; padding: 2rem; color: var(--text-muted); }
+      .testimonial-admin-card { flex-direction: column; }
+      .testimonial-admin-actions { width: 100%; justify-content: flex-start; }
     }
   </style>
 </head>
@@ -453,6 +480,7 @@
           <button class="nav-item" data-section="products">محصولات</button>
           <button class="nav-item" data-section="orders">سفارش‌ها</button>
           <button class="nav-item" data-section="discounts">تخفیف‌ها</button>
+          <button class="nav-item" data-section="testimonials">نظرات مشتریان</button>
           <button class="nav-item" data-section="settings">تنظیمات</button>
         </div>
 
@@ -584,8 +612,18 @@
             <div class="panel-header">
               <h3>مدیریت محصولات</h3>
               <span class="chip">گالری ۳ تصویری</span>
+              <button class="btn btn-reset" style="margin-right:auto;" onclick="resetDefaultProducts()">♻️ بازگردانی محصولات پیش‌فرض</button>
             </div>
             <div class="cms-grid" id="product-grid"></div>
+          </div>
+
+          <div class="panel" style="margin-top: 1.2rem;">
+            <div class="panel-header">
+              <h3>محصول تخفیف ویژه (ویترین حراجی)</h3>
+              <span class="chip">Flash Sale</span>
+              <button class="btn btn-save" style="margin-right:auto;" onclick="saveSpecialOfferFromAdmin()">💾 ذخیره تخفیف ویژه</button>
+            </div>
+            <div class="cms-grid" id="special-offer-editor"></div>
           </div>
         </section>
 
@@ -652,6 +690,21 @@
             </div>
           </div>
         </section>
+
+        <!-- بخش مدیریت نظرات مشتریان -->
+        <section class="admin-section" id="section-testimonials">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>مدیریت نظرات مشتریان</h3>
+              <div class="top-actions" style="justify-content:flex-start;">
+                <button class="btn btn-save" onclick="approveAllTestimonials()">✓ تأیید همه</button>
+              </div>
+            </div>
+            <div class="testimonials-admin-list" id="testimonials-admin-list">
+              <!-- نظرات در اینجا رندر می‌شوند -->
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   </div>
@@ -691,6 +744,11 @@
       checkAuth();
     }
 
+    function escAttr(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
     function renderCMS() {
       const grid = document.getElementById('product-grid');
       grid.innerHTML = '';
@@ -705,46 +763,156 @@
         card.innerHTML = `
           <div class="cms-header">
             <span class="cms-badge">محصول #${p.id}</span>
-            <input type="text" class="form-control" style="width:120px;" id="p-tag-${idx}" value="${p.tag}">
+            <input type="text" class="form-control" style="width:120px;" id="p-tag-${idx}" value="${escAttr(p.tag)}">
           </div>
 
           <div class="img-slots">
             <div class="img-slot">
               <span>عکس ۱ (اصلی)</span>
-              <img src="${g1}" id="prev-${idx}-0" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <img src="${escAttr(g1)}" id="prev-${idx}-0" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
               <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, ${idx}, 0)">
-              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-0" value="${g1}" oninput="document.getElementById('prev-${idx}-0').src=this.value">
+              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-0" value="${escAttr(g1)}" oninput="document.getElementById('prev-${idx}-0').src=this.value">
             </div>
             <div class="img-slot">
               <span>عکس ۲</span>
-              <img src="${g2}" id="prev-${idx}-1" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <img src="${escAttr(g2)}" id="prev-${idx}-1" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
               <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, ${idx}, 1)">
-              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-1" value="${g2}" oninput="document.getElementById('prev-${idx}-1').src=this.value">
+              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-1" value="${escAttr(g2)}" oninput="document.getElementById('prev-${idx}-1').src=this.value">
             </div>
             <div class="img-slot">
               <span>عکس ۳</span>
-              <img src="${g3}" id="prev-${idx}-2" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <img src="${escAttr(g3)}" id="prev-${idx}-2" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
               <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, ${idx}, 2)">
-              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-2" value="${g3}" oninput="document.getElementById('prev-${idx}-2').src=this.value">
+              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-2" value="${escAttr(g3)}" oninput="document.getElementById('prev-${idx}-2').src=this.value">
             </div>
           </div>
 
           <div class="form-group">
             <label>عنوان فارسی:</label>
-            <input type="text" class="form-control" id="p-title-${idx}" value="${p.title}">
+            <input type="text" class="form-control" id="p-title-${idx}" value="${escAttr(p.title)}">
           </div>
           <div class="form-group">
             <label>قیمت نمایشی (تومان):</label>
-            <input type="text" class="form-control" id="p-price-${idx}" value="${p.price}">
+            <input type="text" class="form-control" id="p-price-${idx}" value="${escAttr(p.price)}">
           </div>
           <div class="form-group">
             <label>توضیحات کوتاه:</label>
-            <textarea class="form-control" id="p-desc-${idx}">${p.desc}</textarea>
+            <textarea class="form-control" id="p-desc-${idx}">${escAttr(p.desc)}</textarea>
           </div>
         `;
         grid.appendChild(card);
       });
     }
+
+    function renderSpecialOfferEditor() {
+      const host = document.getElementById('special-offer-editor');
+      if (!host) return;
+      const sp = TrendStore.specialOffer || {};
+      const s1 = sp.gallery && sp.gallery[0] ? sp.gallery[0] : (sp.mainImg || '');
+      const s2 = sp.gallery && sp.gallery[1] ? sp.gallery[1] : '';
+      const s3 = sp.gallery && sp.gallery[2] ? sp.gallery[2] : '';
+
+      host.innerHTML = `
+        <div class="cms-card">
+          <div class="cms-header">
+            <span class="cms-badge">پیشنهاد ویژه حراجی</span>
+            <input type="text" class="form-control" style="width:150px;" id="sp-tag" value="${escAttr(sp.tag || 'تخفیف ویژه')}">
+          </div>
+
+          <div class="img-slots">
+            <div class="img-slot">
+              <span>عکس ۱ (اصلی)</span>
+              <img src="${escAttr(s1)}" id="prev-sp-0" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, 'sp', 0)">
+              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-sp-0" value="${escAttr(s1)}" oninput="document.getElementById('prev-sp-0').src=this.value">
+            </div>
+            <div class="img-slot">
+              <span>عکس ۲</span>
+              <img src="${escAttr(s2)}" id="prev-sp-1" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, 'sp', 1)">
+              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-sp-1" value="${escAttr(s2)}" oninput="document.getElementById('prev-sp-1').src=this.value">
+            </div>
+            <div class="img-slot">
+              <span>عکس ۳</span>
+              <img src="${escAttr(s3)}" id="prev-sp-2" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, 'sp', 2)">
+              <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-sp-2" value="${escAttr(s3)}" oninput="document.getElementById('prev-sp-2').src=this.value">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>عنوان فارسی:</label>
+            <input type="text" class="form-control" id="sp-title" value="${escAttr(sp.title || '')}">
+          </div>
+          <div class="form-group">
+            <label>قیمت جدید (تومان):</label>
+            <input type="text" class="form-control" id="sp-price" value="${escAttr(sp.price || '')}">
+          </div>
+          <div class="form-group">
+            <label>قیمت قبل از تخفیف (تومان):</label>
+            <input type="text" class="form-control" id="sp-oldprice" value="${escAttr(sp.oldPrice || '')}">
+          </div>
+          <div class="form-group">
+            <label>درصد تخفیف:</label>
+            <input type="number" class="form-control" id="sp-discount" value="${Number(sp.discountPercent || 0)}">
+          </div>
+          <div class="form-group">
+            <label>توضیحات:</label>
+            <textarea class="form-control" id="sp-desc">${escAttr(sp.desc || '')}</textarea>
+          </div>
+        </div>
+      `;
+    }
+
+    function saveSpecialOfferFromAdmin() {
+      if (!TrendStore.specialOffer) TrendStore.specialOffer = {};
+      const sp = TrendStore.specialOffer;
+      sp.title = document.getElementById('sp-title').value;
+      sp.tag = document.getElementById('sp-tag').value;
+      sp.price = document.getElementById('sp-price').value;
+      sp.oldPrice = document.getElementById('sp-oldprice').value;
+      sp.discountPercent = Number(document.getElementById('sp-discount').value || 0);
+      sp.desc = document.getElementById('sp-desc').value;
+
+      const img1 = document.getElementById('url-sp-0').value;
+      const img2 = document.getElementById('url-sp-1').value;
+      const img3 = document.getElementById('url-sp-2').value;
+      sp.mainImg = img1;
+      sp.gallery = [img1, img2, img3].filter(Boolean);
+
+      TrendStore.saveSpecialOffer(sp);
+      const t = document.getElementById('toast');
+      t.textContent = '🔥 تخفیف ویژه ذخیره شد!';
+      t.classList.add('show');
+      setTimeout(() => {
+        t.classList.remove('show');
+        t.textContent = '✅ تغییرات با موفقیت ذخیره شدند!';
+      }, 3000);
+    }
+
+    function resetDefaultProducts() {
+      if (!confirm('همه تغییرات حذف و ۲۰ محصول پیش‌فرض + تخفیف ویژه بازگردانی شود؟')) return;
+      try {
+        localStorage.removeItem(STORAGE_KEYS.products);
+        localStorage.removeItem(STORAGE_KEYS.specialOffer);
+      } catch (error) {
+        console.warn('Unable to clear stored products:', error);
+      }
+      TrendStore.products = JSON.parse(JSON.stringify(top20Products));
+      TrendStore.specialOffer = JSON.parse(JSON.stringify(specialOfferProduct));
+      TrendStore.saveProducts(TrendStore.products);
+      TrendStore.saveSpecialOffer(TrendStore.specialOffer);
+      renderCMS();
+      renderSpecialOfferEditor();
+      const t = document.getElementById('toast');
+      t.textContent = '♻️ محصولات پیش‌فرض بازگردانی شدند';
+      t.classList.add('show');
+      setTimeout(() => {
+        t.classList.remove('show');
+        t.textContent = '✅ تغییرات با موفقیت ذخیره شدند!';
+      }, 3000);
+    }
+
 
     function compressImg(e, pIdx, slotIdx) {
       const file = e.target.files?.[0];
@@ -849,6 +1017,12 @@
       document.querySelectorAll('.admin-section').forEach(section => {
         section.classList.toggle('active', section.id === `section-${sectionName}`);
       });
+    }
+
+    function escapeHTML(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
     }
 
     function formatCurrency(value) {
@@ -1088,6 +1262,71 @@
       });
     }
 
+    function getTestimonials() {
+      try {
+        const stored = localStorage.getItem('trendcargo_testimonials');
+        if (stored) return JSON.parse(stored);
+        return [];
+      } catch { return []; }
+    }
+
+    function saveTestimonials(list) {
+      localStorage.setItem('trendcargo_testimonials', JSON.stringify(list));
+    }
+
+    function renderTestimonialsAdmin() {
+      const host = document.getElementById('testimonials-admin-list');
+      if (!host) return;
+      const testimonials = getTestimonials();
+      if (!testimonials.length) {
+        host.innerHTML = '<div class="no-testimonials">هنوز نظری ثبت نشده است.</div>';
+        return;
+      }
+      host.innerHTML = testimonials.map((t, i) => `
+        <div class="testimonial-admin-card ${t.approved === false ? 'pending' : ''}">
+          <div class="testimonial-admin-avatar">${(t.name || '?').charAt(0)}</div>
+          <div class="testimonial-admin-info">
+            <div class="testimonial-admin-name">
+              ${escapeHTML(t.name || 'کاربر')}
+              ${t.approved === false ? '<span class="badge-pending">در انتظار</span>' : '<span class="badge-approved">✓ تأیید شده</span>'}
+            </div>
+            <div class="testimonial-admin-meta">📍 ${escapeHTML(t.city || 'نامشخص')} · ${t.date || ''}</div>
+            <div class="testimonial-admin-stars">${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}</div>
+            <div class="testimonial-admin-text">${escapeHTML(t.text || '')}</div>
+          </div>
+          <div class="testimonial-admin-actions">
+            ${t.approved !== false ? '' : `<button class="btn-approve" onclick="approveTestimonial(${t.id})">✓ تأیید</button>`}
+            <button class="btn-reject" onclick="deleteTestimonial(${t.id})">🗑 حذف</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function approveTestimonial(id) {
+      const list = getTestimonials();
+      const idx = list.findIndex(t => t.id === id);
+      if (idx > -1) {
+        list[idx].approved = true;
+        list[idx].verified = true;
+        saveTestimonials(list);
+        renderTestimonialsAdmin();
+      }
+    }
+
+    function deleteTestimonial(id) {
+      let list = getTestimonials();
+      list = list.filter(t => t.id !== id);
+      saveTestimonials(list);
+      renderTestimonialsAdmin();
+    }
+
+    function approveAllTestimonials() {
+      const list = getTestimonials();
+      list.forEach(t => { t.approved = true; t.verified = true; });
+      saveTestimonials(list);
+      renderTestimonialsAdmin();
+    }
+
     function initAdminUi() {
       bindNavigation();
       renderDiscounts();
@@ -1096,7 +1335,9 @@
       hydrateSheetUrl();
       syncSheetInputs();
       updateDashboardMetrics();
+      renderTestimonialsAdmin();
       if (typeof renderCMS === 'function') renderCMS();
+      if (typeof renderSpecialOfferEditor === 'function') renderSpecialOfferEditor();
     }
 
     checkAuth();
