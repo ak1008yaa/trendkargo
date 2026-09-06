@@ -260,7 +260,7 @@ button, input, select, textarea { font-family: inherit; }
   font-size: clamp(1.1rem, 2vw, 1.6rem);
   font-weight: 900;
   letter-spacing: 1px;
-  text-transform: uppercase;
+  text-transform: lowercase;
   text-decoration: none;
   color: var(--text-main);
   transition: color 0.3s ease;
