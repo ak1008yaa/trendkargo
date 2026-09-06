@@ -252,10 +252,31 @@ button, input, select, textarea { font-family: inherit; }
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-.logo-container { display: flex; align-items: center; gap: 8px; }
+.logo-container { display: flex; align-items: center; gap: 10px; }
 .logo-img { height: 38px; width: 38px; border-radius: 50%; border: 1.5px solid var(--cyan-main); }
-.logo-text { font-size: clamp(1rem, 1.8vw, 1.5rem); font-weight: 900; }
-.logo-text span { color: var(--coral-main); }
+.logo-icon { display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; }
+.logo-icon:hover { transform: scale(1.1) rotate(5deg); }
+.logo-text {
+  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text-main);
+  transition: color 0.3s ease;
+}
+.logo-text span {
+  background: linear-gradient(135deg, var(--coral-main), var(--cyan-main));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.logo-text:hover span {
+  background: linear-gradient(135deg, var(--cyan-main), var(--coral-main));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 .nav-links {
   display: none;
@@ -843,6 +864,45 @@ footer { border-top: 1px solid var(--glass-border); padding: 4.5rem 0 2rem; back
 .footer-contact-item strong { color: var(--coral-main); }
 .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 1.8rem; text-align: center; font-size: 0.85rem; opacity: 0.7; }
 
+/* Social Media Icons */
+.footer-social {
+  display: flex;
+  gap: 12px;
+  margin-top: 1.2rem;
+}
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+.social-link:hover {
+  transform: translateY(-3px);
+  color: #fff;
+}
+.social-link svg {
+  width: 20px;
+  height: 20px;
+}
+.social-instagram:hover {
+  background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  border-color: transparent;
+}
+.social-telegram:hover {
+  background: #0088cc;
+  border-color: #0088cc;
+}
+.social-youtube:hover {
+  background: #ff0000;
+  border-color: #ff0000;
+}
+
 /* --------------------------------------------------------------------------
    11. مودال‌ها و توست‌ها
    -------------------------------------------------------------------------- */
@@ -1041,7 +1101,7 @@ footer { border-top: 1px solid var(--glass-border); padding: 4.5rem 0 2rem; back
 .btn-submit-testimonial { width: 100%; margin-top: 0.5rem; }
 
 /* -------------------------------------------------------------------------- 
-   ????????? � ??????
+   ????????? � ??????
    -------------------------------------------------------------------------- */
 @media (max-width: 600px) {
   .testimonials-stats { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
