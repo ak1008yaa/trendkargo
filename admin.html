@@ -443,6 +443,25 @@
     .badge-pending { display: inline-block; background: rgba(251, 191, 36, 0.15); color: #fbbf24; padding: 0.15rem 0.5rem; border-radius: 50px; font-size: 0.65rem; font-weight: 700; }
     .badge-approved { display: inline-block; background: var(--green-soft); color: var(--green); padding: 0.15rem 0.5rem; border-radius: 50px; font-size: 0.65rem; font-weight: 700; }
     .no-testimonials { text-align: center; padding: 2rem; color: var(--text-muted); }
+
+    /* News Admin Styles */
+    .news-admin-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; max-height: 600px; overflow-y: auto; }
+    .news-admin-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .news-admin-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.8rem 1rem; background: rgba(56, 189, 248, 0.05);
+      border-bottom: 1px solid var(--border);
+    }
+    .news-id { font-size: 0.8rem; font-weight: 700; color: var(--cyan); }
+    .news-admin-actions { display: flex; gap: 0.5rem; }
+    .news-admin-body { padding: 1rem; }
+    .news-admin-body .form-group { margin-bottom: 0.8rem; }
+    .news-admin-body label { display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.3rem; color: var(--text-muted); }
+    .news-admin-body .form-control { font-size: 0.85rem; }
+
       .testimonial-admin-card { flex-direction: column; }
       .testimonial-admin-actions { width: 100%; justify-content: flex-start; }
     }
@@ -478,6 +497,7 @@
           <div class="nav-label">Navigation</div>
           <button class="nav-item active" data-section="dashboard">داشبورد</button>
           <button class="nav-item" data-section="products">محصولات</button>
+          <button class="nav-item" data-section="news">اخبار</button>
           <button class="nav-item" data-section="orders">سفارش‌ها</button>
           <button class="nav-item" data-section="discounts">تخفیف‌ها</button>
           <button class="nav-item" data-section="testimonials">نظرات مشتریان</button>
@@ -702,6 +722,22 @@
             </div>
             <div class="testimonials-admin-list" id="testimonials-admin-list">
               <!-- نظرات در اینجا رندر می‌شوند -->
+            </div>
+          </div>
+        </section>
+
+        <!-- بخش مدیریت اخبار -->
+        <section class="admin-section" id="section-news">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>مدیریت اخبار</h3>
+              <div class="top-actions" style="justify-content:flex-start;">
+                <button class="btn btn-save" onclick="addNewsRow()">+ خبر جدید</button>
+                <button class="btn btn-save" onclick="saveNews()">💾 ذخیره اخبار</button>
+              </div>
+            </div>
+            <div id="news-list" class="news-admin-list">
+              <!-- اخبار در اینجا رندر می‌شوند -->
             </div>
           </div>
         </section>
@@ -1336,8 +1372,108 @@
       syncSheetInputs();
       updateDashboardMetrics();
       renderTestimonialsAdmin();
+      renderNewsAdmin();
       if (typeof renderCMS === 'function') renderCMS();
       if (typeof renderSpecialOfferEditor === 'function') renderSpecialOfferEditor();
+    }
+
+    // News Management
+    function getNews() {
+      try {
+        const stored = localStorage.getItem('trendcargo_custom_news');
+        if (stored) return JSON.parse(stored);
+        return [];
+      } catch { return []; }
+    }
+
+    function saveNewsList(list) {
+      localStorage.setItem('trendcargo_custom_news', JSON.stringify(list));
+    }
+
+    function renderNewsAdmin() {
+      const host = document.getElementById('news-list');
+      if (!host) return;
+      const news = getNews();
+      if (!news.length) {
+        host.innerHTML = '<div class="no-testimonials">هنوز خبری ثبت نشده است.</div>';
+        return;
+      }
+      host.innerHTML = news.map((item, i) => `
+        <div class="news-admin-card">
+          <div class="news-admin-header">
+            <span class="news-id">#${item.id || (i + 1)}</span>
+            <div class="news-admin-actions">
+              <button class="btn-approve" onclick="editNews(${item.id})">✏️ ویرایش</button>
+              <button class="btn-reject" onclick="deleteNews(${item.id})">🗑 حذف</button>
+            </div>
+          </div>
+          <div class="news-admin-body">
+            <div class="form-group">
+              <label>تیتر خبر:</label>
+              <input type="text" class="form-control news-title" value="${escapeHTML(item.title || '')}" placeholder="تیتر خبر">
+            </div>
+            <div class="form-group">
+              <label>توضیحات:</label>
+              <textarea class="form-control news-desc" rows="2" placeholder="توضیحات خبر">${escapeHTML(item.desc || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label>لینک تصویر:</label>
+              <input type="text" class="form-control news-img" value="${escapeHTML(item.image || item.mainImg || '')}" placeholder="لینک تصویر خبر">
+            </div>
+            <div class="form-group">
+              <label>تگ/دسته‌بندی:</label>
+              <input type="text" class="form-control news-tag" value="${escapeHTML(item.tag || '')}" placeholder="مثلاً: تکنولوژی، فشن">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addNewsRow() {
+      const list = getNews();
+      const newId = Date.now();
+      list.unshift({
+        id: newId,
+        title: 'خبر جدید',
+        desc: 'توضیحات خبر را اینجا بنویسید',
+        image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
+        tag: 'اخبار'
+      });
+      saveNewsList(list);
+      renderNewsAdmin();
+    }
+
+    function saveNews() {
+      const cards = document.querySelectorAll('.news-admin-card');
+      const list = [];
+      cards.forEach(card => {
+        const id = parseInt(card.querySelector('.news-id').textContent.replace('#', '')) || Date.now();
+        list.push({
+          id: id,
+          title: card.querySelector('.news-title').value,
+          desc: card.querySelector('.news-desc').value,
+          image: card.querySelector('.news-img').value,
+          tag: card.querySelector('.news-tag').value
+        });
+      });
+      saveNewsList(list);
+      const toast = document.getElementById('toast');
+      if (toast) {
+        toast.textContent = '✅ اخبار با موفقیت ذخیره شدند!';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }
+    }
+
+    function editNews(id) {
+      // Edit functionality - already handled by inline editing
+    }
+
+    function deleteNews(id) {
+      let list = getNews();
+      list = list.filter(item => item.id !== id);
+      saveNewsList(list);
+      renderNewsAdmin();
     }
 
     checkAuth();
