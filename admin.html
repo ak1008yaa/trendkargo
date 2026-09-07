@@ -468,13 +468,16 @@
   </style>
 </head>
 <body>
-  <!-- لاگین ادمین امن با SHA-256 -->
+  <!-- ورود به پنل ادمین -->
   <div id="admin-login" class="login-screen">
     <div class="login-box">
       <h2 style="color:var(--cyan);margin-bottom:0.5rem;">🔐 ورود به پنل ادمین</h2>
-      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:1.5rem;">امنیت رمزنگاری SHA-256 در سطح فرانت‌اند — برای محیط تولید توصیه می‌شود به بک‌اند منتقل شود.</p>
-      <div id="login-err" style="display:none;background:rgba(239,68,68,0.2);color:#fca5a5;padding:0.6rem;border-radius:8px;margin-bottom:1rem;font-size:0.85rem;">رمز عبور نادرست است!</div>
+      <div id="login-err" style="display:none;background:rgba(239,68,68,0.2);color:#fca5a5;padding:0.6rem;border-radius:8px;margin-bottom:1rem;font-size:0.85rem;">نام کاربری یا رمز عبور نادرست است!</div>
       <form id="login-form">
+        <div class="form-group">
+          <label>نام کاربری:</label>
+          <input type="text" id="admin-user" class="form-control" placeholder="نام کاربری را وارد کنید" required autocomplete="username">
+        </div>
         <div class="form-group">
           <label>رمز عبور:</label>
           <input type="password" id="admin-pass" class="form-control" placeholder="رمز عبور را وارد کنید" required>
@@ -489,7 +492,7 @@
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand-box">
-          <div class="title">TREND <span>CARGO</span></div>
+          <div class="title">trend<span>kargo</span></div>
           <small>Control Center</small>
         </div>
 
@@ -498,6 +501,7 @@
           <button class="nav-item active" data-section="dashboard">داشبورد</button>
           <button class="nav-item" data-section="products">محصولات</button>
           <button class="nav-item" data-section="news">اخبار</button>
+          <button class="nav-item" data-section="blog">بلاگ و مقالات</button>
           <button class="nav-item" data-section="orders">سفارش‌ها</button>
           <button class="nav-item" data-section="discounts">تخفیف‌ها</button>
           <button class="nav-item" data-section="testimonials">نظرات مشتریان</button>
@@ -741,6 +745,22 @@
             </div>
           </div>
         </section>
+      
+        <!-- بخش مدیریت بلاگ -->
+        <section class="admin-section" id="section-blog">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>مدیریت بلاگ و مقالات</h3>
+              <div class="top-actions" style="justify-content:flex-start;">
+                <button class="btn btn-save" onclick="addBlogRow()">+ مقاله جدید</button>
+                <button class="btn btn-site" onclick="saveBlogAdmin()">💾 ذخیره مقالات</button>
+                <button class="btn btn-reset" onclick="resetBlogDefault()">♻️ بازگردانی پیش‌فرض</button>
+              </div>
+            </div>
+            <div id="blog-admin-list" class="news-admin-list"></div>
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
@@ -748,8 +768,11 @@
   <div class="toast" id="toast">✅ تغییرات با موفقیت ذخیره شدند!</div>
 
   <script src="js/script.js"></script>
+  <script src="js/blog-data.js"></script>
+  <script src="js/blog-admin.js"></script>
   <script>
-    const DEFAULT_HASH = "e03896efeec0a98c9ebe92ed37bafd43ac96900dec57c6af58d1f04787e8ea9b"; // هش معادل "Azz][po';l=-0123"
+    const DEFAULT_HASH = "e03896efeec0a98c9ebe92ed37bafd43ac96900dec57c6af58d1f04787e8ea9b";
+    const ADMIN_USER = "admin"; // نام کاربری ورود
 
     async function hash(msg) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
@@ -765,9 +788,10 @@
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const user = document.getElementById('admin-user').value.trim();
       const val = document.getElementById('admin-pass').value.trim();
       const h = await hash(val);
-      if (h === DEFAULT_HASH) {
+      if (user === ADMIN_USER && h === DEFAULT_HASH) {
         sessionStorage.setItem('tc_auth', 'true');
         checkAuth();
       } else {
@@ -1301,7 +1325,7 @@
     function getTestimonials() {
       try {
         const stored = localStorage.getItem('trendcargo_testimonials');
-        if (stored) return JSON.parse(stored);
+        if (stored && !stored.includes('??')) return JSON.parse(stored);
         return [];
       } catch { return []; }
     }
@@ -1346,6 +1370,7 @@
         list[idx].verified = true;
         saveTestimonials(list);
         renderTestimonialsAdmin();
+      renderBlogAdmin();
       }
     }
 

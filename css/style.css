@@ -152,49 +152,6 @@ button, input, select, textarea { font-family: inherit; }
   margin: 0 auto;
 }
 
-/* --------------------------------------------------------------------------
-   3. پرلودر ۳ بعدی
-   -------------------------------------------------------------------------- */
-.preloader {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: #05070a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  transition: opacity 0.6s ease, visibility 0.6s ease;
-}
-
-.preloader.fade-out {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.preloader-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 320px;
-}
-
-.logo-3d-spinner {
-  width: 90px;
-  height: 90px;
-  margin-bottom: 1.5rem;
-  perspective: 1000px;
-}
-
-.logo-3d-spinner img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid var(--cyan-main);
-  box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
-  animation: rotateLogo 2.5s infinite linear;
-}
 
 @keyframes rotateLogo {
   0% { transform: rotateY(0deg); }
@@ -202,16 +159,6 @@ button, input, select, textarea { font-family: inherit; }
   100% { transform: rotateY(360deg); }
 }
 
-.preloader-brand { font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: 0.3rem; }
-.preloader-brand span { color: var(--coral-main); }
-.preloader-sub { font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
-.preloader-bar { width: 140px; height: 3px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden; }
-.preloader-bar-fill { width: 100%; height: 100%; background: var(--grad-blue); animation: barFill 2s infinite ease-in-out; }
-
-@keyframes barFill {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
 
 /* --------------------------------------------------------------------------
    4. نوار PWA و ساعت هدر
@@ -571,6 +518,24 @@ button, input, select, textarea { font-family: inherit; }
 .insta-handle-gadget { color: var(--cyan-main); }
 .insta-bio { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.4rem; flex-grow: 1; }
 .btn-insta { padding: 0.85rem; cursor: pointer; }
+.insta-user-meta { flex: 1; min-width: 0; }
+.insta-user-meta h3 { margin: 0 0 0.15rem; font-size: 1.05rem; font-weight: 800; color: var(--text-main); overflow-wrap: anywhere; }
+.insta-followers { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+.insta-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1.4rem; }
+.insta-tags span { font-size: 0.7rem; font-weight: 700; padding: 0.22rem 0.65rem; border-radius: 50px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-muted); white-space: nowrap; }
+.btn-insta { display: flex; align-items: center; justify-content: center; gap: 0.5rem; border-radius: 14px; font-weight: 800; font-size: 0.9rem; text-align: center; text-decoration: none; }
+.btn-insta-style { background: linear-gradient(135deg, #E1306C, #fd5949); color: #fff; }
+.btn-insta-gadget { background: var(--grad-blue); color: #fff; }
+@media (max-width: 600px) {
+  .insta-card { padding: 1.2rem 1rem; }
+  .insta-badge { position: static; display: inline-block; margin-bottom: 0.9rem; }
+  .insta-header { flex-wrap: wrap; gap: 10px; }
+  .insta-avatar-box { width: 48px; height: 48px; flex-shrink: 0; }
+  .insta-user-meta h3 { font-size: 0.95rem; }
+  .insta-bio { font-size: 0.84rem; line-height: 1.8; margin-bottom: 1.1rem; }
+  .insta-tags { gap: 0.35rem; margin-bottom: 1.1rem; }
+  .insta-tags span { font-size: 0.64rem; padding: 0.18rem 0.55rem; }
+}
  
 /* اخبار */
 .tech-news-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
@@ -851,6 +816,7 @@ footer { border-top: 1px solid var(--glass-border); padding: 4.5rem 0 2rem; back
 @media(min-width: 600px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } }
 @media(min-width: 1024px) { .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1.2fr; } }
 .footer-logo { font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: 1rem; }
+.footer-logo-img { height: 56px; width: auto; max-width: 200px; object-fit: contain; margin-bottom: 1rem; display: block; }
 .footer-logo span { color: var(--coral-main); }
 .footer-about-text { font-size: 0.88rem; line-height: 1.8; margin-bottom: 1.2rem; }
 .footer-trust-tags { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1124,3 +1090,11 @@ footer { border-top: 1px solid var(--glass-border); padding: 4.5rem 0 2rem; back
   .testimonial-card { min-width: 220px; }
   .testimonials-stats { grid-template-columns: 1fr 1fr; }
 }
+
+/* Blog Cards */
+.blog-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.blog-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.45); }
+.blog-article { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 24px; padding: 2rem; }
+.blog-article h1 { color: var(--text-main); }
+.blog-article p { color: var(--text-muted); }
+@media (max-width: 600px) { .blog-article { padding: 1.2rem; } .blog-article h1 { font-size: 1.3rem; } }

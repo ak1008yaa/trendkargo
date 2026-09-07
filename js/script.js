@@ -581,7 +581,7 @@ function renderProducts(items) {
     card.innerHTML = `
       <div class="product-tag">${escapeHTML(p.tag)}</div>
       <div class="product-img-box">
-        <img src="${displayImg}" alt="${escapeHTML(p.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&auto=format&fit=crop&q=80'">
+        <img loading="lazy" src="${displayImg}" alt="${escapeHTML(p.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&auto=format&fit=crop&q=80'">
       </div>
       <div class="product-category">${escapeHTML(p.catName)}</div>
       <h3 class="product-title">${escapeHTML(p.title)}</h3>
@@ -643,7 +643,7 @@ function openProductModal(productId) {
   images.forEach((imgUrl, index) => {
     const thumb = document.createElement('div');
     thumb.className = `modal-thumb ${index === 0 ? 'active' : ''}`;
-    thumb.innerHTML = `<img src="${imgUrl}" alt="${product.title}" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=100&auto=format&fit=crop&q=80'">`;
+    thumb.innerHTML = `<img loading="lazy" src="${imgUrl}" alt="${product.title}" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=100&auto=format&fit=crop&q=80'">`;
     thumb.onclick = (e) => {
       e.stopPropagation();
       mainImgElem.src = imgUrl;
@@ -676,47 +676,6 @@ function closeProductModal(event) {
   }
 }
 
-// ==========================================================================
-// ماشین‌حساب آنلاین قیمت تمام‌شده
-// ==========================================================================
-function calculateCargoPrice() {
-  const currElem = document.getElementById('calc-currency');
-  const priceElem = document.getElementById('calc-price');
-  const pkgElem = document.getElementById('calc-package-type');
-
-  if (!currElem || !priceElem || !pkgElem) return;
-
-  const curr = currElem.value;
-  const price = parseFloat(priceElem.value) || 0;
-  const pkg = pkgElem.value;
-
-  const baseRate = TrendStore.rates.baseRates[curr] || 170;
-  const effectiveRate = baseRate * (TrendStore.rates.exchangeSpreadMultiplier || 1.06);
-  const baseToman = price * effectiveRate;
-  const serviceProfit = baseToman * 0.25;
-  const transferFee = baseToman * 0.01;
-
-  let shippingUsd = 12;
-  if (pkg === 'single_heavy') shippingUsd = 15;
-  if (pkg === 'bulk_multi') shippingUsd = 5;
-
-  const shippingToman = Math.max(3500000, shippingUsd * (TrendStore.rates.usdShippingRate || 188000));
-  const total = Math.round((baseToman + serviceProfit + transferFee + shippingToman) / 10000) * 10000;
-
-  const resElem = document.getElementById('calc-total-result');
-  if (resElem) {
-    resElem.innerHTML = `${total.toLocaleString('fa-IR')} <span>تومان</span>`;
-  }
-
-  return { total, curr, price };
-}
-
-function sendCalculatedQuoteToWhatsApp() {
-  const calc = calculateCargoPrice();
-  if (!calc) return;
-  const msg = encodeURIComponent(`سلام ترندز کارگو، طبق فرمول سایت برای محصولی با قیمت ${calc.price} (${calc.curr.toUpperCase()}) قیمت تمام‌شده تخمینی ${calc.total.toLocaleString('fa-IR')} تومان محاسبه شد. لطفاً فاکتور نهایی صادر کنید.`);
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
-}
 
 function submitCustomLink() {
   const linkInput = document.getElementById('user-product-link');
@@ -745,7 +704,7 @@ function renderTechNews() {
 
     card.innerHTML = `
       <div class="tech-card-img">
-        <img src="${news.img}" alt="${news.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
+        <img loading="lazy" src="${news.img}" alt="${news.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
         <span class="tech-badge">${news.badge}</span>
       </div>
       <div class="tech-card-body">
@@ -811,7 +770,7 @@ function renderSpecialOffer() {
 
   container.innerHTML = `
     <div class="special-offer-card">
-      <img src="${displayImg}" alt="${escapeHTML(offer.title || 'محصول تخفیف ویژه')}" class="special-offer-img" loading="lazy" onclick="openProductModal(${Number(offer.id)})"
+      <img loading="lazy" src="${displayImg}" alt="${escapeHTML(offer.title || 'محصول تخفیف ویژه')}" class="special-offer-img" loading="lazy" onclick="openProductModal(${Number(offer.id)})"
         onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
       <div class="special-offer-body">
         <span class="special-offer-badge">🔥 ${escapeHTML(offer.tag || 'تخفیف ویژه')}${offer.discountPercent ? ' | ' + toFaDigits(offer.discountPercent) + '٪ آف' : ''}</span>
@@ -959,7 +918,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTestimonials();
   initTestimonialsSlider();
   initTestimonialForm();
-  calculateCargoPrice();
   updateHeaderClock();
   startFlashCountdown();
   startLiveToasts();
@@ -972,11 +930,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const allTab = document.querySelector('.filter-tabs .tab-btn[data-filter="all"]');
   if (allTab) allTab.textContent = `همه محصولات (${toFaDigits(TrendStore.products.length)})`;
 
-  // حذف پرلودر
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-    setTimeout(() => preloader.classList.add('fade-out'), 1200);
-  }
 
   // فیلتر تب‌ها
   document.querySelectorAll('.filter-tabs .tab-btn').forEach(btn => {
@@ -1011,47 +964,47 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================================================
-// ??? ????? ??????? (Testimonials)
+// بخش نظرات مشتریان (Testimonials)
 // ==========================================================================
 const STORAGE_KEYS_TESTIMONIALS = "trendcargo_testimonials";
 
 const defaultTestimonials = [
   {
-    id: 1, name: "???? ?????", city: "?????", rating: 5,
-    text: "????? ?????????? ???! ????? ?? ?? ?? ??? ????? ?? ????????? ???? ? ?? ?????? ???? ???? ????. ?????? ???? ??? ?? ????? ????? ?? ???? ??????. ????? ?????? ????? ?????.",
-    date: "????/??/??", verified: true
+    id: 1, name: "علی رضایی", city: "تهران", rating: 5,
+    text: "خرید از تمو واقعاً راحت بود! سفارشم را ثبت کردم و کمتر از دو هفته به دستم رسید. بسته‌بندی عالی بود و همه چیز سالم رسید. پشتیبانی هم دقیق و سریع جواب داد. حتماً باز هم خرید می‌کنم.",
+    date: "۱۴۰۴/۰۵/۱۲", verified: true
   },
   {
-    id: 2, name: "???? ?????", city: "?????", rating: 5,
-    text: "?? ????? ????? ?? ??? ? ??? ???? ? ?? ??? ?? ????? ?????? ????? ?????. ??????? ?????? ??????? ??? ? ???????? ???? ?????? ???.",
-    date: "????/??/??", verified: true
+    id: 2, name: "مریم احمدی", city: "مشهد", rating: 5,
+    text: "اولین بار بود که از شین خرید می‌کردم و استرس داشتم، اما تیم ترندز کارگو همه چیز را شفاف توضیح داد. قیمت نهایی همان چیزی بود که محاسبه شده بود و هیچ هزینه پنهانی نداشت.",
+    date: "۱۴۰۴/۰۵/۰۳", verified: true
   },
   {
-    id: 3, name: "????? ?????", city: "??????", rating: 5,
-    text: "????? ??? ??? ?? ????? ???? ??????? ? ??? ????? ???? ??? ??? ??? ???? ???. ?????? ?? ?? ?????? ????? ??? ? ???? ??? ????? ????.",
-    date: "????/??/??", verified: true
+    id: 3, name: "حسین کریمی", city: "تبریز", rating: 5,
+    text: "کیفیت محصولات فوق‌العاده بود و دقیقاً همان چیزی رسید که در عکس‌ها دیدم. مراحل ارسال را مرحله به مرحله اطلاع دادند. از راهنمای سایزبندی هم استفاده کردم و سایز دقیقاً مناسب بود.",
+    date: "۱۴۰۴/۰۴/۲۵", verified: true
   },
   {
-    id: 4, name: "???? ?????", city: "????", rating: 4,
-    text: "???? ????? ???? ??? ? ???? ?? ?????? ????? ????????? ??? ???. ??? ???????? ???? ??????? ????? ???. ?? ?? ??????? ??????.",
-    date: "????/??/??", verified: true
+    id: 4, name: "سارا موسوی", city: "اصفهان", rating: 4,
+    text: "سفارش لباس بود و کیفیت پارچه خوب بود و مطابق توضیحات سایت. فقط کمی ارسال طول کشید ولی در کل راضی بودم. قیمت‌ها نسبت به بازار به‌صرفه‌تر است.",
+    date: "۱۴۰۴/۰۴/۱۰", verified: true
   },
   {
-    id: 5, name: "???? ?????", city: "?????", rating: 5,
-    text: "????? ??? ????? ???? ? ?? ??? ????? ???? ?????. ??????? ?????? ???? ?? ?????? ?? ???? ????? ?? ???? ??????.",
-    date: "????/??/??", verified: true
+    id: 5, name: "امیر جعفری", city: "شیراز", rating: 5,
+    text: "دومین خریدم از ترندز کارگو بود و باز هم عالی. گجتی که سفارش دادم اصل بود و سالم رسید. پیگیری سفارش از طریق واتساپ خیلی راحت و سریع انجام می‌شود.",
+    date: "۱۴۰۴/۰۳/۳۰", verified: true
   },
   {
-    id: 6, name: "??? ?????", city: "???", rating: 5,
-    text: "???????? ????? ????? ???? ?? ?????? ???? ?????. ?? ???? ????? ?? ?????? ??? ??? ??????? ? ???? ????? ??. ????? ?? ???.",
-    date: "????/??/??", verified: true
+    id: 6, name: "نگار حسینی", city: "رشت", rating: 5,
+    text: "بسته‌بندی محصولات خیلی حرفه‌ای بود و همه چیز سالم به دستم رسید. مشاوره قبل از خرید کمک کرد محصول مناسب را انتخاب کنم. پیشنهاد می‌کنم قبل از سفارش راهنمای خرید سایت را بخوانید.",
+    date: "۱۴۰۴/۰۳/۱۸", verified: true
   }
 ];
 
 function getTestimonials() {
   try {
     const stored = localStorage.getItem(STORAGE_KEYS_TESTIMONIALS);
-    if (stored) return JSON.parse(stored);
+    if (stored && !stored.includes('??')) return JSON.parse(stored);
     localStorage.setItem(STORAGE_KEYS_TESTIMONIALS, JSON.stringify(defaultTestimonials));
     return defaultTestimonials;
   } catch {
@@ -1077,12 +1030,12 @@ function renderTestimonials() {
         <div class="testimonial-avatar">${t.name.charAt(0)}</div>
         <div class="testimonial-info">
           <div class="testimonial-name">${escapeHTML(t.name)}</div>
-          <div class="testimonial-city">?? ${escapeHTML(t.city)}</div>
+          <div class="testimonial-city">از ${escapeHTML(t.city)}</div>
         </div>
-        <div class="testimonial-stars">${'?'.repeat(t.rating)}${'u2606'.repeat(5 - t.rating)}</div>
+        <div class="testimonial-stars">${'★'.repeat(t.rating)}${'☆'.repeat(5 - t.rating)}</div>
       </div>
       <p class="testimonial-text">${escapeHTML(t.text)}</p>
-      ${t.verified ? '<span class="testimonial-verified">? ???? ????? ???</span>' : ""}
+      ${t.verified ? '<span class="testimonial-verified">✅ خرید تأیید شده</span>' : ""}
       <div class="testimonial-date">${t.date || ""}</div>
     </div>
   `).join("");
@@ -1090,7 +1043,7 @@ function renderTestimonials() {
   // Dots
   if (dotsContainer) {
     dotsContainer.innerHTML = approved.map((_, i) =>
-      `<button class="testimonial-dot ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="?????? ${toFaDigits(i + 1)}"></button>`
+      `<button class="testimonial-dot ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="رفتن به نظر ${toFaDigits(i + 1)}"></button>`
     ).join("");
     dotsContainer.querySelectorAll(".testimonial-dot").forEach(dot => {
       dot.addEventListener("click", () => {
@@ -1211,10 +1164,11 @@ function initTestimonialForm() {
     if (toast) {
       const userEl = document.getElementById("toast-user");
       const actionEl = document.getElementById("toast-action");
-      if (userEl) userEl.textContent = "? ??? ??? ??? ??";
-      if (actionEl) actionEl.textContent = "?? ?? ????? ??? ??? ????? ???? ????? ??";
+      if (userEl) userEl.textContent = "نظر شما با موفقیت ثبت شد ✅";
+      if (actionEl) actionEl.textContent = "بعد از تأیید ادمین، نظر شما در سایت نمایش داده می‌شود";
       toast.classList.add("active");
       setTimeout(() => toast.classList.remove("active"), 5000);
     }
   });
 }
+
