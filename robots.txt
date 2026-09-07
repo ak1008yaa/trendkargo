@@ -19,4 +19,4 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://trendcargo.com/sitemap.xml
+Sitemap: https://www.trendkargo.ir/sitemap.xml
