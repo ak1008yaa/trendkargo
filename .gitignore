@@ -1,0 +1,17 @@
+# Environment variables — هرگز commit نشوند
+.env
+.env.local
+.env.*.local
+
+# OS / Editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# Dependencies (این پروژه وابستگی npm ندارد ولی برای اطمینان)
+node_modules/
+
+# Local packaging output
+*.zip
+dist/

@@ -449,11 +449,15 @@
 
         <div class="nav-group">
           <div class="nav-label">Navigation</div>
-          <button class="nav-item active" data-section="dashboard">داشبورد</button>
-          <button class="nav-item" data-section="products">محصولات</button>
-          <button class="nav-item" data-section="orders">سفارش‌ها</button>
-          <button class="nav-item" data-section="discounts">تخفیف‌ها</button>
-          <button class="nav-item" data-section="settings">تنظیمات</button>
+          <button class="nav-item active" data-section="dashboard" aria-label="داشبورد">داشبورد</button>
+          <button class="nav-item" data-section="products" aria-label="محصولات">محصولات</button>
+          <button class="nav-item" data-section="hero" aria-label="هیرو">✨ هیرو</button>
+          <button class="nav-item" data-section="news" aria-label="اخبار">📰 اخبار</button>
+          <button class="nav-item" data-section="socials" aria-label="سوشال">🔗 سوشال مدیا</button>
+          <button class="nav-item" data-section="flash-deals" aria-label="حراجی‌های ساعتی">حراجی‌های ساعتی</button>
+          <button class="nav-item" data-section="orders" aria-label="سفارش‌ها">سفارش‌ها</button>
+          <button class="nav-item" data-section="discounts" aria-label="تخفیف‌ها">تخفیف‌ها</button>
+          <button class="nav-item" data-section="settings" aria-label="تنظیمات">تنظیمات</button>
         </div>
 
         <div class="status-card">
@@ -521,7 +525,7 @@
           <section class="panel" style="padding: 1rem 1.1rem; margin-top: 1rem;">
             <div class="panel-header">
               <h3>حسابداری و فاکتور</h3>
-              <span class="chip">Google Sheets Ready</span>
+              <span class="chip">Backend + Sheets Ready</span>
             </div>
 
             <div class="form-group">
@@ -582,10 +586,97 @@
         <section class="admin-section" id="section-products">
           <div class="panel">
             <div class="panel-header">
-              <h3>مدیریت محصولات</h3>
-              <span class="chip">گالری ۳ تصویری</span>
+              <h3>مدیریت محصولات — افزودن / ویرایش / حذف</h3>
+              <div class="top-actions" style="justify-content:flex-start;">
+                <button class="btn btn-save" onclick="addProductToAdminList()">+ افزودن محصول جدید</button>
+              </div>
             </div>
             <div class="cms-grid" id="product-grid"></div>
+          </div>
+        </section>
+
+        <section class="admin-section" id="section-hero">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>✨ مدیریت هیرو — متن و لینک‌های اصلی</h3>
+              <button class="btn btn-save" onclick="saveHeroFromAdmin()">💾 ذخیره هیرو</button>
+            </div>
+            <div class="form-group"><label>نشان (Badge) بالای هیرو</label><input type="text" id="hero-badge-input" class="form-control"></div>
+            <div class="form-group"><label>عنوان اصلی (HTML مجاز برای span)</label><textarea id="hero-title-input" class="form-control" rows="3"></textarea></div>
+            <div class="form-group"><label>توضیح زیر عنوان</label><textarea id="hero-desc-input" class="form-control" rows="3"></textarea></div>
+            <div class="form-group"><label>چیپ‌ها (با کاما جدا کنید: TEMU, SHEIN ...)</label><input type="text" id="hero-chips-input" class="form-control"></div>
+            <div class="cms-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="form-group"><label>دکمه اصلی — متن</label><input type="text" id="hero-primary-text" class="form-control"></div>
+              <div class="form-group"><label>دکمه اصلی — لینک (href)</label><input type="text" id="hero-primary-href" class="form-control" placeholder="#flash-sale"></div>
+              <div class="form-group"><label>دکمه دوم — متن</label><input type="text" id="hero-secondary-text" class="form-control"></div>
+              <div class="form-group"><label>دکمه دوم — لینک</label><input type="text" id="hero-secondary-href" class="form-control" placeholder="#custom-order"></div>
+            </div>
+            <div style="margin-top:1rem;">
+              <h4 style="font-size:0.95rem;margin-bottom:0.7rem;">نکات کلیدی — ۳ آیتم (آیکون / عنوان / توضیح)</h4>
+              <div id="hero-points-editor" class="cms-grid" style="grid-template-columns: repeat(3, minmax(0,1fr));"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section" id="section-news">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>📰 مدیریت اخبار — افزودن / ویرایش / حذف</h3>
+              <button class="btn btn-save" onclick="addNewsFromAdmin()">+ افزودن خبر جدید</button>
+            </div>
+            <div id="news-admin-list" class="discount-list"></div>
+          </div>
+        </section>
+
+        <section class="admin-section" id="section-socials">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>🔗 لینک‌گذاری سوشال مدیا</h3>
+              <button class="btn btn-save" onclick="saveSocialsFromAdmin()">💾 ذخیره سوشال</button>
+            </div>
+            <div class="form-group"><label>شماره واتساپ (بدون +)</label><input type="text" id="social-whatsapp" class="form-control" placeholder="989374443386"></div>
+            <div class="panel" style="margin-top:1rem;">
+              <h4 style="margin-bottom:0.8rem;">پیج استایل (Trend Cargo Style)</h4>
+              <div class="cms-grid">
+                <div class="form-group"><label>Badge</label><input type="text" id="social-style-badge" class="form-control"></div>
+                <div class="form-group"><label>عنوان</label><input type="text" id="social-style-title" class="form-control"></div>
+                <div class="form-group"><label>هندل (@...)</label><input type="text" id="social-style-handle" class="form-control"></div>
+                <div class="form-group"><label>لینک اینستا</label><input type="url" id="social-style-url" class="form-control"></div>
+                <div class="form-group"><label>زیرنویس فالوور</label><input type="text" id="social-style-note" class="form-control"></div>
+                <div class="form-group"><label>آواتار URL</label><input type="url" id="social-style-avatar" class="form-control"></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>بیو</label><textarea id="social-style-bio" class="form-control" rows="2"></textarea></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>تگ‌ها (با کاما)</label><input type="text" id="social-style-tags" class="form-control"></div>
+                <div class="form-group"><label>متن دکمه</label><input type="text" id="social-style-btn" class="form-control"></div>
+              </div>
+            </div>
+            <div class="panel" style="margin-top:1rem;">
+              <h4 style="margin-bottom:0.8rem;">پیج گجت (Trend Cargo Gadget)</h4>
+              <div class="cms-grid">
+                <div class="form-group"><label>Badge</label><input type="text" id="social-gadget-badge" class="form-control"></div>
+                <div class="form-group"><label>عنوان</label><input type="text" id="social-gadget-title" class="form-control"></div>
+                <div class="form-group"><label>هندل (@...)</label><input type="text" id="social-gadget-handle" class="form-control"></div>
+                <div class="form-group"><label>لینک اینستا</label><input type="url" id="social-gadget-url" class="form-control"></div>
+                <div class="form-group"><label>زیرنویس فالوور</label><input type="text" id="social-gadget-note" class="form-control"></div>
+                <div class="form-group"><label>آواتار URL</label><input type="url" id="social-gadget-avatar" class="form-control"></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>بیو</label><textarea id="social-gadget-bio" class="form-control" rows="2"></textarea></div>
+                <div class="form-group" style="grid-column:1/-1;"><label>تگ‌ها (با کاما)</label><input type="text" id="social-gadget-tags" class="form-control"></div>
+                <div class="form-group"><label>متن دکمه</label><input type="text" id="social-gadget-btn" class="form-control"></div>
+              </div>
+            </div>
+            <div class="panel" style="margin-top:1rem;">
+              <div class="panel-header"><h4>سایت‌های تحت پوشش (فوتر)</h4><button class="btn btn-save" onclick="addFooterSite()">+ افزودن سایت</button></div>
+              <div id="footer-sites-editor" class="discount-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section" id="section-flash-deals">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>حراجی‌های ساعتی و صاعقه‌ای</h3>
+              <button class="btn btn-save" onclick="addFlashDeal()" aria-label="افزودن حراجی جدید">+ افزودن حراجی</button>
+            </div>
+            <div id="flash-deals-list" class="discount-list"></div>
           </div>
         </section>
 
@@ -650,6 +741,24 @@
               <label>لینک Web App گوگل شیت</label>
               <input type="url" id="settings-sheet-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" />
             </div>
+
+            <div class="panel" style="margin-top: 1.2rem;">
+              <div class="panel-header">
+                <h3>قوانین، تضمین سلامت و مرجوعی</h3>
+                <button class="btn btn-save" onclick="saveTermsText()">💾 ذخیره متن</button>
+              </div>
+              <div class="form-group">
+                <label>متن قوانین و ضمانت‌ها</label>
+                <textarea id="terms-editor" class="form-control" rows="14">- کلیه کالاها قبل از ارسال از نظر فنی، ظاهری و سایز بررسی می‌شوند.
+- در صورت مغایرت، آسیب فیزیکی یا خطای فروشنده، کالا به‌صورت رسمی در دفتر ارمنستان بررسی و در صورت نیاز تعویض می‌شود.
+- مرجوعی فقط در صورت عدم تطابق، آسیب، یا خطای فروشنده پذیرفته می‌شود.
+- برای کالاهای استفاده‌شده، بدون برچسب، یا آسیب‌دیده، مرجوعی مجاز نیست.
+- هزینه ارسال مرجوعی در صورت خطای فروشنده به عهده ماست و در غیر این صورت به عهده مشتری خواهد بود.
+- زمان تحویل معمولاً ۱۵ تا ۲۱ روز کاری است و در صورت سفارش هم‌زمان چند آیتم، هزینه باربری سرشکن می‌شود.
+- همه‌ی قیمت‌ها به صورت شفاف و بر اساس فرمول کالا + 25% سود + بررسی و ارسال محاسبه می‌شوند.
+- پیگیری سفارش‌ها فقط از طریق واتساپ رسمی انجام می‌شود.</textarea>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -680,6 +789,7 @@
       const h = await hash(val);
       if (h === DEFAULT_HASH) {
         sessionStorage.setItem('tc_auth', 'true');
+        sessionStorage.setItem('trendcargo_admin_token', val); // توکن ذخیره‌سازی در بکند
         checkAuth();
       } else {
         document.getElementById('login-err').style.display = 'block';
@@ -688,26 +798,31 @@
 
     function logout() {
       sessionStorage.removeItem('tc_auth');
+      sessionStorage.removeItem('trendcargo_admin_token');
       checkAuth();
     }
 
     function renderCMS() {
       const grid = document.getElementById('product-grid');
+      if (!grid) return;
       grid.innerHTML = '';
-
       TrendStore.products.forEach((p, idx) => {
         const g1 = p.gallery?.[0] || p.mainImg || '';
         const g2 = p.gallery?.[1] || '';
         const g3 = p.gallery?.[2] || '';
-
+        const specsStr = Array.isArray(p.specs)? p.specs.join(' | ') : (p.specs||'');
         const card = document.createElement('div');
         card.className = 'cms-card';
         card.innerHTML = `
           <div class="cms-header">
             <span class="cms-badge">محصول #${p.id}</span>
-            <input type="text" class="form-control" style="width:120px;" id="p-tag-${idx}" value="${p.tag}">
+            <select class="form-control" style="width:140px;" id="p-cat-${idx}">
+              <option value="gadget" ${p.category==='gadget'?'selected':''}>⚡ گجت</option>
+              <option value="fashion" ${p.category==='fashion'?'selected':''}>👕 پوشاک</option>
+              <option value="accessory" ${p.category==='accessory'?'selected':''}>🕶️ اکسسوری</option>
+              <option value="lifestyle" ${p.category==='lifestyle'?'selected':''}>🏠 لایف‌استایل</option>
+            </select>
           </div>
-
           <div class="img-slots">
             <div class="img-slot">
               <span>عکس ۱ (اصلی)</span>
@@ -728,22 +843,85 @@
               <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-2" value="${g3}" oninput="document.getElementById('prev-${idx}-2').src=this.value">
             </div>
           </div>
-
           <div class="form-group">
             <label>عنوان فارسی:</label>
-            <input type="text" class="form-control" id="p-title-${idx}" value="${p.title}">
+            <input type="text" class="form-control" id="p-title-${idx}" value="${escapeHTML(p.title)}">
           </div>
           <div class="form-group">
-            <label>قیمت نمایشی (تومان):</label>
-            <input type="text" class="form-control" id="p-price-${idx}" value="${p.price}">
+            <label>برچسب / Tag:</label>
+            <input type="text" class="form-control" id="p-tag-${idx}" value="${escapeHTML(p.tag)}">
+          </div>
+          <div class="cms-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="form-group"><label>catName (نمایشی)</label><input type="text" class="form-control" id="p-catname-${idx}" value="${escapeHTML(p.catName||'')}"></div>
+            <div class="form-group"><label>قیمت (تومان)</label><input type="text" class="form-control" id="p-price-${idx}" value="${escapeHTML(p.price)}"></div>
           </div>
           <div class="form-group">
             <label>توضیحات کوتاه:</label>
-            <textarea class="form-control" id="p-desc-${idx}">${p.desc}</textarea>
+            <textarea class="form-control" id="p-desc-${idx}">${escapeHTML(p.desc)}</textarea>
+          </div>
+          <div class="form-group">
+            <label>ویژگی‌ها (با | جدا کنید)</label>
+            <input type="text" class="form-control" id="p-specs-${idx}" value="${escapeHTML(specsStr)}" placeholder="ویژگی ۱ | ویژگی ۲ | ویژگی ۳">
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-top:0.6rem;">
+            <button class="btn btn-reset" style="flex:1;" onclick="removeAdminProduct(${p.id})">🗑 حذف</button>
+            <button class="btn btn-save" style="flex:1;" onclick="duplicateProduct(${p.id})">⎘ کپی</button>
           </div>
         `;
         grid.appendChild(card);
       });
+      renderFlashDeals();
+      loadTermsEditor();
+      hydrateHeroAdmin();
+      hydrateSocialsAdmin();
+      renderNewsAdmin();
+      renderFooterSitesEditor();
+    }
+    function escapeHTML(str){
+      if(!str) return '';
+      return String(str).replace(/[&<>'"]/g, t=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[t]||t));
+    }
+    function duplicateProduct(productId){
+      const orig = TrendStore.products.find(x=> x.id===productId);
+      if(!orig) return;
+      const clone = { ...JSON.parse(JSON.stringify(orig)), id: Date.now(), title: orig.title + ' (کپی)' };
+      TrendStore.products.unshift(clone);
+      TrendStore.saveProducts(TrendStore.products);
+      renderCMS();
+      showToast('کپی محصول ساخته شد');
+    }
+
+    function addProductToAdminList() {
+      const baseId = Date.now();
+      const item = {
+        id: baseId,
+        category: 'gadget',
+        catName: 'گجت و دیجیتال',
+        title: 'محصول جدید',
+        price: '۱,۲۰۰,۰۰۰',
+        rawPrice: 1200000,
+        tag: 'محصول جدید',
+        mainImg: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80'
+        ],
+        desc: 'توضیح کوتاه محصول جدید و قابل ویرایش از پنل ادمین.',
+        specs: ['ویژگی ۱', 'ویژگی ۲', 'ویژگی ۳']
+      };
+      TrendStore.products.unshift(item);
+      TrendStore.saveProducts(TrendStore.products);
+      renderCMS();
+      showToast('محصول جدید اضافه شد');
+    }
+
+    function removeAdminProduct(productId) {
+      const next = TrendStore.products.filter(p => p.id !== productId);
+      TrendStore.products = next;
+      TrendStore.saveProducts(next);
+      renderCMS();
+      showToast('محصول حذف شد');
     }
 
     function compressImg(e, pIdx, slotIdx) {
@@ -773,29 +951,38 @@
 
     function saveProducts() {
       TrendStore.products.forEach((p, idx) => {
-        p.title = document.getElementById(`p-title-${idx}`).value;
-        p.tag = document.getElementById(`p-tag-${idx}`).value;
-        p.price = document.getElementById(`p-price-${idx}`).value;
-        p.desc = document.getElementById(`p-desc-${idx}`).value;
-
-        const img1 = document.getElementById(`url-${idx}-0`).value;
-        const img2 = document.getElementById(`url-${idx}-1`).value;
-        const img3 = document.getElementById(`url-${idx}-2`).value;
-
-        p.mainImg = img1;
+        const catEl = document.getElementById(`p-cat-${idx}`);
+        const catNameEl = document.getElementById(`p-catname-${idx}`);
+        const specsEl = document.getElementById(`p-specs-${idx}`);
+        p.category = catEl ? catEl.value : p.category;
+        const catMap = { gadget:'گجت و دیجیتال', fashion:'استایل و پوشاک', accessory:'اکسسوری و کیف', lifestyle:'خانه و لایف‌استایل' };
+        p.catName = catNameEl ? catNameEl.value.trim() || catMap[p.category] || p.catName : p.catName;
+        p.title = document.getElementById(`p-title-${idx}`).value.trim();
+        p.tag = document.getElementById(`p-tag-${idx}`).value.trim();
+        p.price = document.getElementById(`p-price-${idx}`).value.trim();
+        const rawNum = Number(String(p.price).replace(/[^0-9]/g,'')) || p.rawPrice;
+        p.rawPrice = rawNum;
+        p.desc = document.getElementById(`p-desc-${idx}`).value.trim();
+        if(specsEl) p.specs = specsEl.value.split('|').map(s=>s.trim()).filter(Boolean);
+        const img1 = document.getElementById(`url-${idx}-0`).value.trim();
+        const img2 = document.getElementById(`url-${idx}-1`).value.trim();
+        const img3 = document.getElementById(`url-${idx}-2`).value.trim();
+        p.mainImg = img1 || p.mainImg;
         p.gallery = [img1, img2, img3].filter(Boolean);
       });
-
       TrendStore.saveProducts(TrendStore.products);
       const t = document.getElementById('toast');
+      t.textContent='✅ محصولات ذخیره شد';
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
+      setTimeout(() => t.classList.remove('show'), 2500);
+      updateDashboardMetrics();
     }
 
     function saveInvoiceFromAdmin() {
       const sheetUrl = document.getElementById('sheet-webapp-url')?.value?.trim();
       if (sheetUrl) {
         localStorage.setItem('trendcargo_google_sheet_url', sheetUrl);
+        if (typeof TrendBackend !== 'undefined') TrendBackend.push('sheetUrl', sheetUrl);
       }
 
       const invoice = {
@@ -979,6 +1166,7 @@
           if (idx >= 0) {
             list[idx].status = event.target.value;
             localStorage.setItem('trendcargo_accounting_invoices', JSON.stringify(list));
+            if (typeof TrendBackend !== 'undefined') TrendBackend.push('invoices', list);
             updateDashboardMetrics();
           }
         });
@@ -1088,6 +1276,191 @@
       });
     }
 
+    // ===== HERO ADMIN =====
+    function hydrateHeroAdmin(){
+      const h = TrendStore.hero || {};
+      const set = (id,val)=>{ const el=document.getElementById(id); if(el) el.value = val||''; };
+      set('hero-badge-input', h.badge);
+      set('hero-title-input', h.title);
+      set('hero-desc-input', h.desc);
+      set('hero-chips-input', (h.chips||[]).join(', '));
+      set('hero-primary-text', h.primaryBtn?.text);
+      set('hero-primary-href', h.primaryBtn?.href);
+      set('hero-secondary-text', h.secondaryBtn?.text);
+      set('hero-secondary-href', h.secondaryBtn?.href);
+      renderHeroPointsEditor();
+    }
+    function renderHeroPointsEditor(){
+      const host = document.getElementById('hero-points-editor');
+      if(!host) return;
+      const pts = TrendStore.hero?.keyPoints || [];
+      host.innerHTML = pts.map((kp, i)=>`
+        <div class="mini-card">
+          <div class="form-group"><label>آیکون</label><input type="text" class="form-control" id="kp-icon-${i}" value="${escapeHTML(kp.icon||'')}"></div>
+          <div class="form-group"><label>عنوان</label><input type="text" class="form-control" id="kp-title-${i}" value="${escapeHTML(kp.title||'')}"></div>
+          <div class="form-group"><label>توضیح</label><input type="text" class="form-control" id="kp-desc-${i}" value="${escapeHTML(kp.desc||'')}"></div>
+        </div>
+      `).join('');
+    }
+    function saveHeroFromAdmin(){
+      const chips = document.getElementById('hero-chips-input').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const points = (TrendStore.hero?.keyPoints||[]).map((_,i)=>({
+        icon: document.getElementById(`kp-icon-${i}`)?.value.trim()||'',
+        title: document.getElementById(`kp-title-${i}`)?.value.trim()||'',
+        desc: document.getElementById(`kp-desc-${i}`)?.value.trim()||''
+      }));
+      const next = {
+        badge: document.getElementById('hero-badge-input').value.trim(),
+        title: document.getElementById('hero-title-input').value.trim(),
+        desc: document.getElementById('hero-desc-input').value.trim(),
+        chips,
+        primaryBtn: { text: document.getElementById('hero-primary-text').value.trim(), href: document.getElementById('hero-primary-href').value.trim()||'#flash-sale' },
+        secondaryBtn: { text: document.getElementById('hero-secondary-text').value.trim(), href: document.getElementById('hero-secondary-href').value.trim()||'#custom-order' },
+        keyPoints: points
+      };
+      TrendStore.saveHero(next);
+      const t=document.getElementById('toast'); t.textContent='✅ هیرو ذخیره شد'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+    }
+    // ===== SOCIALS ADMIN =====
+    function hydrateSocialsAdmin(){
+      const s = TrendStore.socials || {};
+      const st = s.instagramStyle||{}, g = s.instagramGadget||{};
+      const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val||''; };
+      set('social-whatsapp', s.whatsapp);
+      set('social-style-badge', st.badge); set('social-style-title', st.title); set('social-style-handle', st.handle); set('social-style-url', st.url); set('social-style-note', st.followersNote); set('social-style-avatar', st.avatar); set('social-style-bio', st.bio); set('social-style-tags', (st.tags||[]).join(', ')); set('social-style-btn', st.btnText);
+      set('social-gadget-badge', g.badge); set('social-gadget-title', g.title); set('social-gadget-handle', g.handle); set('social-gadget-url', g.url); set('social-gadget-note', g.followersNote); set('social-gadget-avatar', g.avatar); set('social-gadget-bio', g.bio); set('social-gadget-tags', (g.tags||[]).join(', ')); set('social-gadget-btn', g.btnText);
+    }
+    function saveSocialsFromAdmin(){
+      const parseTags = v => v.split(',').map(s=>s.trim()).filter(Boolean);
+      const next = {
+        whatsapp: document.getElementById('social-whatsapp').value.trim().replace(/[^0-9]/g,'') || TrendStore.socials.whatsapp,
+        instagramStyle: {
+          badge: document.getElementById('social-style-badge').value.trim(),
+          title: document.getElementById('social-style-title').value.trim(),
+          handle: document.getElementById('social-style-handle').value.trim(),
+          url: document.getElementById('social-style-url').value.trim(),
+          followersNote: document.getElementById('social-style-note').value.trim(),
+          avatar: document.getElementById('social-style-avatar').value.trim(),
+          bio: document.getElementById('social-style-bio').value.trim(),
+          tags: parseTags(document.getElementById('social-style-tags').value),
+          btnText: document.getElementById('social-style-btn').value.trim()
+        },
+        instagramGadget: {
+          badge: document.getElementById('social-gadget-badge').value.trim(),
+          title: document.getElementById('social-gadget-title').value.trim(),
+          handle: document.getElementById('social-gadget-handle').value.trim(),
+          url: document.getElementById('social-gadget-url').value.trim(),
+          followersNote: document.getElementById('social-gadget-note').value.trim(),
+          avatar: document.getElementById('social-gadget-avatar').value.trim(),
+          bio: document.getElementById('social-gadget-bio').value.trim(),
+          tags: parseTags(document.getElementById('social-gadget-tags').value),
+          btnText: document.getElementById('social-gadget-btn').value.trim()
+        },
+        footerLinks: TrendStore.socials.footerLinks
+      };
+      // keep footerLinks from editor live state
+      const footerSites = [];
+      document.querySelectorAll('[data-footer-site-idx]').forEach(row=>{
+        const idx = Number(row.dataset.footerSiteIdx);
+        const label = row.querySelector('[data-footer-label]')?.value.trim();
+        const href = row.querySelector('[data-footer-href]')?.value.trim();
+        if(label || href) footerSites[idx]={ label: label||'', href: href||'#' };
+      });
+      if(footerSites.length) next.footerLinks = { sites: footerSites.filter(Boolean) };
+      TrendStore.saveSocials(next);
+      const t=document.getElementById('toast'); t.textContent='✅ سوشال مدیا ذخیره شد'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+    }
+    function renderFooterSitesEditor(){
+      const host = document.getElementById('footer-sites-editor');
+      if(!host) return;
+      const sites = TrendStore.socials?.footerLinks?.sites || [];
+      host.innerHTML = sites.map((s,i)=>`
+        <div class="discount-item" data-footer-site-idx="${i}">
+          <div style="display:flex;gap:0.6rem;flex:1;flex-wrap:wrap;">
+            <input type="text" class="form-control" style="flex:1;min-width:160px;" data-footer-label value="${escapeHTML(s.label)}" placeholder="عنوان">
+            <input type="text" class="form-control" style="flex:1;min-width:180px;" data-footer-href value="${escapeHTML(s.href)}" placeholder="https://...">
+          </div>
+          <button class="btn btn-reset" onclick="removeFooterSite(${i})">حذف</button>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);font-size:0.85rem;">سایتی ثبت نشده.</p>';
+      // live bind to keep TrendStore updated on change without save still needed but we handle on save
+      host.querySelectorAll('[data-footer-label],[data-footer-href]').forEach(inp=>{
+        inp.addEventListener('change', ()=>{
+          const row = inp.closest('[data-footer-site-idx]');
+          const idx = Number(row.dataset.footerSiteIdx);
+          const label = row.querySelector('[data-footer-label]').value;
+          const href = row.querySelector('[data-footer-href]').value;
+          TrendStore.socials.footerLinks.sites[idx] = { label, href };
+        });
+      });
+    }
+    function addFooterSite(){
+      const sites = TrendStore.socials?.footerLinks?.sites || [];
+      sites.push({ label: 'سایت جدید', href: 'https://example.com' });
+      TrendStore.socials.footerLinks = { sites };
+      TrendStore.saveSocials(TrendStore.socials);
+      renderFooterSitesEditor();
+      showToast('سایت جدید اضافه شد');
+    }
+    function removeFooterSite(idx){
+      const sites = TrendStore.socials?.footerLinks?.sites || [];
+      sites.splice(idx,1);
+      TrendStore.saveSocials(TrendStore.socials);
+      renderFooterSitesEditor();
+    }
+    // ===== NEWS ADMIN =====
+    function renderNewsAdmin(){
+      const host = document.getElementById('news-admin-list');
+      if(!host) return;
+      const list = techNewsList || [];
+      host.innerHTML = list.map(n=>`
+        <div class="discount-item" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.8rem;">
+            <strong>${escapeHTML(n.title)} <small style="color:var(--text-muted);font-weight:400;">#${n.id}</small></strong>
+            <button class="btn btn-reset" onclick="removeNewsAdmin(${n.id})">حذف</button>
+          </div>
+          <div class="cms-grid" style="margin-top:0.8rem;">
+            <div class="form-group"><label>عنوان</label><input type="text" class="form-control" id="news-title-${n.id}" value="${escapeHTML(n.title)}"></div>
+            <div class="form-group"><label>دسته</label><input type="text" class="form-control" id="news-cat-${n.id}" value="${escapeHTML(n.category)}"></div>
+            <div class="form-group"><label>تاریخ</label><input type="text" class="form-control" id="news-date-${n.id}" value="${escapeHTML(n.date)}"></div>
+            <div class="form-group"><label>badge</label><input type="text" class="form-control" id="news-badge-${n.id}" value="${escapeHTML(n.badge)}"></div>
+            <div class="form-group"><label>عکس URL</label><input type="url" class="form-control" id="news-img-${n.id}" value="${escapeHTML(n.img)}"></div>
+            <div class="form-group"><label>readTime</label><input type="text" class="form-control" id="news-read-${n.id}" value="${escapeHTML(n.readTime)}"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>shortDesc</label><textarea class="form-control" rows="2" id="news-short-${n.id}">${escapeHTML(n.shortDesc)}</textarea></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>fullBody</label><textarea class="form-control" rows="4" id="news-body-${n.id}">${escapeHTML(n.fullBody)}</textarea></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>specs (با | جدا)</label><input type="text" class="form-control" id="news-specs-${n.id}" value="${escapeHTML((n.specs||[]).join(' | '))}"></div>
+          </div>
+          <button class="btn btn-save" style="margin-top:0.6rem;" onclick="saveOneNews(${n.id})">💾 ذخیره این خبر</button>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);">خبری ثبت نشده.</p>';
+    }
+    function saveOneNews(id){
+      const patch = {
+        title: document.getElementById(`news-title-${id}`)?.value.trim()||'',
+        category: document.getElementById(`news-cat-${id}`)?.value.trim()||'',
+        date: document.getElementById(`news-date-${id}`)?.value.trim()||'',
+        badge: document.getElementById(`news-badge-${id}`)?.value.trim()||'',
+        img: document.getElementById(`news-img-${id}`)?.value.trim()||'',
+        readTime: document.getElementById(`news-read-${id}`)?.value.trim()||'',
+        shortDesc: document.getElementById(`news-short-${id}`)?.value.trim()||'',
+        fullBody: document.getElementById(`news-body-${id}`)?.value.trim()||'',
+        specs: (document.getElementById(`news-specs-${id}`)?.value.split('|').map(s=>s.trim()).filter(Boolean) || [])
+      };
+      updateNewsItem(id, patch);
+      showToast('خبر بروزرسانی شد');
+      renderNewsAdmin();
+    }
+    function addNewsFromAdmin(){
+      addNewsItem({});
+      renderNewsAdmin();
+      showToast('خبر جدید اضافه شد');
+    }
+    function removeNewsAdmin(id){
+      removeNewsItem(id);
+      renderNewsAdmin();
+      showToast('خبر حذف شد');
+    }
+
     function initAdminUi() {
       bindNavigation();
       renderDiscounts();
@@ -1097,6 +1470,10 @@
       syncSheetInputs();
       updateDashboardMetrics();
       if (typeof renderCMS === 'function') renderCMS();
+      hydrateHeroAdmin();
+      hydrateSocialsAdmin();
+      renderFooterSitesEditor();
+      renderNewsAdmin();
     }
 
     checkAuth();

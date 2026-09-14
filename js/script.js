@@ -15,7 +15,9 @@ const STORAGE_KEYS = {
   lastInvoice: 'trendcargo_last_invoice',
   sheetUrl: 'trendcargo_google_sheet_url',
   flashDeals: 'trendcargo_flash_deals',
-  termsText: 'trendcargo_terms_text'
+  termsText: 'trendcargo_terms_text',
+  hero: 'trendcargo_hero_config',
+  socials: 'trendcargo_socials_config'
 };
 
 // نرخ‌های پایه صرافی و ضریب حاشیه امن
@@ -126,8 +128,55 @@ const top20Products = [
   }
 ];
 
-// اخبار تکنولوژی ۲۰۲۶
-const techNewsList = [
+// محتوای پیش‌فرض هیرو و سوشال
+const defaultHeroConfig = {
+  badge: "🇦🇲 خط مستقیم واردات: هاب ایروان ➔ هاب توزیع تبریز ➔ سراسر ایران",
+  title: 'خرید مستقیم از <span class="highlight-cyan">تمو، شین و آمازون</span><br>با تضمین اصالت و <span class="highlight-coral">قیمت کاملاً رقابتی</span>',
+  desc: "دسترسی بدون واسطه به محصولات اورجینال و ترند روز جهانی؛ کنترل فیزیکی و تست سلامت در ارمنستان، و ارسال پلمپ با تیپاکس از تبریز بدون درگیری با گمرک و پروسه‌های فرسایشی مرجوعی به چین.",
+  chips: ["TEMU (تمو)", "SHEIN (شین)", "AMAZON (آمازون)", "WILDBERRIES (وایلدبریز)"],
+  primaryBtn: { text: "مشاهده حراجی‌های لحظه‌ای ۹۰٪", href: "#flash-sale" },
+  secondaryBtn: { text: "استعلام قیمت لینک دلخواه", href: "#custom-order" },
+  keyPoints: [
+    { icon: "🛡️", title: "مرجوعی در ایروان", desc: "تست و تعویض در ارمنستان قبل از ورود به ایران" },
+    { icon: "💎", title: "سود کاملاً منصفانه", desc: "محاسبه با کمترین کارمزد و کرایه اقتصادی" },
+    { icon: "📸", title: "شفافیت و رهگیری لحظه‌ای", desc: "اسکرین‌شات خرید مستقیم پنل خارجی" }
+  ]
+};
+const defaultSocialsConfig = {
+  whatsapp: WHATSAPP_NUMBER,
+  instagramStyle: {
+    badge: "👕 مد، فشن و استایل",
+    title: "Trend Cargo Style",
+    handle: "@trendcargo.style",
+    url: "https://instagram.com/trendkargo_style",
+    followersNote: "🔥 هودی‌های وینتیج، کارگو و فشن شین",
+    bio: "مرجع خرید هودی‌های سنگین اسیدواش، شلوارهای بگ کارگو، کفش‌های چانکی و استایل‌های ترند پینترست از Shein و Temu.",
+    tags: ["#استریت_ویر", "#شین_ایران", "#هودی_اورسایز", "#کارگو_بگ"],
+    btnText: "مشاهده و فالو پیج استایل",
+    avatar: "assets/logo.png"
+  },
+  instagramGadget: {
+    badge: "⚡ گجت و دنیای تکنولوژی",
+    title: "Trend Cargo Gadget",
+    handle: "@trendcargo.gadget",
+    url: "https://instagram.com/trendkargo_gajet",
+    followersNote: "🚀 گجت‌های هوشمند و وایرال تیک‌تاک",
+    bio: "معرفی و تست آنباکس پرینترهای حرارتی جیبی، پایه‌های هوش مصنوعی تعقیب سوژه، شارژرهای وایرلس و گجت‌های دسکتاپ.",
+    tags: ["#گجت_هوشمند", "#تمو_ایران", "#ست_آپ_دسکتاپ", "#گجت_تیک_تاک"],
+    btnText: "مشاهده و فالو پیج گجت",
+    avatar: "assets/logo.png"
+  },
+  footerLinks: {
+    sites: [
+      { label: "خرید مستقیم از Temu (تمو)", href: "https://www.temu.com/" },
+      { label: "خرید مستقیم از Shein (شین)", href: "https://m.shein.com/" },
+      { label: "خرید از Amazon", href: "https://www.amazon.com/" },
+      { label: "خرید از Wildberries", href: "https://www.wildberries.ru/" }
+    ]
+  }
+};
+// اخبار تکنولوژی ۲۰۲۶ - پیش‌فرض
+const defaultTechNewsList = [
   {
     id: 1,
     category: "گجت‌های پوشیدنی بیومتریک & AI",
@@ -153,21 +202,28 @@ const techNewsList = [
     specs: ["نمایشگر: دوگانه Waveguide MicroLED با روشنایی ۲۰۰۰ نیت", "وزن: ۴۳ گرم فوق‌سبک"]
   }
 ];
+let techNewsList = [...defaultTechNewsList];
 
 // ==========================================================================
-// موتور ذخیره‌سازی داده‌های واکنشی (Reactive Store)
-// ==========================================================================
+ // موتور ذخیره‌سازی داده‌های واکنشی (Reactive Store)
+ // ==========================================================================
 const TrendStore = {
   products: [],
   rates: { ...CURRENCY_CONFIG },
+  hero: { ...defaultHeroConfig },
+  socials: JSON.parse(JSON.stringify(defaultSocialsConfig)),
 
   init() {
     this.products = this.loadStorage(STORAGE_KEYS.products, top20Products);
     this.rates = this.loadStorage(STORAGE_KEYS.rates, CURRENCY_CONFIG);
     const savedRates = this.loadStorage('trendcargo_last_exchange_rates', null);
-    if (savedRates && typeof savedRates === 'object') {
-      this.rates = { ...this.rates, ...savedRates };
-    }
+    if (savedRates && typeof savedRates === 'object') this.rates = { ...this.rates, ...savedRates };
+    this.hero = this.loadStorage(STORAGE_KEYS.hero, defaultHeroConfig);
+    // deep merge for socials / chips fallback
+    const savedSocials = this.loadStorage(STORAGE_KEYS.socials, null);
+    if (savedSocials && typeof savedSocials === 'object') this.socials = { ...JSON.parse(JSON.stringify(defaultSocialsConfig)), ...savedSocials, instagramStyle: { ...defaultSocialsConfig.instagramStyle, ...(savedSocials.instagramStyle||{}) }, instagramGadget: { ...defaultSocialsConfig.instagramGadget, ...(savedSocials.instagramGadget||{}) }, footerLinks: savedSocials.footerLinks || defaultSocialsConfig.footerLinks };
+    techNewsList = this.loadStorage(STORAGE_KEYS.news, defaultTechNewsList);
+    if (!Array.isArray(techNewsList) || !techNewsList.length) techNewsList = [...defaultTechNewsList];
   },
 
   loadStorage(key, fallback) {
@@ -176,18 +232,13 @@ const TrendStore = {
       if (!raw) return fallback;
       const parsed = JSON.parse(raw);
       return parsed && typeof parsed === 'object' ? parsed : fallback;
-    } catch {
-      return fallback;
-    }
+    } catch { return fallback; }
   },
 
   saveProducts(newProducts) {
     this.products = Array.isArray(newProducts) ? newProducts : this.products;
-    try {
-      localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(this.products));
-    } catch (error) {
-      console.warn('Unable to persist product list:', error);
-    }
+    try { localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(this.products)); } catch (error) { console.warn('Unable to persist product list:', error); }
+    TrendBackend.push('products', this.products);
   },
 
   saveRates(newRates) {
@@ -195,9 +246,25 @@ const TrendStore = {
     try {
       localStorage.setItem(STORAGE_KEYS.rates, JSON.stringify(this.rates));
       localStorage.setItem('trendcargo_last_exchange_rates', JSON.stringify(this.rates));
-    } catch (error) {
-      console.warn('Unable to persist exchange rates:', error);
-    }
+    } catch (error) { console.warn('Unable to persist exchange rates:', error); }
+    TrendBackend.push('rates', this.rates);
+  },
+
+  saveHero(nextHero){
+    this.hero = { ...this.hero, ...(nextHero||{}) };
+    try{ localStorage.setItem(STORAGE_KEYS.hero, JSON.stringify(this.hero)); }catch(e){ console.warn(e); }
+    TrendBackend.push('hero', this.hero);
+  },
+  saveSocials(nextSocials){
+    this.socials = { ...this.socials, ...(nextSocials||{}) };
+    try{ localStorage.setItem(STORAGE_KEYS.socials, JSON.stringify(this.socials)); }catch(e){ console.warn(e); }
+    TrendBackend.push('socials', this.socials);
+  },
+  saveNews(list){
+    const arr = Array.isArray(list)? list : techNewsList;
+    techNewsList = arr;
+    try{ localStorage.setItem(STORAGE_KEYS.news, JSON.stringify(arr)); }catch(e){ console.warn(e); }
+    TrendBackend.push('news', arr);
   },
 
   getRate(code) {
@@ -210,6 +277,133 @@ const TrendStore = {
 };
 
 TrendStore.init();
+
+// ==========================================================================
+// بکند واقعی (Vercel Serverless + Supabase) — همگام‌سازی با localStorage
+// خواندن داده‌ها از سرور در لود اول؛ در نبودِ بکند، fallback به localStorage.
+// ذخیره‌سازی ادمین به صورت خودکار به سرور push می‌شود (نیازمند توکن ادمین).
+// ==========================================================================
+const API_STORE_URL = '/api/store';
+
+const TrendBackend = {
+  online: null,          // null = نامشخص، true = متصل، false = قطع
+  echoGuard: false,      // جلوگیری از echo هنگام اعمال داده سرور
+  _timers: {},
+
+  getAdminToken() {
+    try { return sessionStorage.getItem('trendcargo_admin_token') || ''; }
+    catch (error) { return ''; }
+  },
+
+  async pull() {
+    try {
+      const response = await fetch(API_STORE_URL, { cache: 'no-store' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload || payload.ok === false || !payload.data) {
+        throw new Error(payload && payload.error ? payload.error : `HTTP ${response.status}`);
+      }
+      this.online = true;
+      console.info('✅ بکند متصل شد — داده‌ها از سرور بارگذاری می‌شوند.');
+      return payload.data;
+    } catch (error) {
+      this.online = false;
+      console.warn('بکند در دسترس نیست — ادامه با localStorage:', error.message);
+      return null;
+    }
+  },
+
+  push(key, value) {
+    if (this.echoGuard) return;
+    const token = this.getAdminToken();
+    if (!token || this.online === false) return;
+    clearTimeout(this._timers[key]);
+    this._timers[key] = setTimeout(async () => {
+      try {
+        const response = await fetch(API_STORE_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+          body: JSON.stringify({ key, value })
+        });
+        if (!response.ok) {
+          console.warn(`Backend push failed for "${key}": HTTP ${response.status}`);
+        }
+      } catch (error) {
+        console.warn(`Backend push failed for "${key}":`, error.message);
+      }
+    }, 500);
+  },
+
+  applyServerData(data) {
+    if (!data || typeof data !== 'object') return;
+    this.echoGuard = true;
+    try {
+      if (Array.isArray(data.products) && data.products.length) {
+        TrendStore.products = data.products;
+        this._saveLocal(STORAGE_KEYS.products, data.products);
+        if (typeof renderProducts === 'function') renderProducts();
+      }
+      if (data.hero && typeof data.hero === 'object') {
+        TrendStore.saveHero(data.hero);
+        if (typeof renderHeroSection === 'function') renderHeroSection();
+      }
+      if (data.socials && typeof data.socials === 'object') {
+        TrendStore.saveSocials(data.socials);
+        if (typeof renderSocialsSection === 'function') renderSocialsSection();
+      }
+      if (Array.isArray(data.news) && data.news.length) {
+        TrendStore.saveNews(data.news);
+        if (typeof renderTechNews === 'function') renderTechNews();
+      }
+      if (data.rates && typeof data.rates === 'object' && data.rates.baseRates) {
+        TrendStore.saveRates(data.rates);
+      }
+      if (Array.isArray(data.invoices) && data.invoices.length) {
+        this._saveLocal(STORAGE_KEYS.invoices, data.invoices.slice(0, 50));
+        if (data.invoices[0]) this._saveLocal(STORAGE_KEYS.lastInvoice, data.invoices[0]);
+        if (typeof renderOrdersTable === 'function') renderOrdersTable();
+        if (typeof updateDashboardMetrics === 'function') updateDashboardMetrics();
+      }
+      if (Array.isArray(data.flashDeals) && data.flashDeals.length) {
+        this._saveLocal(STORAGE_KEYS.flashDeals, data.flashDeals);
+        if (typeof renderFlashDeals === 'function') renderFlashDeals();
+      }
+      if (Array.isArray(data.discounts) && data.discounts.length) {
+        this._saveLocal('trendcargo_discounts', data.discounts);
+        if (typeof renderDiscounts === 'function') renderDiscounts();
+      }
+      if (typeof data.terms === 'string' && data.terms.trim()) {
+        this._saveLocal(STORAGE_KEYS.termsText, data.terms);
+        if (typeof loadTermsEditor === 'function') loadTermsEditor();
+      }
+      if (typeof data.sheetUrl === 'string' && data.sheetUrl.trim()) {
+        this._saveLocal(STORAGE_KEYS.sheetUrl, data.sheetUrl);
+        if (typeof hydrateSheetUrl === 'function') hydrateSheetUrl();
+        if (typeof syncSheetInputs === 'function') syncSheetInputs();
+      }
+      if (typeof renderCMS === 'function') renderCMS();
+      if (typeof hydrateHeroAdmin === 'function') hydrateHeroAdmin();
+      if (typeof hydrateSocialsAdmin === 'function') hydrateSocialsAdmin();
+      if (typeof renderFooterSitesEditor === 'function') renderFooterSitesEditor();
+      if (typeof renderNewsAdmin === 'function') renderNewsAdmin();
+    } finally {
+      this.echoGuard = false;
+    }
+  },
+
+  _saveLocal(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch (error) { console.warn(`Unable to cache "${key}" locally:`, error); }
+  }
+};
+
+TrendBackend.pull().then((data) => {
+  if (!data) return;
+  if (document.readyState === 'complete') {
+    TrendBackend.applyServerData(data);
+  } else {
+    window.addEventListener('load', () => TrendBackend.applyServerData(data), { once: true });
+  }
+});
 
 async function fetchTgjuLiveRates() {
   const cacheKey = 'trendcargo_tgju_cached_rates';
@@ -325,6 +519,7 @@ function saveAccountingInvoice(entry) {
   invoices.unshift(payload);
   localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices.slice(0, 50)));
   localStorage.setItem(STORAGE_KEYS.lastInvoice, JSON.stringify(payload));
+  TrendBackend.push('invoices', invoices.slice(0, 50));
 
   const sheetUrl = localStorage.getItem(STORAGE_KEYS.sheetUrl);
   if (sheetUrl) {
@@ -513,6 +708,7 @@ function getStoredFlashDeals() {
 function saveFlashDeals(list) {
   const safeList = Array.isArray(list) ? list : [];
   localStorage.setItem(STORAGE_KEYS.flashDeals, JSON.stringify(safeList));
+  TrendBackend.push('flashDeals', safeList);
 }
 
 function addFlashDeal() {
@@ -605,6 +801,7 @@ function saveTermsText() {
   const value = editor.value.trim();
   if (!value) return;
   localStorage.setItem(STORAGE_KEYS.termsText, value);
+  TrendBackend.push('terms', value);
   showToast('متن قوانین و ضمانت‌ها ذخیره شد');
 }
 
@@ -668,37 +865,27 @@ function closeProductModal(event) {
 }
 
 // ==========================================================================
-// ماشین‌حساب آنلاین قیمت تمام‌شده
-// ==========================================================================
+ // ماشین‌حساب آنلاین قیمت تمام‌شده (فقط دلار)
+ // ==========================================================================
 function calculateCargoPrice() {
-  const currElem = document.getElementById('calc-currency');
   const priceElem = document.getElementById('calc-price');
   const pkgElem = document.getElementById('calc-package-type');
-
-  if (!currElem || !priceElem || !pkgElem) return;
-
-  const curr = 'usd';
+  const resElem = document.getElementById('calc-total-result');
+  if (!priceElem || !pkgElem) return null;
   const price = parseFloat(priceElem.value) || 0;
   const pkg = pkgElem.value;
-
+  const curr = 'usd';
   const usdRate = Number(TrendStore.rates.baseRates?.usd || 188000);
   const productCostToman = price * usdRate;
   const profitMargin = productCostToman * 0.25;
-  const serviceAndCheckCost = productCostToman * 0.12 + 1800000 + 2500000;
-
+  const serviceAndCheckCost = productCostToman * 0.12 + 2500000;
   let weightKg = 0.5;
   if (pkg === 'single_heavy') weightKg = 2;
   if (pkg === 'bulk_multi') weightKg = 3.5;
-
   const firstKgShipping = 3500000;
   const extraKgShipping = Math.max(0, weightKg - 1) * 2800000;
   const total = Math.round((productCostToman + profitMargin + serviceAndCheckCost + firstKgShipping + extraKgShipping) / 10000) * 10000;
-
-  const resElem = document.getElementById('calc-total-result');
-  if (resElem) {
-    resElem.innerHTML = `${total.toLocaleString('fa-IR')} <span>تومان</span>`;
-  }
-
+  if (resElem) resElem.innerHTML = `${total.toLocaleString('fa-IR')} <span>تومان</span>`;
   return { total, curr, price, weightKg };
 }
 
@@ -784,9 +971,94 @@ function closeNewsModal(event) {
   }
 }
 
+// --- هیرو و سوشال داینامیک ---
+function renderHeroSection(){
+  const h = TrendStore.hero || defaultHeroConfig;
+  const badge = document.getElementById('hero-badge');
+  if(badge) badge.innerHTML = h.badge;
+  const title = document.getElementById('hero-title');
+  if(title) title.innerHTML = h.title;
+  const desc = document.getElementById('hero-desc');
+  if(desc) desc.textContent = h.desc;
+  const chips = document.getElementById('hero-chips');
+  if(chips) chips.innerHTML = (h.chips||[]).map(c=>`<span class="p-chip">${escapeHTML(c)}</span>`).join('');
+  const primary = document.getElementById('hero-primary-btn');
+  if(primary){ primary.innerHTML = `<span>${escapeHTML(h.primaryBtn?.text||'')}</span><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`; primary.href = h.primaryBtn?.href||'#flash-sale'; }
+  const secondary = document.getElementById('hero-secondary-btn');
+  if(secondary){ secondary.textContent = h.secondaryBtn?.text||''; secondary.href = h.secondaryBtn?.href||'#custom-order'; }
+  const points = document.getElementById('hero-key-points');
+  if(points) points.innerHTML = (h.keyPoints||[]).map(k=>`<div class="point-item"><span class="p-icon">${escapeHTML(k.icon||'')}</span><div class="p-txt"><strong>${escapeHTML(k.title||'')}</strong><small>${escapeHTML(k.desc||'')}</small></div></div>`).join('');
+}
+function renderSocialsSection(){
+  const s = TrendStore.socials || defaultSocialsConfig;
+  // اینستا استایل
+  const st = s.instagramStyle||defaultSocialsConfig.instagramStyle;
+  const g = s.instagramGadget||defaultSocialsConfig.instagramGadget;
+  const set = (prefix, data)=>{
+    const els = {
+      badge: document.getElementById(prefix+'-badge'),
+      title: document.getElementById(prefix+'-title'),
+      handle: document.getElementById(prefix+'-handle'),
+      note: document.getElementById(prefix+'-note'),
+      bio: document.getElementById(prefix+'-bio'),
+      btn: document.getElementById(prefix+'-btn'),
+      avatar: document.getElementById(prefix+'-avatar'),
+      tags: document.getElementById(prefix+'-tags')
+    };
+    if(els.badge) els.badge.textContent = data.badge||'';
+    if(els.title) els.title.textContent = data.title||'';
+    if(els.handle) els.handle.textContent = data.handle||'';
+    if(els.note) els.note.textContent = data.followersNote||'';
+    if(els.bio) els.bio.textContent = data.bio||'';
+    if(els.btn){ els.btn.href = data.url||'#'; const span = els.btn.querySelector('span'); if(span) span.textContent = data.btnText||''; }
+    if(els.avatar) els.avatar.src = data.avatar||'assets/logo.png';
+    if(els.tags) els.tags.innerHTML = (data.tags||[]).map(t=>`<span>${escapeHTML(t)}</span>`).join('');
+  };
+  set('insta-style', st);
+  set('insta-gadget', g);
+  // فوتر سایت‌ها
+  const footerBox = document.getElementById('footer-sites-list');
+  if(footerBox && s.footerLinks?.sites){
+    footerBox.innerHTML = s.footerLinks.sites.map(l=>`<li><a href="${escapeHTML(l.href)}" target="_blank" rel="noopener">${escapeHTML(l.label)}</a></li>`).join('');
+  }
+  // واتساپ لینک‌ها
+  const waNum = (s.whatsapp||WHATSAPP_NUMBER).replace(/[^0-9]/g,'');
+  document.querySelectorAll('a.whatsapp-btn, a.footer-whatsapp-link').forEach(a=>{
+    const base = a.getAttribute('href')||'';
+    if(base.includes('wa.me')) a.href = `https://wa.me/${waNum}` + (base.includes('?text=')? base.slice(base.indexOf('?text=')) : '?text='+encodeURIComponent('سلام درخواست مشاوره و ثبت سفارش دارم'));
+    if(a.classList.contains('footer-whatsapp-link')) a.textContent = '+'+waNum.slice(0,2)+' '+waNum.slice(2,5)+' '+waNum.slice(5,8)+' '+waNum.slice(8);
+  });
+}
+// --- مدیریت اخبار در ادمین (CRUD) ---
+function addNewsItem(payload){
+  const item = {
+    id: Date.now(),
+    category: payload?.category || 'تکنولوژی',
+    title: payload?.title || 'عنوان خبر جدید',
+    date: payload?.date || new Date().toLocaleDateString('fa-IR'),
+    readTime: payload?.readTime || 'زمان مطالعه: ۳ دقیقه',
+    img: payload?.img || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
+    badge: payload?.badge || 'جدید',
+    shortDesc: payload?.shortDesc || 'توضیح کوتاه خبر...',
+    fullBody: payload?.fullBody || 'متن کامل خبر قابل ویرایش از پنل ادمین.',
+    specs: Array.isArray(payload?.specs)? payload.specs : ['ویژگی ۱','ویژگی ۲']
+  };
+  techNewsList.unshift(item);
+  TrendStore.saveNews(techNewsList);
+  return item;
+}
+function removeNewsItem(id){
+  techNewsList = techNewsList.filter(n=> String(n.id)!==String(id));
+  TrendStore.saveNews(techNewsList);
+}
+function updateNewsItem(id, patch){
+  const idx = techNewsList.findIndex(n=> String(n.id)===String(id));
+  if(idx>=0){ techNewsList[idx]={...techNewsList[idx], ...patch}; TrendStore.saveNews(techNewsList); }
+}
+
 // ==========================================================================
-// مدیریت PWA و نوتیفیکیشن
-// ==========================================================================
+ // مدیریت PWA و نوتیفیکیشن
+ // ==========================================================================
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -835,6 +1107,8 @@ function enablePushNotifications() {
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
   initAppTheme();
+  renderHeroSection();
+  renderSocialsSection();
   renderProducts();
   renderTechNews();
   calculateCargoPrice();
