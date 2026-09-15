@@ -15,3 +15,7 @@ node_modules/
 # Local packaging output
 *.zip
 dist/
+
+# Local backups (code zip, git bundle, database export)
+backups/
+
