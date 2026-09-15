@@ -447,6 +447,10 @@ const TrendBackend = {
         this._saveLocal('trendcargo_orders', data.orders);
         if (typeof renderCustomOrders === 'function') renderCustomOrders();
       }
+      if (Array.isArray(data.testimonials) && data.testimonials.length) {
+        TrendStore.saveTestimonials(data.testimonials);
+        if (typeof renderTestimonials === 'function') renderTestimonials();
+      }
       if (typeof data.terms === 'string' && data.terms.trim()) {
         this._saveLocal(STORAGE_KEYS.termsText, data.terms);
         if (typeof loadTermsEditor === 'function') loadTermsEditor();
@@ -759,12 +763,83 @@ function escapeHTML(str) {
 }
 
 function showToast(message) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add('show');
+  // پنل ادمین: توست ساده اختصاصی
+  const adminToast = document.getElementById('toast');
+  if (adminToast) {
+    adminToast.textContent = message;
+    adminToast.classList.add('show');
+    clearTimeout(showToast.timerId);
+    showToast.timerId = setTimeout(() => adminToast.classList.remove('show'), 2600);
+    return;
+  }
+
+  // فروشگاه: استفاده موقت از اعلان زنده (با بازگردانی محتوای اصلی)
+  const liveToast = document.getElementById('live-toast');
+  const content = liveToast ? liveToast.querySelector('.toast-content') : null;
+  if (!liveToast || !content) {
+    console.info(message);
+    return;
+  }
+  if (!showToast.originalHTML) showToast.originalHTML = content.innerHTML;
+  content.innerHTML = `<strong>${escapeHTML(message)}</strong>`;
+  liveToast.classList.add('active');
+  pauseLiveOrderTicker();
   clearTimeout(showToast.timerId);
-  showToast.timerId = setTimeout(() => toast.classList.remove('show'), 2600);
+  showToast.timerId = setTimeout(() => {
+    liveToast.classList.remove('active');
+    if (showToast.originalHTML) content.innerHTML = showToast.originalHTML;
+    resumeLiveOrderTicker();
+  }, 3600);
+}
+
+// اعلان زنده سفارش‌ها (فعال‌سازی اعلان اجتماعی فروشگاه)
+const liveOrderSamples = [
+  { user: 'کاربری از تبریز', action: 'همین حالا هودی اورسایز شین را ثبت کرد' },
+  { user: 'کاربری از تهران', action: 'دقایقی پیش پرینتر حرارتی جیبی تمو را سفارش داد' },
+  { user: 'کاربری از اصفهان', action: 'همین حالا پایه تعقیب سوژه آمازون را ثبت کرد' },
+  { user: 'کاربری از شیراز', action: 'چند دقیقه پیش کفش چانکی شین را سفارش داد' },
+  { user: 'کاربری از مشهد', action: 'همین حالا کمربند بوهو وینتیج را ثبت کرد' },
+  { user: 'کاربری از کرج', action: 'دقایقی پیش ساعت هوشمند را استعلام قیمت کرد' },
+  { user: 'کاربری از رشت', action: 'همین حالا گجت‌های آشپزخانه وایلدبریز را ثبت کرد' }
+];
+let liveOrderTimers = [];
+
+function pauseLiveOrderTicker() {
+  liveOrderTimers.forEach((t) => clearTimeout(t));
+  liveOrderTimers = [];
+}
+
+function resumeLiveOrderTicker() {
+  const toast = document.getElementById('live-toast');
+  if (!toast) return;
+  liveOrderTimers.push(setTimeout(startLiveOrderTicker, 8000));
+}
+
+function startLiveOrderTicker() {
+  const toast = document.getElementById('live-toast');
+  const userEl = document.getElementById('toast-user');
+  const actionEl = document.getElementById('toast-action');
+  if (!toast || !userEl || !actionEl) return;
+
+  let index = Math.floor(Math.random() * liveOrderSamples.length);
+  const showNext = () => {
+    // اگر کاربر در حال خواندن است یا پنجره مخفی است، نمایش نده
+    if (toast.classList.contains('active') || document.hidden) {
+      liveOrderTimers.push(setTimeout(showNext, 12000));
+      return;
+    }
+    const sample = liveOrderSamples[index % liveOrderSamples.length];
+    index += 1;
+    userEl.textContent = sample.user;
+    actionEl.textContent = sample.action;
+    toast.classList.add('active');
+    liveOrderTimers.push(setTimeout(() => {
+      toast.classList.remove('active');
+      liveOrderTimers.push(setTimeout(showNext, 14000));
+    }, 5200));
+  };
+
+  liveOrderTimers.push(setTimeout(showNext, 6000));
 }
 
 function getStoredFlashDeals() {
@@ -1001,55 +1076,137 @@ function submitCustomLink() {
 // ==========================================================================
 // اخبار تکنولوژی و پاپ‌آپ آن
 // ==========================================================================
+// فیلتر دسته‌بندی وبلاگ
+function renderNewsFilters() {
+  const host = document.getElementById('news-filters');
+  if (!host) return;
+  const categories = [];
+  techNewsList.forEach(n => { if (n.category && !categories.includes(n.category)) categories.push(n.category); });
+  const items = ['all', ...categories];
+  host.innerHTML = items.map(cat => `
+    <button class="news-filter-chip ${newsActiveFilter === cat ? 'active' : ''}" type="button" data-news-filter="${escapeHTML(cat)}">${cat === 'all' ? 'همه گزارش‌ها' : escapeHTML(cat)}</button>
+  `).join('');
+  host.querySelectorAll('[data-news-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      newsActiveFilter = btn.dataset.newsFilter;
+      renderTechNews();
+    });
+  });
+}
+
 function renderTechNews() {
   const newsContainer = document.getElementById('tech-news-container');
   if (!newsContainer) return;
-  newsContainer.innerHTML = '';
+  renderNewsFilters();
 
-  techNewsList.forEach(news => {
-    const card = document.createElement('article');
-    card.className = 'tech-card';
-    card.onclick = () => openNewsModal(news.id);
+  const list = newsActiveFilter === 'all'
+    ? techNewsList
+    : techNewsList.filter(n => n.category === newsActiveFilter);
 
-    card.innerHTML = `
+  if (!list.length) {
+    newsContainer.innerHTML = '<p class="news-empty">گزارشی در این دسته ثبت نشده است.</p>';
+    return;
+  }
+
+  newsContainer.innerHTML = list.map(news => `
+    <article class="tech-card" data-news-id="${escapeHTML(String(news.id))}">
       <div class="tech-card-img">
-        <img src="${news.img}" alt="${news.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
-        <span class="tech-badge">${news.badge}</span>
+        <img src="${escapeHTML(news.img || '')}" alt="${escapeHTML(news.title || '')}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
+        <span class="tech-badge">${escapeHTML(news.badge || '')}</span>
       </div>
       <div class="tech-card-body">
-        <span class="tech-cat">${news.category}</span>
-        <h3 class="tech-title">${news.title}</h3>
-        <p class="tech-desc">${news.shortDesc}</p>
-        <button class="btn-view-news">مشاهده گزارش کامل</button>
+        <span class="tech-cat">${escapeHTML(news.category || '')}</span>
+        <h3 class="tech-title">${escapeHTML(news.title || '')}</h3>
+        <p class="tech-desc">${escapeHTML(news.shortDesc || '')}</p>
+        <div class="tech-card-meta">
+          <span> ${escapeHTML(news.date || '')}</span>
+          <span>⏱ ${escapeHTML(String(news.readTime || '').replace('زمان مطالعه:', '').trim())}</span>
+        </div>
+        <button class="btn-view-news" type="button">مشاهده گزارش کامل</button>
       </div>
-    `;
-    newsContainer.appendChild(card);
+    </article>
+  `).join('');
+
+  newsContainer.querySelectorAll('[data-news-id]').forEach(card => {
+    card.addEventListener('click', () => openNewsModal(card.dataset.newsId));
   });
 }
 
 function openNewsModal(newsId) {
-  const news = techNewsList.find(n => n.id === newsId);
+  const news = techNewsList.find(n => String(n.id) === String(newsId));
   const modal = document.getElementById('news-modal-backdrop');
   if (!news || !modal) return;
 
-  document.getElementById('news-modal-img').src = news.img;
-  document.getElementById('news-modal-cat').innerText = news.category;
-  document.getElementById('news-modal-date').innerText = news.date;
-  document.getElementById('news-modal-readtime').innerText = news.readTime;
-  document.getElementById('news-modal-title').innerText = news.title;
-  document.getElementById('news-modal-body').innerText = news.fullBody;
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.innerText = value || ''; };
 
+  const img = document.getElementById('news-modal-img');
+  if (img) {
+    img.src = news.img || '';
+    img.onerror = () => { img.src = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=800&auto=format&fit=crop&q=80'; };
+  }
+  setText('news-modal-cat', news.category);
+  setText('news-modal-date', news.date);
+  setText('news-modal-readtime', news.readTime);
+  setText('news-modal-author', '✍️ ' + (news.author || NEWS_AUTHOR_DEFAULT));
+  setText('news-modal-title', news.title);
+
+  // بدنه مقاله — پاراگراف‌بندی واقعی وبلاگی
+  const bodyHost = document.getElementById('news-modal-body');
+  if (bodyHost) {
+    const paragraphs = String(news.fullBody || '').split(/\n+/).map(p => p.trim()).filter(Boolean);
+    bodyHost.innerHTML = paragraphs.length
+      ? paragraphs.map(p => `<p>${escapeHTML(p)}</p>`).join('')
+      : '<p>متن کامل این گزارش به‌زودی منتشر می‌شود.</p>';
+  }
+
+  // مشخصات فنی
   const specsContainer = document.getElementById('news-modal-specs');
-  specsContainer.innerHTML = '<h4>ویژگی‌ها و مشخصات نوآوری:</h4><ul></ul>';
-  const ul = specsContainer.querySelector('ul');
-  (news.specs || []).forEach(spec => {
-    const li = document.createElement('li');
-    li.innerText = spec;
-    ul.appendChild(li);
-  });
+  if (specsContainer) {
+    const specs = news.specs || [];
+    specsContainer.innerHTML = specs.length
+      ? `<h4>ویژگی‌ها و مشخصات نوآوری:</h4><ul>${specs.map(s => `<li>${escapeHTML(s)}</li>`).join('')}</ul>`
+      : '';
+  }
+
+  // دکمه‌های اشتراک‌گذاری
+  const shareHost = document.getElementById('news-share-row');
+  if (shareHost) {
+    const shareUrl = `${location.origin}${location.pathname}#tech-news`;
+    const shareText = `${news.title} | وبلاگ ترندز کارگو`;
+    shareHost.innerHTML = `
+      <span class="share-label">اشتراک‌گذاری گزارش:</span>
+      <a class="share-btn share-wa" href="https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}" target="_blank" rel="noopener">واتساپ</a>
+      <a class="share-btn share-tg" href="https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener">تلگرام</a>
+      <button class="share-btn share-copy" type="button" onclick="copyNewsLink()">کپی لینک</button>
+    `;
+  }
+
+  // ناوبری مقالات مرتبط (قبلی / بعدی)
+  const relatedHost = document.getElementById('news-related-nav');
+  if (relatedHost) {
+    const index = techNewsList.findIndex(n => String(n.id) === String(news.id));
+    const prevNews = techNewsList[index - 1];
+    const nextNews = techNewsList[index + 1];
+    relatedHost.innerHTML = `
+      ${prevNews ? `<button class="related-btn" type="button" onclick="openNewsModal('${escapeHTML(String(prevNews.id))}')"><small>گزارش قبلی</small><strong>${escapeHTML(prevNews.title)}</strong></button>` : '<span></span>'}
+      ${nextNews ? `<button class="related-btn" type="button" onclick="openNewsModal('${escapeHTML(String(nextNews.id))}')"><small>گزارش بعدی</small><strong>${escapeHTML(nextNews.title)}</strong></button>` : '<span></span>'}
+    `;
+  }
 
   modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
+}
+
+function copyNewsLink() {
+  const url = `${location.origin}${location.pathname}#tech-news`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('لینک گزارش کپی شد'))
+      .catch(() => showToast('کپی خودکار ممکن نبود'));
+  } else {
+    showToast('لینک گزارش: ' + url);
+  }
 }
 
 function closeNewsModal(event) {
@@ -1057,7 +1214,137 @@ function closeNewsModal(event) {
   if (event && event.target !== modal && !event.target.classList.contains('modal-close-btn')) return;
   if (modal) {
     modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+  }
+}
+
+// ==========================================================================
+// کاروسل تجربه واقعی مشتریان (فلش‌دار + اسکرول اسنپ + پخش خودکار)
+// ==========================================================================
+function getTestimonialsList() {
+  return (Array.isArray(TrendStore.testimonials) && TrendStore.testimonials.length)
+    ? TrendStore.testimonials
+    : defaultTestimonials;
+}
+
+function renderTestimonials() {
+  const track = document.getElementById('testimonials-track');
+  if (!track) return;
+
+  const list = getTestimonialsList();
+  track.innerHTML = list.map(t => {
+    const rating = Math.min(5, Math.max(1, Number(t.rating || 5)));
+    return `
+    <article class="testi-card">
+      <div class="testi-quote">”</div>
+      <div class="testi-stars" aria-label="امتیاز ${rating} از ۵">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+      <p class="testi-text">${escapeHTML(t.text || '')}</p>
+      <div class="testi-footer">
+        <div class="testi-avatar">${escapeHTML(String(t.name || 'م').trim().charAt(0))}</div>
+        <div class="testi-person">
+          <strong>${escapeHTML(t.name || 'مشتری')} <span class="testi-verified">✔ خرید تأییدشده</span></strong>
+          <small>${escapeHTML(t.city || '')}${t.product ? ' · ' + escapeHTML(t.product) : ''}</small>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+
+  if (!track.dataset.bound) {
+    track.dataset.bound = '1';
+    track.addEventListener('scroll', () => {
+      updateTestiArrows();
+      highlightTestiDots();
+    }, { passive: true });
+  }
+
+  track.scrollLeft = 0;
+  renderTestiDots();
+  updateTestiArrows();
+  startTestiAutoplay();
+}
+
+function getTestiStep() {
+  const track = document.getElementById('testimonials-track');
+  if (!track) return 320;
+  const card = track.querySelector('.testi-card');
+  if (!card) return track.clientWidth;
+  return card.getBoundingClientRect().width + 20; // ۲۰px فاصله بین کارت‌ها
+}
+
+/** جهت ۱ = نظر بعدی (به سمت چپ در RTL) · جهت ‎-۱ = نظر قبلی */
+function scrollTestimonials(direction) {
+  const track = document.getElementById('testimonials-track');
+  if (!track) return;
+  track.scrollBy({ left: direction * getTestiStep(), behavior: 'smooth' });
+  setTimeout(() => { updateTestiArrows(); highlightTestiDots(); }, 380);
+}
+
+function updateTestiArrows() {
+  const track = document.getElementById('testimonials-track');
+  const prev = document.getElementById('testi-prev');
+  const next = document.getElementById('testi-next');
+  if (!track || !prev || !next) return;
+  const maxScroll = track.scrollWidth - track.clientWidth;
+  const pos = Math.abs(track.scrollLeft);         // در RTL مقدار scrollLeft منفی است
+  const atStart = pos < 6;
+  const atEnd = maxScroll <= 6 || pos >= maxScroll - 6;
+  prev.disabled = atStart;
+  next.disabled = atEnd;
+  prev.classList.toggle('is-disabled', atStart);
+  next.classList.toggle('is-disabled', atEnd);
+}
+
+function renderTestiDots() {
+  const host = document.getElementById('testi-dots');
+  const track = document.getElementById('testimonials-track');
+  if (!host || !track) return;
+  const count = track.querySelectorAll('.testi-card').length;
+  if (count < 2) { host.innerHTML = ''; return; }
+  host.innerHTML = Array.from({ length: count })
+    .map((_, i) => `<button class="testi-dot" type="button" data-testi-dot="${i}" aria-label="نظر ${i + 1}"></button>`)
+    .join('');
+  host.querySelectorAll('[data-testi-dot]').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const idx = Number(dot.dataset.testiDot);
+      track.scrollTo({ left: idx * getTestiStep(), behavior: 'smooth' });
+      setTimeout(() => { updateTestiArrows(); highlightTestiDots(); }, 380);
+    });
+  });
+  highlightTestiDots();
+}
+
+function highlightTestiDots() {
+  const track = document.getElementById('testimonials-track');
+  const host = document.getElementById('testi-dots');
+  if (!track || !host) return;
+  const step = getTestiStep();
+  const active = Math.round(Math.abs(track.scrollLeft) / step);
+  host.querySelectorAll('[data-testi-dot]').forEach((dot, i) => dot.classList.toggle('active', i === active));
+}
+
+let testiAutoplayTimer = null;
+
+function startTestiAutoplay() {
+  const track = document.getElementById('testimonials-track');
+  if (!track || testiAutoplayTimer) return;
+  testiAutoplayTimer = setInterval(() => {
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    if (maxScroll <= 6) return;
+    if (Math.abs(track.scrollLeft) >= maxScroll - 6) {
+      track.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      track.scrollBy({ left: -getTestiStep(), behavior: 'smooth' });
+    }
+    setTimeout(() => { updateTestiArrows(); highlightTestiDots(); }, 380);
+  }, 5500);
+  ['mouseenter', 'touchstart', 'focusin'].forEach(evt => track.addEventListener(evt, stopTestiAutoplay, { passive: true }));
+}
+
+function stopTestiAutoplay() {
+  if (testiAutoplayTimer) {
+    clearInterval(testiAutoplayTimer);
+    testiAutoplayTimer = null;
   }
 }
 
@@ -1201,6 +1488,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSocialsSection();
   renderProducts();
   renderTechNews();
+  renderTestimonials();
+  startLiveOrderTicker();
   calculateCargoPrice();
   updateHeaderClock();
 fetchTgjuLiveRates().catch(() => {});

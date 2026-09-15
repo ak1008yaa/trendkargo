@@ -54,7 +54,18 @@
 </head>
 <body>
 
-  
+  <!-- پرلودر سه‌بعدی برند -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-content">
+      <div class="logo-3d-spinner">
+        <img src="assets/logo.png" alt="لوگوی ترندز کارگو" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=200&auto=format&fit=crop&q=80'">
+      </div>
+      <div class="preloader-brand">TREND <span>CARGO</span></div>
+      <div class="preloader-sub">در حال آماده‌سازی فروشگاه و نرخ لحظه‌ای...</div>
+      <div class="preloader-bar"><div class="preloader-bar-fill"></div></div>
+    </div>
+  </div>
+
   <!-- نوار بالای صفحه PWA -->
   <aside class="pwa-top-bar" id="pwa-top-bar" role="banner">
     <div class="container pwa-bar-inner">
@@ -420,7 +431,23 @@
       <h2 class="section-title">اخبار تکنولوژی و گجت‌های آینده ۲۰۲۶</h2>
       <p class="section-desc">گزارش و تحلیل تازه‌ترین گجت‌های هوشمند و سخت‌افزارهای سال ۲۰۲۶.</p>
     </div>
+    <div class="news-filters" id="news-filters"></div>
     <div class="tech-news-grid" id="tech-news-container"></div>
+  </section>
+
+  <!-- تجربه واقعی مشتریان -->
+  <section id="testimonials" class="section-padding container">
+    <div class="title-group">
+      <div class="section-badge">⭐ اعتبار ما</div>
+      <h2 class="section-title">تجربه واقعی مشتریان TrendKargo</h2>
+      <p class="section-desc">روایت خریدهای واقعی از تمو، شین و آمازون؛ با بازرسی ایروان، بسته پلمپ و ارسال مطمئن از تبریز.</p>
+    </div>
+    <div class="testimonials-carousel">
+      <button class="testi-arrow testi-arrow-prev" id="testi-prev" onclick="scrollTestimonials(1)" aria-label="نظر قبلی">❯</button>
+      <div class="testimonials-track" id="testimonials-track"></div>
+      <button class="testi-arrow testi-arrow-next" id="testi-next" onclick="scrollTestimonials(-1)" aria-label="نظر بعدی">❮</button>
+    </div>
+    <div class="testi-dots" id="testi-dots"></div>
   </section>
 
   <!-- درباره ما -->
@@ -593,11 +620,13 @@
       </div>
       <div class="news-modal-content">
         <div class="news-modal-meta">
-          <span id="news-modal-date">تاریخ</span> • <span id="news-modal-readtime">زمان مطالعه: ۳ دقیقه</span>
+          <span id="news-modal-date">تاریخ</span> • <span id="news-modal-readtime">زمان مطالعه: ۳ دقیقه</span> • <span id="news-modal-author">تیم تحریریه</span>
         </div>
         <h2 class="news-modal-title" id="news-modal-title">تیتر گزارش</h2>
         <div class="news-modal-body" id="news-modal-body"></div>
         <div class="news-modal-specs" id="news-modal-specs"></div>
+        <div class="news-share-row" id="news-share-row"></div>
+        <div class="news-related-nav" id="news-related-nav"></div>
       </div>
     </div>
   </div>

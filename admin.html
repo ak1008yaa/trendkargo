@@ -448,16 +448,25 @@
         </div>
 
         <div class="nav-group">
-          <div class="nav-label">Navigation</div>
-          <button class="nav-item active" data-section="dashboard" aria-label="داشبورد">داشبورد</button>
-          <button class="nav-item" data-section="products" aria-label="محصولات">محصولات</button>
+          <div class="nav-label">مدیریت فروش</div>
+          <button class="nav-item active" data-section="dashboard" aria-label="داشبورد">📊 داشبورد</button>
+          <button class="nav-item" data-section="products" aria-label="محصولات">🛍️ محصولات</button>
+          <button class="nav-item" data-section="orders" aria-label="سفارش‌ها">📦 سفارش‌ها و فاکتور</button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-label">محتوای سایت</div>
           <button class="nav-item" data-section="hero" aria-label="هیرو">✨ هیرو</button>
-          <button class="nav-item" data-section="news" aria-label="اخبار">📰 اخبار</button>
+          <button class="nav-item" data-section="news" aria-label="اخبار">📰 وبلاگ اخبار</button>
+          <button class="nav-item" data-section="testimonials" aria-label="نظرات مشتریان">⭐ نظرات مشتریان</button>
           <button class="nav-item" data-section="socials" aria-label="سوشال">🔗 سوشال مدیا</button>
-          <button class="nav-item" data-section="flash-deals" aria-label="حراجی‌های ساعتی">حراجی‌های ساعتی</button>
-          <button class="nav-item" data-section="orders" aria-label="سفارش‌ها">سفارش‌ها</button>
-          <button class="nav-item" data-section="discounts" aria-label="تخفیف‌ها">تخفیف‌ها</button>
-          <button class="nav-item" data-section="settings" aria-label="تنظیمات">تنظیمات</button>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-label">فروش و سیستم</div>
+          <button class="nav-item" data-section="flash-deals" aria-label="حراجی‌های ساعتی">⚡ حراجی‌های ساعتی</button>
+          <button class="nav-item" data-section="discounts" aria-label="تخفیف‌ها">🏷️ کدهای تخفیف</button>
+          <button class="nav-item" data-section="settings" aria-label="تنظیمات">⚙️ تنظیمات</button>
         </div>
 
         <div class="status-card">
@@ -522,65 +531,6 @@
             </div>
           </section>
 
-          <section class="panel" style="padding: 1rem 1.1rem; margin-top: 1rem;">
-            <div class="panel-header">
-              <h3>حسابداری و فاکتور</h3>
-              <span class="chip">Backend + Sheets Ready</span>
-            </div>
-
-            <div class="form-group">
-              <label>لینک Web App گوگل شیت</label>
-              <input type="url" id="sheet-webapp-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" />
-            </div>
-
-            <div class="cms-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0.8rem;">
-              <div class="form-group">
-                <label>نام مشتری</label>
-                <input type="text" id="invoice-customer" class="form-control" placeholder="مثلاً: محمد رضایی" />
-              </div>
-              <div class="form-group">
-                <label>شماره تماس</label>
-                <input type="tel" id="invoice-phone" class="form-control" placeholder="09XXXXXXXXX" />
-              </div>
-              <div class="form-group">
-                <label>نام محصول / سفارش</label>
-                <input type="text" id="invoice-product" class="form-control" placeholder="محصول یا سفارش" />
-              </div>
-              <div class="form-group">
-                <label>ارز</label>
-                <select id="invoice-currency" class="form-control">
-                  <option value="usd">USD</option>
-                  <option value="amd">AMD</option>
-                  <option value="try">TRY</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>مبلغ ارزی</label>
-                <input type="number" id="invoice-amount" class="form-control" value="1200" />
-              </div>
-              <div class="form-group">
-                <label>نرخ لحظه‌ای</label>
-                <input type="number" id="invoice-rate" class="form-control" value="188000" />
-              </div>
-              <div class="form-group">
-                <label>هزینه ارسال</label>
-                <input type="number" id="invoice-shipping" class="form-control" value="2500000" />
-              </div>
-              <div class="form-group">
-                <label>وضعیت</label>
-                <select id="invoice-status" class="form-control">
-                  <option value="pending">در انتظار</option>
-                  <option value="paid">تسویه شده</option>
-                  <option value="shipped">در حال ارسال</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="top-actions" style="justify-content:flex-start; margin-top: 1rem;">
-              <button class="btn btn-save" onclick="saveInvoiceFromAdmin()">💾 ثبت فاکتور / ارسال به شیت</button>
-              <button class="btn btn-site" onclick="openInvoicePreview()">🧾 پیش‌نمایش فاکتور</button>
-            </div>
-          </section>
         </section>
 
         <section class="admin-section" id="section-products">
@@ -621,10 +571,20 @@
         <section class="admin-section" id="section-news">
           <div class="panel">
             <div class="panel-header">
-              <h3>📰 مدیریت اخبار — افزودن / ویرایش / حذف</h3>
+              <h3>📰 مدیریت وبلاگ اخبار — افزودن / ویرایش / حذف</h3>
               <button class="btn btn-save" onclick="addNewsFromAdmin()">+ افزودن خبر جدید</button>
             </div>
             <div id="news-admin-list" class="discount-list"></div>
+          </div>
+        </section>
+
+        <section class="admin-section" id="section-testimonials">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>⭐ مدیریت نظرات مشتریان (کاروسل صفحه اصلی)</h3>
+              <button class="btn btn-save" onclick="addTestimonialFromAdmin()">+ افزودن نظر جدید</button>
+            </div>
+            <div id="testimonials-admin-list" class="discount-list"></div>
           </div>
         </section>
 
@@ -683,11 +643,65 @@
         <section class="admin-section" id="section-orders">
           <div class="panel">
             <div class="panel-header">
-              <h3>مدیریت سفارش‌ها</h3>
+              <h3>🧾 ثبت فاکتور جدید</h3>
+              <span class="chip">Backend + Sheets Ready</span>
+            </div>
+            <div class="cms-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+              <div class="form-group">
+                <label>نام مشتری</label>
+                <input type="text" id="invoice-customer" class="form-control" placeholder="مثلاً: محمد رضایی" />
+              </div>
+              <div class="form-group">
+                <label>شماره تماس</label>
+                <input type="tel" id="invoice-phone" class="form-control" placeholder="09XXXXXXXXX" />
+              </div>
+              <div class="form-group">
+                <label>نام محصول / سفارش</label>
+                <input type="text" id="invoice-product" class="form-control" placeholder="محصول یا سفارش" />
+              </div>
+              <div class="form-group">
+                <label>ارز</label>
+                <select id="invoice-currency" class="form-control">
+                  <option value="usd">USD</option>
+                  <option value="amd">AMD</option>
+                  <option value="try">TRY</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>مبلغ ارزی</label>
+                <input type="number" id="invoice-amount" class="form-control" value="1200" />
+              </div>
+              <div class="form-group">
+                <label>نرخ لحظه‌ای</label>
+                <input type="number" id="invoice-rate" class="form-control" value="188000" />
+              </div>
+              <div class="form-group">
+                <label>هزینه ارسال</label>
+                <input type="number" id="invoice-shipping" class="form-control" value="2500000" />
+              </div>
+              <div class="form-group">
+                <label>وضعیت</label>
+                <select id="invoice-status" class="form-control">
+                  <option value="pending">در انتظار</option>
+                  <option value="paid">تسویه شده</option>
+                  <option value="shipped">در حال ارسال</option>
+                </select>
+              </div>
+            </div>
+            <div class="top-actions" style="justify-content:flex-start; margin-top: 1rem;">
+              <button class="btn btn-save" onclick="saveInvoiceFromAdmin()">💾 ثبت فاکتور / ارسال به شیت</button>
+              <button class="btn btn-site" onclick="openInvoicePreview()">🧾 پیش‌نمایش فاکتور</button>
+            </div>
+          </div>
+
+          <div class="panel" style="margin-top:1rem;">
+            <div class="panel-header">
+              <h3>📦 سفارش‌های ثبت‌شده</h3>
               <span class="chip">Live</span>
             </div>
             <div id="orders-table-wrapper"></div>
           </div>
+
           <div class="panel" style="margin-top:1rem;">
             <div class="panel-header">
               <h4>🔗 استعلام‌های لینک مشتریان (بکند)</h4>
@@ -986,7 +1000,7 @@
     }
 
     function saveInvoiceFromAdmin() {
-      const sheetUrl = document.getElementById('sheet-webapp-url')?.value?.trim();
+      const sheetUrl = document.getElementById('settings-sheet-url')?.value?.trim();
       if (sheetUrl) {
         localStorage.setItem('trendcargo_google_sheet_url', sheetUrl);
         if (typeof TrendBackend !== 'undefined') TrendBackend.push('sheetUrl', sheetUrl);
@@ -1029,11 +1043,8 @@
 
     function hydrateSheetUrl() {
       const url = localStorage.getItem('trendcargo_google_sheet_url');
-      const inputs = [
-        document.getElementById('sheet-webapp-url'),
-        document.getElementById('settings-sheet-url')
-      ].filter(Boolean);
-      inputs.forEach(input => { if (url) input.value = url; });
+      const el = document.getElementById('settings-sheet-url');
+      if (el && url) el.value = url;
     }
 
     function showSection(sectionName) {
@@ -1265,21 +1276,15 @@
 
     function syncSheetInputs() {
       const savedUrl = localStorage.getItem('trendcargo_google_sheet_url');
-      const urlInputs = ['sheet-webapp-url', 'settings-sheet-url'];
-      urlInputs.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && savedUrl) el.value = savedUrl;
-      });
-      [document.getElementById('sheet-webapp-url'), document.getElementById('settings-sheet-url')].forEach(el => {
-        if (!el) return;
-        el.addEventListener('change', (event) => {
-          const value = event.target.value.trim();
-          if (value) {
-            localStorage.setItem('trendcargo_google_sheet_url', value);
-            const other = document.getElementById(event.target.id === 'sheet-webapp-url' ? 'settings-sheet-url' : 'sheet-webapp-url');
-            if (other) other.value = value;
-          }
-        });
+      const el = document.getElementById('settings-sheet-url');
+      if (!el) return;
+      if (savedUrl) el.value = savedUrl;
+      el.addEventListener('change', (event) => {
+        const value = event.target.value.trim();
+        if (value) {
+          localStorage.setItem('trendcargo_google_sheet_url', value);
+          if (typeof TrendBackend !== 'undefined') TrendBackend.push('sheetUrl', value);
+        }
       });
     }
 
@@ -1513,6 +1518,57 @@
       renderCustomOrders();
     }
 
+    // ===== TESTIMONIALS ADMIN (نظرات مشتریان) =====
+    function renderTestimonialsAdmin(){
+      const host = document.getElementById('testimonials-admin-list');
+      if(!host) return;
+      const list = TrendStore.testimonials || [];
+      host.innerHTML = list.map(t=>`
+        <div class="discount-item" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.8rem;">
+            <strong>${escapeHTML(t.name)} <small style="color:var(--text-muted);font-weight:400;">· ${escapeHTML(t.city||'')}</small> <small style="color:var(--cyan);font-weight:400;">#${t.id}</small></strong>
+            <button class="btn btn-reset" onclick="removeTestimonialAdmin(${t.id})">حذف</button>
+          </div>
+          <div class="cms-grid" style="margin-top:0.8rem;grid-template-columns:repeat(2,minmax(0,1fr));">
+            <div class="form-group"><label>نام مشتری</label><input type="text" class="form-control" id="testi-name-${t.id}" value="${escapeHTML(t.name)}"></div>
+            <div class="form-group"><label>شهر</label><input type="text" class="form-control" id="testi-city-${t.id}" value="${escapeHTML(t.city||'')}"></div>
+            <div class="form-group"><label>محصول خریداری‌شده</label><input type="text" class="form-control" id="testi-product-${t.id}" value="${escapeHTML(t.product||'')}"></div>
+            <div class="form-group"><label>امتیاز (۱ تا ۵)</label><input type="number" min="1" max="5" class="form-control" id="testi-rating-${t.id}" value="${Number(t.rating||5)}"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>متن نظر</label><textarea class="form-control" rows="3" id="testi-text-${t.id}">${escapeHTML(t.text||'')}</textarea></div>
+          </div>
+          <button class="btn btn-save" style="margin-top:0.6rem;" onclick="saveOneTestimonial(${t.id})">💾 ذخیره این نظر</button>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);">نظری ثبت نشده.</p>';
+    }
+    function collectTestimonial(id){
+      return {
+        name: document.getElementById(`testi-name-${id}`)?.value.trim()||'مشتری',
+        city: document.getElementById(`testi-city-${id}`)?.value.trim()||'',
+        product: document.getElementById(`testi-product-${id}`)?.value.trim()||'',
+        rating: Math.min(5, Math.max(1, Number(document.getElementById(`testi-rating-${id}`)?.value||5))),
+        text: document.getElementById(`testi-text-${id}`)?.value.trim()||''
+      };
+    }
+    function saveOneTestimonial(id){
+      const list = (TrendStore.testimonials||[]).map(t => t.id===id ? { ...t, ...collectTestimonial(id) } : t);
+      TrendStore.saveTestimonials(list);
+      renderTestimonialsAdmin();
+      showToast('نظر مشتری بروزرسانی شد');
+    }
+    function addTestimonialFromAdmin(){
+      const list = TrendStore.testimonials||[];
+      const id = Date.now();
+      list.unshift({ id, name: 'مشتری جدید', city: '', product: '', rating: 5, text: '' });
+      TrendStore.saveTestimonials(list);
+      renderTestimonialsAdmin();
+      showToast('نظر جدید اضافه شد — فیلدها را پر و ذخیره کنید');
+    }
+    function removeTestimonialAdmin(id){
+      TrendStore.saveTestimonials((TrendStore.testimonials||[]).filter(t=>t.id!==id));
+      renderTestimonialsAdmin();
+      showToast('نظر حذف شد');
+    }
+
     function initAdminUi() {
       bindNavigation();
       renderDiscounts();
@@ -1527,6 +1583,7 @@
       hydrateSocialsAdmin();
       renderFooterSitesEditor();
       renderNewsAdmin();
+      renderTestimonialsAdmin();
     }
 
     checkAuth();

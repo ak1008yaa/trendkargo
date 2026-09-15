@@ -907,3 +907,134 @@ footer {
   background-color: var(--whatsapp); color: white; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
 }
+
+/* ==========================================================================
+   وبلاگ اخبار — فیلتر دسته‌بندی و متادیتای کارت
+   ========================================================================== */
+.news-filters {
+  display: flex; flex-wrap: wrap; gap: 0.55rem; justify-content: center;
+  margin-bottom: 1.8rem;
+}
+.news-filter-chip {
+  background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-muted);
+  padding: 0.45rem 0.95rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: all 0.25s ease; font-family: inherit;
+}
+.news-filter-chip:hover { border-color: var(--cyan-main); color: var(--text-main); }
+.news-filter-chip.active {
+  background: linear-gradient(135deg, rgba(56,189,248,0.22), rgba(56,189,248,0.08));
+  border-color: var(--cyan-main); color: var(--text-main);
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.18);
+}
+.tech-card-meta {
+  display: flex; flex-wrap: wrap; gap: 0.9rem;
+  font-size: 0.74rem; color: var(--text-muted);
+  margin: 0.7rem 0 0.9rem;
+}
+.news-empty {
+  grid-column: 1 / -1; text-align: center; color: var(--text-muted);
+  padding: 2.5rem 0; font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   مودال وبلاگی اخبار — نویسنده، پاراگراف، اشتراک‌گذاری، مقالات مرتبط
+   ========================================================================== */
+.news-modal-author { color: var(--cyan-main); }
+.news-modal-body p {
+  font-size: 0.95rem; line-height: 2.05; color: var(--text-muted);
+  margin-bottom: 1.05rem;
+}
+.news-share-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+  margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--glass-border);
+}
+.share-label { font-size: 0.82rem; color: var(--text-muted); }
+.share-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0.45rem 0.9rem; border-radius: 50px; font-size: 0.78rem; font-weight: 700;
+  border: 1px solid var(--glass-border); background: var(--bg-surface); color: var(--text-main);
+  cursor: pointer; text-decoration: none; font-family: inherit; transition: transform 0.2s ease;
+}
+.share-btn:hover { transform: translateY(-1px); }
+.share-wa { border-color: rgba(37, 211, 102, 0.5); color: #25D366; }
+.share-tg { border-color: rgba(56, 189, 248, 0.5); color: var(--cyan-main); }
+.share-copy { border-color: var(--coral-main); color: var(--coral-main); }
+.news-related-nav {
+  display: grid; grid-template-columns: 1fr; gap: 0.8rem; margin-top: 1.4rem;
+}
+@media(min-width: 640px) { .news-related-nav { grid-template-columns: 1fr 1fr; } }
+.related-btn {
+  text-align: right; background: rgba(0,0,0,0.22); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md); padding: 0.85rem 1rem; cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px; font-family: inherit; transition: border-color 0.25s ease;
+}
+.related-btn:hover { border-color: var(--cyan-main); }
+.related-btn small { color: var(--cyan-main); font-size: 0.72rem; }
+.related-btn strong { color: var(--text-main); font-size: 0.84rem; font-weight: 700; line-height: 1.6; }
+
+/* ==========================================================================
+   کاروسل تجربه واقعی مشتریان
+   ========================================================================== */
+.testimonials-carousel { position: relative; padding: 0 48px; }
+.testimonials-track {
+  display: flex; gap: 20px; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.4rem 0.2rem 1.2rem;
+  scrollbar-width: none;
+}
+.testimonials-track::-webkit-scrollbar { display: none; }
+.testi-card {
+  scroll-snap-align: start; flex: 0 0 auto;
+  width: 320px; max-width: 82vw;
+  background: var(--bg-card); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 1.5rem 1.4rem 1.3rem;
+  display: flex; flex-direction: column; position: relative;
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.35);
+}
+.testi-quote {
+  position: absolute; top: 0.4rem; left: 1rem;
+  font-size: 3.4rem; line-height: 1; color: rgba(56, 189, 248, 0.16); font-family: Georgia, serif;
+}
+.testi-stars { font-size: 0.95rem; letter-spacing: 2px; color: #fbbf24; margin-bottom: 0.7rem; }
+.testi-text { font-size: 0.87rem; line-height: 1.95; color: var(--text-muted); flex-grow: 1; }
+.testi-footer {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);
+}
+.testi-avatar {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, rgba(56,189,248,0.3), rgba(251,146,60,0.25));
+  border: 1px solid var(--glass-border); font-weight: 800; color: var(--text-main); font-size: 1rem;
+}
+.testi-person strong { display: block; font-size: 0.85rem; color: var(--text-main); font-weight: 700; }
+.testi-person small { font-size: 0.72rem; color: var(--text-muted); }
+.testi-verified { color: #34d399; font-size: 0.68rem; font-weight: 600; }
+.testi-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--glass-border); color: var(--text-main);
+  font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s ease; box-shadow: 0 8px 22px rgba(2, 6, 23, 0.4);
+}
+.testi-arrow:hover:not(:disabled) {
+  border-color: var(--cyan-main); color: var(--cyan-main); transform: translateY(-50%) scale(1.06);
+}
+.testi-arrow:disabled, .testi-arrow.is-disabled { opacity: 0.32; cursor: not-allowed; }
+.testi-arrow-prev { right: 0; }
+.testi-arrow-next { left: 0; }
+.testi-dots { display: flex; justify-content: center; align-items: center; gap: 7px; margin-top: 0.4rem; }
+.testi-dot {
+  width: 8px; height: 8px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--glass-border); padding: 0; transition: all 0.25s ease;
+}
+.testi-dot.active { background: var(--cyan-main); width: 22px; border-radius: 50px; }
+@media(max-width: 640px) {
+  .testimonials-carousel { padding: 0 6px; }
+  .testi-arrow { width: 36px; height: 36px; top: auto; bottom: -4px; transform: none; }
+  .testi-arrow:hover:not(:disabled) { transform: none; }
+  .testi-arrow-prev { right: calc(50% + 8px); }
+  .testi-arrow-next { left: calc(50% + 8px); }
+  .testi-dots { margin-top: 3rem; }
+}
