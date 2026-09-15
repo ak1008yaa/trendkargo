@@ -19,7 +19,10 @@ const sources = {
 const allHtmlIds = new Set(Object.values(sources).flatMap((cfg) => [...cfg.html.matchAll(/id\s*=\s*"([^"]+)"/g)].map((x) => x[1])));
 const NATIVE_HANDLERS = new Set(['print', 'stopPropagation', 'preventDefault', 'open', 'location', 'alert', 'history', 'blur', 'focus', 'submit', 'reset']);
 // عناصر اختیاری: در بعضی صفحات وجود ندارند و کد با محافظ (if) مدیریتشان می‌کند
-const OPTIONAL_IDS = new Set(['toast']);
+const OPTIONAL_IDS = new Set([
+  'toast',                     // توست ادمین — در فروشگاه از live-toast استفاده می‌شود
+  'dynamic-structured-data'    // تگ JSON-LD که در زمان اجرا توسط JS ساخته می‌شود
+]);
 
 let failures = 0;
 const fail = (msg) => { failures++; console.log(' ⛔ ' + msg); };

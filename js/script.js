@@ -465,6 +465,7 @@ const TrendBackend = {
       if (typeof hydrateSocialsAdmin === 'function') hydrateSocialsAdmin();
       if (typeof renderFooterSitesEditor === 'function') renderFooterSitesEditor();
       if (typeof renderNewsAdmin === 'function') renderNewsAdmin();
+      if (typeof injectDynamicStructuredData === 'function') injectDynamicStructuredData();
     } finally {
       this.echoGuard = false;
     }
@@ -1198,6 +1199,106 @@ function openNewsModal(newsId) {
   document.body.classList.add('modal-open');
 }
 
+// ==========================================================================
+// داده ساختاریافته پویا (SEO + GEO) — محصولات، اخبار و نظرات مشتریان
+// ==========================================================================
+function injectDynamicStructuredData() {
+  const SITE = 'https://trendkargo.ir/';
+  const graph = [];
+
+  // --- محصولات ---
+  const products = Array.isArray(TrendStore.products) ? TrendStore.products.slice(0, 50) : [];
+  if (products.length) {
+    graph.push({
+      '@type': 'ItemList',
+      '@id': SITE + '#products',
+      name: 'محصولات وایرال پرفروش تمو، شین و آمازون',
+      numberOfItems: products.length,
+      itemListElement: products.map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: {
+          '@type': 'Product',
+          name: p.title,
+          description: p.desc,
+          category: p.catName || p.category,
+          image: [p.mainImg, ...(p.gallery || [])].filter(Boolean).slice(0, 4),
+          offers: {
+            '@type': 'Offer',
+            price: Number(p.rawPrice || 0),
+            priceCurrency: 'IRT',
+            availability: 'https://schema.org/InStock',
+            url: SITE + '#products',
+            seller: { '@type': 'Organization', name: 'ترندز کارگو | Trend Cargo' }
+          }
+        }
+      }))
+    });
+  }
+
+  // --- مقالات وبلاگ ---
+  const news = Array.isArray(techNewsList) ? techNewsList.slice(0, 20) : [];
+  if (news.length) {
+    graph.push({
+      '@type': 'ItemList',
+      '@id': SITE + '#blog',
+      name: 'وبلاگ اخبار تکنولوژی و گجت‌های آینده ۲۰۲۶',
+      numberOfItems: news.length,
+      itemListElement: news.map((n, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        item: {
+          '@type': 'BlogPosting',
+          headline: n.title,
+          description: n.shortDesc,
+          image: n.img,
+          articleSection: n.category,
+          datePublished: n.date,
+          inLanguage: 'fa-IR',
+          author: { '@type': 'Organization', name: n.author || NEWS_AUTHOR_DEFAULT },
+          publisher: { '@type': 'Organization', name: 'ترندز کارگو | Trend Cargo' },
+          mainEntityOfPage: SITE + '#tech-news'
+        }
+      }))
+    });
+  }
+
+  // --- نظرات مشتریان (اعتبار اجتماعی برای موتورهای AI) ---
+  const reviews = getTestimonialsList().slice(0, 20);
+  if (reviews.length) {
+    const avg = reviews.reduce((sum, r) => sum + Math.min(5, Math.max(1, Number(r.rating || 5))), 0) / reviews.length;
+    graph.push({
+      '@type': 'Organization',
+      '@id': SITE + '#organization',
+      name: 'ترندز کارگو | Trend Cargo',
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: Number(avg.toFixed(1)),
+        bestRating: 5,
+        worstRating: 1,
+        reviewCount: reviews.length
+      },
+      review: reviews.slice(0, 10).map((r) => ({
+        '@type': 'Review',
+        author: { '@type': 'Person', name: r.name },
+        reviewBody: r.text,
+        reviewRating: { '@type': 'Rating', ratingValue: Math.min(5, Math.max(1, Number(r.rating || 5))), bestRating: 5, worstRating: 1 }
+      }))
+    });
+  }
+
+  if (!graph.length) return;
+
+  let tag = document.getElementById('dynamic-structured-data');
+  if (!tag) {
+    tag = document.createElement('script');
+    tag.type = 'application/ld+json';
+    tag.id = 'dynamic-structured-data';
+    document.head.appendChild(tag);
+  }
+  tag.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
+}
+
 function copyNewsLink() {
   const url = `${location.origin}${location.pathname}#tech-news`;
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1490,6 +1591,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTechNews();
   renderTestimonials();
   startLiveOrderTicker();
+  injectDynamicStructuredData();
   calculateCargoPrice();
   updateHeaderClock();
 fetchTgjuLiveRates().catch(() => {});
