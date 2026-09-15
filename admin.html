@@ -688,6 +688,13 @@
             </div>
             <div id="orders-table-wrapper"></div>
           </div>
+          <div class="panel" style="margin-top:1rem;">
+            <div class="panel-header">
+              <h4>🔗 استعلام‌های لینک مشتریان (بکند)</h4>
+              <button class="btn btn-site" onclick="renderCustomOrders()">🔄 بروزرسانی از سرور</button>
+            </div>
+            <div id="custom-orders-list" class="discount-list"></div>
+          </div>
         </section>
 
         <section class="admin-section" id="section-discounts">
@@ -1461,10 +1468,56 @@
       showToast('خبر حذف شد');
     }
 
+    // ===== CUSTOM ORDERS (استعلام لینک مشتریان از بکند) =====
+    function getStoredCustomOrders() {
+      try {
+        const list = JSON.parse(localStorage.getItem('trendcargo_orders') || '[]');
+        return Array.isArray(list) ? list : [];
+      } catch { return []; }
+    }
+
+    function saveCustomOrders(list) {
+      localStorage.setItem('trendcargo_orders', JSON.stringify(list.slice(0, 500)));
+      if (typeof TrendBackend !== 'undefined') TrendBackend.push('orders', list.slice(0, 500));
+    }
+
+    function renderCustomOrders() {
+      const host = document.getElementById('custom-orders-list');
+      if (!host) return;
+      const list = getStoredCustomOrders();
+      host.innerHTML = list.map((order) => `
+        <div class="discount-item" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+            <a href="${escapeHTML(order.link)}" target="_blank" rel="noopener" style="flex:1;min-width:200px;word-break:break-all;color:var(--accent-cyan,#22d3ee);">${escapeHTML(order.link)}</a>
+            <span class="chip">${order.status === 'new' ? '🆕 جدید' : '✅ پیگیری شد'}</span>
+            <button class="btn btn-site" onclick="markCustomOrder('${order.id}')">پیگیری شد</button>
+            <button class="btn btn-reset" onclick="removeCustomOrder('${order.id}')">حذف</button>
+          </div>
+          <small style="color:var(--text-muted);margin-top:0.3rem;">${escapeHTML(order.createdAt || '')}${order.note ? ' · ' + escapeHTML(order.note) : ''}</small>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);">هنوز استعلامی ثبت نشده. استعلام‌های فرم سایت به‌صورت خودکار اینجا نمایش داده می‌شوند.</p>';
+    }
+
+    function markCustomOrder(orderId) {
+      const list = getStoredCustomOrders();
+      const item = list.find((order) => order.id === orderId);
+      if (!item) return;
+      item.status = item.status === 'new' ? 'contacted' : 'new';
+      saveCustomOrders(list);
+      renderCustomOrders();
+    }
+
+    function removeCustomOrder(orderId) {
+      const next = getStoredCustomOrders().filter((order) => order.id !== orderId);
+      saveCustomOrders(next);
+      renderCustomOrders();
+    }
+
     function initAdminUi() {
       bindNavigation();
       renderDiscounts();
       renderOrdersTable();
+      renderCustomOrders();
       hydrateRateInputs();
       hydrateSheetUrl();
       syncSheetInputs();

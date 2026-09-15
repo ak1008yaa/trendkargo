@@ -371,6 +371,10 @@ const TrendBackend = {
         this._saveLocal('trendcargo_discounts', data.discounts);
         if (typeof renderDiscounts === 'function') renderDiscounts();
       }
+      if (Array.isArray(data.orders)) {
+        this._saveLocal('trendcargo_orders', data.orders);
+        if (typeof renderCustomOrders === 'function') renderCustomOrders();
+      }
       if (typeof data.terms === 'string' && data.terms.trim()) {
         this._saveLocal(STORAGE_KEYS.termsText, data.terms);
         if (typeof loadTermsEditor === 'function') loadTermsEditor();
@@ -904,6 +908,20 @@ function submitCustomLink() {
     alert('لطفاً ابتدا لینک محصول خارجی را وارد کنید.');
     return;
   }
+
+  // ثبت درخواست در بکند (اگر در دسترس بود) — جریان واتساپ متوقف نمی‌شود
+  try {
+    fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ link: val })
+    })
+      .then((response) => {
+        if (response.ok) console.info('✅ استعلام شما در سامانه ثبت شد.');
+      })
+      .catch(() => {});
+  } catch (error) { /* در حالت آفلاین فقط واتساپ باز می‌شود */ }
+
   const msg = encodeURIComponent(`سلام ترندز کارگو، لطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}`);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 }
