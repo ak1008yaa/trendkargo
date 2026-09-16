@@ -1420,7 +1420,11 @@ footer {
   transition: transform var(--transition);
 }
 .product-modal-dialog { max-width: 900px; }
-.news-modal-dialog { max-width: 750px; padding: 0; overflow: hidden; }
+.news-modal-dialog { max-width: 750px; padding: 0; overflow-y: auto; }
+
+/* دکمه «نمایش اخبار بیشتر» — زیر گرید اخبار */
+.news-more-wrap { display: flex; justify-content: center; margin-top: 2rem; }
+.news-more-wrap[hidden] { display: none; }
 .install-box { max-width: 480px; text-align: center; }
 .testimonial-modal-dialog { max-width: 500px; }
 

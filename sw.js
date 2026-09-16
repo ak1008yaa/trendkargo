@@ -1,9 +1,9 @@
 /**
- * TREND CARGO — SERVICE WORKER v5.1
+ * TREND CARGO — SERVICE WORKER v5.1.1
  * Network-first for HTML, cache-first for assets (all imagery served locally)
  */
 
-const CACHE_VERSION = 'trendcargo-v5.1.0';
+const CACHE_VERSION = 'trendcargo-v5.1.1';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 

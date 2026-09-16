@@ -364,17 +364,24 @@ const techNewsList = [
 /** Admin-created news (localStorage) is normalized into the same shape as the built-ins. */
 function normalizeNewsItem(item, index) {
   const desc = String(item.desc || item.shortDesc || '');
+  const fullBody = String(item.fullBody || desc);
+  const category = item.category || item.tag || 'اخبار ترندز کارگو';
+  const badge = item.badge || item.tag || 'خبر تازه';
+  const img = item.img || item.image || item.mainImg || FALLBACK_IMG;
+  const specs = Array.isArray(item.specs)
+    ? item.specs
+    : (item.specs ? [String(item.specs)] : []);
   return {
     id: item.id != null ? item.id : `custom-${index}`,
-    category: item.category || 'اخبار ترندز کارگو',
+    category,
     title: item.title || 'خبر بدون عنوان',
     date: item.date || new Date().toLocaleDateString('fa-IR'),
-    readTime: item.readTime || '',
-    img: item.img || item.image || item.mainImg || FALLBACK_IMG,
-    badge: item.badge || 'خبر تازه',
+    readTime: item.readTime || 'زمان مطالعه: ۳ دقیقه',
+    img,
+    badge,
     shortDesc: desc,
-    fullBody: item.fullBody || desc,
-    specs: Array.isArray(item.specs) ? item.specs : []
+    fullBody,
+    specs
   };
 }
 
@@ -881,11 +888,20 @@ function renderSpecialOffer() {
 /*  TECH NEWS                                                                 */
 /* -------------------------------------------------------------------------- */
 
+/** تعداد پیش‌فرض خبرهای نمایشی؛ بقیه با دکمه «نمایش اخبار بیشتر» باز می‌شوند. */
+const NEWS_DEFAULT_LIMIT = 3;
+let newsExpanded = false;
+
 function renderTechNews() {
   const container = document.getElementById('tech-news-container');
   if (!container) return;
 
-  container.innerHTML = getTechNews().map((n) => {
+  const all = getTechNews();
+  const visible = (!newsExpanded && NEWS_DEFAULT_LIMIT > 0 && all.length > NEWS_DEFAULT_LIMIT)
+    ? all.slice(0, NEWS_DEFAULT_LIMIT)
+    : all;
+
+  container.innerHTML = visible.map((n) => {
     const shareUrl = shareLinkFor('news', n.id);
     const shareTitle = n.title;
     return `
@@ -934,6 +950,25 @@ function renderTechNews() {
 
   wireShareButtons(container);
   observeReveals();
+  updateNewsMoreButton(all.length, visible.length);
+}
+
+function updateNewsMoreButton(total, shown) {
+  const wrap = document.getElementById('news-more-wrap');
+  const btn = document.getElementById('news-show-more');
+  if (!wrap || !btn) return;
+
+  if (newsExpanded || total <= shown || total <= NEWS_DEFAULT_LIMIT) {
+    wrap.hidden = true;
+    return;
+  }
+  const rest = total - shown;
+  btn.innerHTML = `<span>نمایش اخبار بیشتر (${toFaDigits(String(rest))} خبر دیگر)</span>`;
+  btn.onclick = () => {
+    newsExpanded = true;
+    renderTechNews();
+  };
+  wrap.hidden = false;
 }
 
 function openNewsModal(newsId) {

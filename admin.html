@@ -1494,6 +1494,14 @@
       localStorage.setItem('trendcargo_custom_news', JSON.stringify(list));
     }
 
+    function newsItemId(card, fallback) {
+      const idEl = card.querySelector('.news-id');
+      const raw = idEl && idEl.dataset ? idEl.dataset.id : '';
+      const num = Number(raw);
+      if (raw !== '' && Number.isFinite(num)) return num;
+      return fallback;
+    }
+
     function renderNewsAdmin() {
       const host = document.getElementById('news-list');
       if (!host) return;
@@ -1505,10 +1513,10 @@
       host.innerHTML = news.map((item, i) => `
         <div class="news-admin-card">
           <div class="news-admin-header">
-            <span class="news-id">#${item.id || (i + 1)}</span>
+            <span class="news-id" data-id="${escapeHTML(String(item.id != null ? item.id : (i + 1)))}">#${escapeHTML(String(item.id != null ? item.id : (i + 1)))}</span>
             <div class="news-admin-actions">
-              <button class="btn-approve" onclick="editNews(${item.id})">✏️ ویرایش</button>
-              <button class="btn-reject" onclick="deleteNews(${item.id})">🗑 حذف</button>
+              <button class="btn-approve" onclick="editNews(${JSON.stringify(item.id)})">✏️ ویرایش</button>
+              <button class="btn-reject" onclick="deleteNews(${JSON.stringify(item.id)})">🗑 حذف</button>
             </div>
           </div>
           <div class="news-admin-body">
@@ -1517,16 +1525,24 @@
               <input type="text" class="form-control news-title" value="${escapeHTML(item.title || '')}" placeholder="تیتر خبر">
             </div>
             <div class="form-group">
-              <label>توضیحات:</label>
-              <textarea class="form-control news-desc" rows="2" placeholder="توضیحات خبر">${escapeHTML(item.desc || '')}</textarea>
+              <label>توضیحات کوتاه:</label>
+              <textarea class="form-control news-desc" rows="2" placeholder="توضیحات کوتاه خبر">${escapeHTML(item.desc || item.shortDesc || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label>متن کامل خبر:</label>
+              <textarea class="form-control news-fullbody" rows="4" placeholder="متن کامل گزارش">${escapeHTML(item.fullBody || item.desc || item.shortDesc || '')}</textarea>
             </div>
             <div class="form-group">
               <label>لینک تصویر:</label>
-              <input type="text" class="form-control news-img" value="${escapeHTML(item.image || item.mainImg || '')}" placeholder="لینک تصویر خبر">
+              <input type="text" class="form-control news-img" value="${escapeHTML(item.img || item.image || item.mainImg || '')}" placeholder="لینک تصویر خبر">
             </div>
             <div class="form-group">
               <label>تگ/دسته‌بندی:</label>
-              <input type="text" class="form-control news-tag" value="${escapeHTML(item.tag || '')}" placeholder="مثلاً: تکنولوژی، فشن">
+              <input type="text" class="form-control news-tag" value="${escapeHTML(item.category || item.tag || '')}" placeholder="مثلاً: تکنولوژی، فشن">
+            </div>
+            <div class="form-group">
+              <label>زمان مطالعه:</label>
+              <input type="text" class="form-control news-readtime" value="${escapeHTML(item.readTime || '')}" placeholder="مثلاً: زمان مطالعه: ۳ دقیقه">
             </div>
           </div>
         </div>
@@ -1539,25 +1555,49 @@
       list.unshift({
         id: newId,
         title: 'خبر جدید',
-        desc: 'توضیحات خبر را اینجا بنویسید',
+        category: 'اخبار',
+        badge: 'اخبار',
+        shortDesc: 'توضیحات کوتاه خبر را اینجا بنویسید',
+        fullBody: 'متن کامل خبر را اینجا بنویسید',
+        desc: 'توضیحات کوتاه خبر را اینجا بنویسید',
+        img: 'assets/img/products/photo-1518770660439-4636190af475-w600.jpg',
         image: 'assets/img/products/photo-1518770660439-4636190af475-w600.jpg',
-        tag: 'اخبار'
+        tag: 'اخبار',
+        date: new Date().toLocaleDateString('fa-IR'),
+        readTime: 'زمان مطالعه: ۳ دقیقه',
+        specs: []
       });
       saveNewsList(list);
       renderNewsAdmin();
     }
 
     function saveNews() {
-      const cards = document.querySelectorAll('.news-admin-card');
+      const cards = document.querySelectorAll('#news-list .news-admin-card');
+      const oldList = getNews();
       const list = [];
-      cards.forEach(card => {
-        const id = parseInt(card.querySelector('.news-id').textContent.replace('#', '')) || Date.now();
+      cards.forEach((card, i) => {
+        const old = oldList[i] || {};
+        const id = newsItemId(card, old.id != null ? old.id : Date.now());
+        const title = card.querySelector('.news-title').value;
+        const desc = card.querySelector('.news-desc').value;
+        const fullBody = card.querySelector('.news-fullbody').value || desc;
+        const img = card.querySelector('.news-img').value;
+        const tag = card.querySelector('.news-tag').value;
+        const readTime = card.querySelector('.news-readtime').value;
         list.push({
           id: id,
-          title: card.querySelector('.news-title').value,
-          desc: card.querySelector('.news-desc').value,
-          image: card.querySelector('.news-img').value,
-          tag: card.querySelector('.news-tag').value
+          title: title,
+          category: tag,
+          badge: tag,
+          shortDesc: desc,
+          fullBody: fullBody,
+          desc: desc,
+          img: img,
+          image: img,
+          tag: tag,
+          date: old.date || new Date().toLocaleDateString('fa-IR'),
+          readTime: readTime,
+          specs: Array.isArray(old.specs) ? old.specs : []
         });
       });
       saveNewsList(list);
@@ -1575,7 +1615,7 @@
 
     function deleteNews(id) {
       let list = getNews();
-      list = list.filter(item => item.id !== id);
+      list = list.filter(item => String(item.id) !== String(id));
       saveNewsList(list);
       renderNewsAdmin();
     }
