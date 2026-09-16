@@ -3,7 +3,7 @@
  * Cache Offline & Push Notifications Handler
  */
 
-const CACHE_NAME = 'trendcargo-v3.5';
+const CACHE_NAME = 'trendcargo-v3.6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

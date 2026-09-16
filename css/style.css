@@ -1038,3 +1038,91 @@ footer {
   .testi-arrow-next { left: calc(50% + 8px); }
   .testi-dots { margin-top: 3rem; }
 }
+
+/* --------------------------------------------------------------------------
+   19. پس‌زمینه نوری متحرک (Aurora Lights) + ورود تدریجی سکشن‌ها
+   لایه fixed با ۳ هاله رنگی شناور + شبکه محو — سبک و فقط با transform/opacity
+   -------------------------------------------------------------------------- */
+.bg-aurora {
+  position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+}
+.aurora-orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(110px); will-change: transform, opacity;
+}
+.aurora-orb-cyan {
+  width: 560px; height: 560px; top: -12%; right: -8%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, transparent 65%);
+  animation: auroraDrift1 26s ease-in-out infinite alternate;
+}
+.aurora-orb-coral {
+  width: 620px; height: 620px; bottom: -16%; left: -10%;
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.16) 0%, transparent 65%);
+  animation: auroraDrift2 34s ease-in-out infinite alternate;
+}
+.aurora-orb-violet {
+  width: 480px; height: 480px; top: 38%; left: 42%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.13) 0%, transparent 65%);
+  animation: auroraDrift3 42s ease-in-out infinite alternate-reverse;
+}
+.bg-grid-overlay {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 85% 65% at 50% 18%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 18%, #000 0%, transparent 78%);
+}
+
+@keyframes auroraDrift1 {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+  50% { transform: translate(-120px, 90px) scale(1.15); opacity: 0.7; }
+  100% { transform: translate(60px, 160px) scale(0.92); opacity: 1; }
+}
+@keyframes auroraDrift2 {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.85; }
+  50% { transform: translate(140px, -110px) scale(1.12); opacity: 0.65; }
+  100% { transform: translate(-70px, -170px) scale(0.95); opacity: 1; }
+}
+@keyframes auroraDrift3 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-90px, -80px) scale(1.2); }
+  100% { transform: translate(110px, 60px) scale(0.9); }
+}
+
+/* تم روشن — افکت‌ها ملایم‌تر */
+[data-theme="light"] .aurora-orb-cyan { background: radial-gradient(circle, rgba(2, 132, 199, 0.16) 0%, transparent 65%); }
+[data-theme="light"] .aurora-orb-coral { background: radial-gradient(circle, rgba(234, 88, 12, 0.12) 0%, transparent 65%); }
+[data-theme="light"] .aurora-orb-violet { background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 65%); }
+[data-theme="light"] .bg-grid-overlay { opacity: 0.6; }
+
+/* حرکت شناور گلوهای هیرو */
+.hero-glow-1 { animation: heroFloat1 18s ease-in-out infinite alternate; }
+.hero-glow-2 { animation: heroFloat2 22s ease-in-out infinite alternate; }
+@keyframes heroFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-60px, 50px) scale(1.12); }
+}
+@keyframes heroFloat2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(70px, -45px) scale(1.08); }
+}
+
+/* ورود تدریجی سکشن‌ها هنگام اسکرول (با JS کلاس reveal افزوده می‌شود — بدون JS مخفی نیست) */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+.reveal.reveal-visible { opacity: 1; transform: none; }
+
+/* درخشش هاور روی کارت‌های محصول و خبر */
+.product-card, .tech-card, .testi-card { transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base); }
+.product-card:hover, .tech-card:hover, .testi-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--cyan-glow);
+  box-shadow: var(--shadow-lg), 0 0 32px rgba(56, 189, 248, 0.12);
+}
+
+/* دسترس‌پذیری — کاربران حساس به حرکت */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-orb, .hero-glow-1, .hero-glow-2 { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}

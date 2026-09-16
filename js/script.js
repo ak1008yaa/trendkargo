@@ -1581,6 +1581,31 @@ function enablePushNotifications() {
 }
 
 // ==========================================================================
+// ورود تدریجی سکشن‌ها هنگام اسکرول (Scroll Reveal)
+// کلاس reveal فقط با JS افزوده می‌شود — اگر JS خراب باشد هیچ محتوایی پنهان نمی‌ماند
+// ==========================================================================
+function initScrollReveal() {
+  try {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('main section, section.container, footer').forEach((el) => {
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  } catch (error) {
+    console.warn('Scroll reveal unavailable:', error);
+  }
+}
+
+// ==========================================================================
 // لود اولیه و اتصالات رویدادها
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -1592,6 +1617,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTestimonials();
   startLiveOrderTicker();
   injectDynamicStructuredData();
+  initScrollReveal();
   calculateCargoPrice();
   updateHeaderClock();
 fetchTgjuLiveRates().catch(() => {});
