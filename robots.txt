@@ -1,7 +1,7 @@
-
 User-agent: *
 Allow: /
 Disallow: /assets/private/
+Disallow: /.backup/
 
 # AI Crawlers for GEO Search
 User-agent: GPTBot
@@ -19,4 +19,4 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://www.trendkargo.ir/sitemap.xml
+Sitemap: https://trendkargo.ir/sitemap.xml

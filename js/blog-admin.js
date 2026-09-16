@@ -39,7 +39,7 @@ function renderBlogAdmin() {
 }
 function addBlogRow() {
   var list = getBlogAdmin();
-  list.push({ id: Date.now(), slug: "post-" + Date.now(), category: "عمومی", title: "مقاله جدید", readTime: "3 دقیقه", date: "1405/06/22", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80", excerpt: "خلاصه مقاله", body: ["متن مقاله"] });
+  list.push({ id: Date.now(), slug: "post-" + Date.now(), category: "عمومی", title: "مقاله جدید", readTime: "3 دقیقه", date: "1405/06/22", img: "assets/img/blog/photo-1518770660439-4636190af475-w800.jpg", excerpt: "خلاصه مقاله", body: ["متن مقاله"] });
   localStorage.setItem("trendcargo_blog_posts", JSON.stringify(list));
   renderBlogAdmin();
 }
