@@ -1222,6 +1222,67 @@ img { display: block; max-width: 100%; height: auto; }
   transition: border-color var(--transition-fast);
 }
 .link-input:focus { border-color: var(--cyan); box-shadow: 0 0 25px rgba(56,189,248,0.2); }
+.link-input-sm { flex: 1; text-align: center; font-size: 0.92rem; padding: 0.8rem 1.2rem; }
+.link-contact-row {
+  display: flex; gap: 10px;
+  max-width: 680px; margin: 12px auto 0;
+  flex-direction: column;
+}
+@media (min-width: 600px) { .link-contact-row { flex-direction: row; } }
+.link-privacy-note { color: var(--text-muted); font-size: 0.82rem; margin-top: 12px; }
+
+/* فرمول شفاف محاسبه قیمت */
+.price-formula-box {
+  max-width: 680px;
+  margin: 0 auto 1.8rem;
+  padding: 1.4rem 1.6rem;
+  background: var(--input-bg);
+  border: 1px dashed var(--cyan);
+  border-radius: var(--radius-md);
+  text-align: right;
+}
+[data-theme="light"] .price-formula-box {
+  background: rgba(255, 255, 255, 0.85);
+}
+.price-formula-box h4 {
+  font-size: 1.05rem; font-weight: 800;
+  color: var(--cyan);
+  margin-bottom: 0.4rem;
+}
+.price-formula-box .formula-hint {
+  font-size: 0.9rem; color: var(--text-muted);
+  margin-bottom: 0.9rem;
+}
+.price-formula-box .formula-steps {
+  list-style: none; counter-reset: formula;
+  padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 0.55rem;
+}
+.price-formula-box .formula-steps li {
+  counter-increment: formula;
+  position: relative;
+  padding-right: 2.1rem;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-main);
+}
+.price-formula-box .formula-steps li::before {
+  content: counter(formula, persian);
+  position: absolute; right: 0; top: 0.15rem;
+  width: 1.5rem; height: 1.5rem;
+  background: var(--cyan);
+  color: #04121f;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 800;
+}
+.price-formula-box .formula-note {
+  margin-top: 0.9rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--glass-border);
+  padding-top: 0.8rem;
+}
 
 /* --------------------------------------------------------------------------
    15. TERMS / ACCORDION

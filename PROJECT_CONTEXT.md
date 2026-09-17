@@ -109,3 +109,12 @@ npm start            # http://localhost:3000 — هم سایت و هم API
 - `backend/server.js` + هر ۷ route: `DATA_DIR` از `process.env.DATA_DIR`؛ seed خودکار فایل‌ها روی دیسک تازه در اولین بوت.
 - `backend/Procfile` (`web: node server.js`)، `backend/.env.example` (+`DATA_DIR`)، `docs/DEPLOY.md` (+بخش Render Disk و اتصال دامنه شخصی با DNS).
 - اعتبارسنجی: تست بالا (seed + store) پاس شد.
+
+### بازنویسی ادمین + فرمول شفاف قیمت (بدون دلار)
+- `admin.html`: حذف کامل نمایش دلار (متریک «قیمت دلار»→«استعلام‌های جدید»، فاکتور فقط تومانی بدون دراپ‌داون ارز، تنظیمات: «نرخ تبدیل ارز (تومان)» + «حمل اولین/هر کیلو اضافه»)؛ گوش‌دهندهٔ SSE ادمین (`subscribeAdminSync`) برای سینک دوطرفهٔ لحظه‌ای؛ بخش جدید «استعلام‌های مشتریان» با تغییر وضعیت (`new/contacted/invoiced/closed`)
+- `backend/routes/orders.js` (جدید): `POST /api/order` عمومی + `GET /api/orders` + `POST /api/orders/status` با اعلان SSE؛ seed `orders.json` اضافه شد
+- `index.html` + `css/style.css`: جعبهٔ «فرمول شفاف قیمت» در بخش ثبت لینک خرید (ارزش محصول + ۲۵٪ + ۱۲٪ + ۲.۵م بررسی + حمل ۳.۵م/۲.۸م هر کیلو — گرد به ۱۰ هزار) + فیلدهای اختیاری نام/تلفن مشتری
+- `js/script.js`: `submitCustomLink` حالا استعلام را به `/api/order` ثبت می‌کند (بدون توقف جریان واتساپ) و شماره تماس را در پیام می‌گنجاند
+- `invoice.html`: نمایش فقط تومانی (حذف USD/نرخ)
+- `sw.js`: کش `trendcargo-v5.3.0`
+- اعتبارسنجی: `node --check` همهٔ فایل‌ها + اسکریپت داخلی ادمین؛ تست واقعی سرور: POST/GET order و تغییر وضعیت همه پاس شدند؛ کلیدهای داخلی `baseRates.usd` برای سازگاری داده حفظ شدند (فقط نمایش دلار حذف شد)

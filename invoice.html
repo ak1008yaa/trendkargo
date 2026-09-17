@@ -170,15 +170,15 @@
           <td>${esc(invoice.product || 'پکیج اقلام سفارش‌گذاری شده')}</td>
           <td>۱ بسته</td>
           <td>استاندارد</td>
-          <td>${faNum(invoice.amount)} ${esc(String(invoice.currency || 'USD').toUpperCase())}</td>`;
+          <td>${faNum(invoice.amount)} تومان</td>`;
       }
 
       const summary = document.querySelector('.inv-summary');
       if (summary) {
         summary.innerHTML = `
           <div class="inv-sum-row">
-            <span>قیمت پایه کالا در مبدأ:</span>
-            <span>${faNum(invoice.amount)} ${esc(String(invoice.currency || 'USD').toUpperCase())} (نرخ: ${faNum(invoice.rate)} تومان)</span>
+            <span>مبلغ کالا و خدمات (تومان):</span>
+            <span>${faNum(invoice.amount)} تومان</span>
           </div>
           <div class="inv-sum-row">
             <span>کارمزد خدمات، تست فیزیکی در ایروان و بسته‌بندی پلمپ:</span>

@@ -28,14 +28,13 @@ function writeData(filename, data) {
   }
 }
 
+// GET /api/news
 router.get('/', (req, res) => {
   const news = readData('news.json');
-  if (news) {
-    return res.json({ success: true, data: news });
-  }
-  return res.json({ success: true, data: [] });
+  return res.json({ success: true, data: news || [] });
 });
 
+// POST /api/news
 router.post('/', (req, res) => {
   try {
     const { news } = req.body;
@@ -54,3 +53,4 @@ router.post('/', (req, res) => {
 });
 
 module.exports = router;
+

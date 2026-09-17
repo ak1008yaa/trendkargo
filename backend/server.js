@@ -19,7 +19,7 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 const SEED_DIR = path.join(__dirname, 'data');
-const SEED_FILES = ['products.json', 'news.json', 'rates.json', 'special-offer.json', 'testimonials.json', 'discounts.json'];
+const SEED_FILES = ['products.json', 'news.json', 'rates.json', 'special-offer.json', 'testimonials.json', 'discounts.json', 'orders.json'];
 for (const file of SEED_FILES) {
   try {
     const target = path.join(DATA_DIR, file);
@@ -101,6 +101,7 @@ const ratesRoutes = require('./routes/rates');
 const newsRoutes = require('./routes/news');
 const offerRoutes = require('./routes/special-offer');
 const testimonialsRoutes = require('./routes/testimonials');
+const ordersRoutes = require('./routes/orders');
 const { router: storeRoutes, broadcastStoreUpdate } = require('./routes/store');
 
 // اعلان لحظه‌ای به کلاینت‌ها (SSE) برای همهٔ routeها در دسترس است
@@ -123,6 +124,7 @@ app.use('/api/rates', ratesRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/special-offer', offerRoutes);
 app.use('/api/testimonials', testimonialsRoutes);
+app.use('/api', ordersRoutes);
 app.use('/api', storeRoutes);
 
 // ============================================

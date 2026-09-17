@@ -1504,8 +1504,22 @@ function submitCustomLink() {
     input.focus();
     return;
   }
+  const userName = document.getElementById('user-name')?.value.trim() || '';
+  const userPhone = document.getElementById('user-phone')?.value.trim() || '';
+
+  // ثبت استعلام در بک‌اند (در صورت در دسترس بودن) — جریان واتساپ متوقف نمی‌شود
+  try {
+    fetch('api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ link: val, name: userName, phone: userPhone })
+    }).catch(() => {});
+  } catch (e) { /* بدون سرور هم ادامه می‌دهیم */ }
+
   const msg = encodeURIComponent(
-    `سلام ترندز کارگو 👋\nلطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}`
+    `سلام ترندز کارگو 👋\nلطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}` +
+    (userPhone ? `\nشماره تماس من: ${userPhone}` : '') +
+    `\n\n(فرمول شفاف قیمت سایت را دیدم — لطفاً فاکتور بر اساس همان فرمول صادر شود)`
   );
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener');
 }

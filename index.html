@@ -477,7 +477,21 @@
       <div class="section-badge section-badge-coral">استعلام آنی هر نوع لینک</div>
       <h3>ثبت سفارش از طریق لینک مستقیم تمو، شین، آمازون و...</h3>
       <p>کافیست لینک هر کالایی را در کادر زیر وارد کنید تا فاکتور رسمی قیمت تمام‌شده در واتساپ برای شما صادر شود.</p>
-      
+
+      <!-- فرمول شفاف محاسبه قیمت -->
+      <div class="price-formula-box" id="price-formula-box" role="note" aria-label="فرمول شفاف محاسبه قیمت">
+        <h4>💡 فرمول شفاف قیمت — بدون هزینه پنهان</h4>
+        <p class="formula-hint">قیمت نهایی هر سفارش دقیقاً با این فرمول محاسبه می‌شود:</p>
+        <ol class="formula-steps">
+          <li><strong>ارزش محصول</strong> — طبق قیمت سایت مبدأ، به تومان محاسبه می‌شود</li>
+          <li><strong>+ ۲۵٪</strong> — سود و خدمات ترندز کارگو</li>
+          <li><strong>+ ۱۲٪ ارزش محصول + ۲٬۵۰۰٬۰۰۰ تومان</strong> — خرید، انجام کار و بررسی در دفتر ایروان</li>
+          <li><strong>+ هزینه حمل</strong> — ۳٬۵۰۰٬۰۰۰ تومان برای اولین کیلوگرم + ۲٬۸۰۰٬۰۰۰ تومان برای هر کیلوگرم اضافه</li>
+          <li><strong>قیمت نهایی</strong> — گِردشده به ۱۰ هزار تومان، بدون هیچ هزینه پنهانی</li>
+        </ol>
+        <p class="formula-note">مثال: کالای سنگین ۲ کیلویی → فقط یک بار هزینه حمل اولین کیلو + یک کیلو اضافه محاسبه می‌شود.</p>
+      </div>
+
       <div class="link-input-group">
         <input type="url" id="user-product-link" class="link-input" placeholder="لینک محصول خارجی را اینجا Paste کنید..." />
         <button class="btn-submit-link" id="btn-submit-link" onclick="submitCustomLink()">
@@ -485,6 +499,11 @@
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
       </div>
+      <div class="link-contact-row">
+        <input type="text" id="user-name" class="link-input link-input-sm" placeholder="نام شما (اختیاری)" />
+        <input type="tel" id="user-phone" class="link-input link-input-sm" placeholder="شماره تماس (اختیاری)" />
+      </div>
+      <p class="link-privacy-note">🔒 اطلاعات تماس شما فقط برای ارسال فاکتور استفاده می‌شود.</p>
     </div>
   </section>
 

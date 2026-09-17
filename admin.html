@@ -562,11 +562,11 @@
 
             <div class="metric-card">
               <div class="top">
-                <span class="label">قیمت دلار</span>
+                <span class="label">استعلام‌های جدید</span>
                 <span class="trend neutral" id="metric-rate-tag">LIVE</span>
               </div>
               <div class="value" id="metric-rate">۰</div>
-              <div class="sub">تومان</div>
+              <div class="sub">در انتظار پیگیری</div>
             </div>
           </section>
 
@@ -595,23 +595,11 @@
                 <input type="text" id="invoice-product" class="form-control" placeholder="محصول یا سفارش" />
               </div>
               <div class="form-group">
-                <label>ارز</label>
-                <select id="invoice-currency" class="form-control">
-                  <option value="usd">USD</option>
-                  <option value="amd">AMD</option>
-                  <option value="try">TRY</option>
-                </select>
+                <label>مبلغ (تومان)</label>
+                <input type="number" id="invoice-amount" class="form-control" value="1200000" />
               </div>
               <div class="form-group">
-                <label>مبلغ ارزی</label>
-                <input type="number" id="invoice-amount" class="form-control" value="1200" />
-              </div>
-              <div class="form-group">
-                <label>نرخ لحظه‌ای</label>
-                <input type="number" id="invoice-rate" class="form-control" value="188000" />
-              </div>
-              <div class="form-group">
-                <label>هزینه ارسال</label>
+                <label>هزینه ارسال (تومان)</label>
                 <input type="number" id="invoice-shipping" class="form-control" value="2500000" />
               </div>
               <div class="form-group">
@@ -654,8 +642,15 @@
         <section class="admin-section" id="section-orders">
           <div class="panel">
             <div class="panel-header">
-              <h3>مدیریت سفارش‌ها</h3>
+              <h3>استعلام‌های مشتریان</h3>
               <span class="chip">Live</span>
+            </div>
+            <div id="customer-orders-wrapper"></div>
+          </div>
+          <div class="panel" style="margin-top: 1rem;">
+            <div class="panel-header">
+              <h3>فاکتورها و سفارش‌های ثبت‌شده</h3>
+              <span class="chip">Local</span>
             </div>
             <div id="orders-table-wrapper"></div>
           </div>
@@ -682,7 +677,7 @@
 
             <div class="settings-grid">
               <div class="form-group">
-                <label>دلار آمریکا (USD)</label>
+                <label>نرخ تبدیل ارز (تومان)</label>
                 <input type="number" id="rate-usd" class="form-control" value="188000" />
               </div>
               <div class="form-group">
@@ -698,14 +693,17 @@
                 <input type="number" id="rate-spread" step="0.01" class="form-control" value="1.06" />
               </div>
               <div class="form-group">
-                <label>هزینه ارسال به دلار</label>
-                <input type="number" id="rate-shipping-usd" class="form-control" value="12" />
+                <label>هزینه حمل — اولین کیلوگرم (تومان)</label>
+                <input type="number" id="rate-shipping-first" class="form-control" value="3500000" />
               </div>
               <div class="form-group">
-                <label>هزینه ارسال به تومان</label>
-                <input type="number" id="rate-shipping-toman" class="form-control" value="188000" />
+                <label>هزینه حمل — هر کیلوگرم اضافه (تومان)</label>
+                <input type="number" id="rate-shipping-extra" class="form-control" value="2800000" />
               </div>
             </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.6rem;">
+              📐 این نرخ‌ها در فرمول شفاف قیمت بخش «ثبت لینک خرید» سایت استفاده می‌شوند.
+            </p>
 
             <div class="form-group" style="margin-top: 1rem;">
               <label>لینک Web App گوگل شیت</label>
@@ -821,15 +819,13 @@
         customer: entry?.customer || 'مشتری',
         phone: entry?.phone || '-',
         product: entry?.product || 'محصول',
-        currency: entry?.currency || 'usd',
         amount: Number(entry?.amount || 0),
-        rate: Number(entry?.rate || 0),
         shipping: Number(entry?.shipping || 0),
         total: Number(entry?.total || 0),
         status: entry?.status || 'pending',
         createdAt: entry?.createdAt || new Date().toISOString()
       };
-      normalized.total = Math.round((normalized.amount * normalized.rate) + normalized.shipping);
+      normalized.total = Math.round(normalized.amount + normalized.shipping);
 
       const list = (() => {
         try {
@@ -1126,14 +1122,12 @@
         customer: document.getElementById('invoice-customer').value || 'مشتری',
         phone: document.getElementById('invoice-phone').value || '-',
         product: document.getElementById('invoice-product').value || 'محصول',
-        currency: document.getElementById('invoice-currency').value || 'usd',
         amount: Number(document.getElementById('invoice-amount').value || 0),
-        rate: Number(document.getElementById('invoice-rate').value || 0),
         shipping: Number(document.getElementById('invoice-shipping').value || 0),
         status: document.getElementById('invoice-status').value || 'pending'
       };
 
-      invoice.total = Math.round((invoice.amount * invoice.rate) + invoice.shipping);
+      invoice.total = Math.round(invoice.amount + invoice.shipping);
       const saved = saveAccountingInvoice(invoice);
       localStorage.setItem('trendcargo_last_invoice', JSON.stringify(saved));
 
@@ -1320,7 +1314,7 @@
       const totalOrders = invoices.length;
       const totalRevenue = invoices.reduce((sum, item) => sum + Number(item.total || 0), 0);
       const productCount = TrendStore.products.length || 0;
-      const usdRate = Number(TrendStore.rates.baseRates?.usd || 188000);
+      const newQuotes = (adminOrdersCache || []).filter((o) => o.status === 'new').length;
 
       const ordersElement = document.getElementById('metric-orders');
       const incomeElement = document.getElementById('metric-income');
@@ -1330,33 +1324,26 @@
       if (ordersElement) ordersElement.textContent = formatCurrency(totalOrders);
       if (incomeElement) incomeElement.textContent = formatCurrency(totalRevenue);
       if (productsElement) productsElement.textContent = formatCurrency(productCount);
-      if (rateElement) rateElement.textContent = formatCurrency(usdRate);
+      if (rateElement) rateElement.textContent = formatCurrency(newQuotes);
     }
 
     function hydrateRateInputs() {
-      const usd = Number(TrendStore.rates.baseRates?.usd || 188000);
-      const amd = Number(TrendStore.rates.baseRates?.amd || 170);
-      const tryRate = Number(TrendStore.rates.baseRates?.try || 5800);
-      const spread = Number(TrendStore.rates.exchangeSpreadMultiplier || 1.06);
-      const shippingUsd = Number(TrendStore.rates.usdShippingRate ? TrendStore.rates.usdShippingRate / 188000 * 12 : 12);
-      const shippingToman = Number(TrendStore.rates.usdShippingRate || 188000);
-
+      const rates = TrendStore.rates || {};
+      const base = rates.baseRates || {};
+      const shipping = rates.shipping || {};
       const fields = {
-        'rate-usd': usd,
-        'rate-amd': amd,
-        'rate-try': tryRate,
-        'rate-spread': spread,
-        'rate-shipping-usd': shippingUsd,
-        'rate-shipping-toman': shippingToman
+        'rate-usd': Number(base.usd || 188000),
+        'rate-amd': Number(base.amd || 170),
+        'rate-try': Number(base.try || 5800),
+        'rate-spread': Number(rates.exchangeSpreadMultiplier || 1.06),
+        'rate-shipping-first': Number(shipping.firstKgToman || 3500000),
+        'rate-shipping-extra': Number(shipping.extraKgToman || 2800000)
       };
 
       Object.entries(fields).forEach(([id, value]) => {
         const el = document.getElementById(id);
         if (el) el.value = value;
       });
-
-      const invoiceRate = document.getElementById('invoice-rate');
-      if (invoiceRate) invoiceRate.value = usd;
     }
 
     function saveManualRates() {
@@ -1367,14 +1354,16 @@
           try: Number(document.getElementById('rate-try').value || 5800)
         },
         exchangeSpreadMultiplier: Number(document.getElementById('rate-spread').value || 1.06),
-        usdShippingRate: Number(document.getElementById('rate-shipping-toman').value || 188000)
+        shipping: {
+          firstKgToman: Number(document.getElementById('rate-shipping-first').value || 3500000),
+          extraKgToman: Number(document.getElementById('rate-shipping-extra').value || 2800000)
+        }
       };
 
       TrendStore.saveRates(nextRates);
       hydrateRateInputs();
       updateDashboardMetrics();
       const t = document.getElementById('toast');
-      t.textContent = '✅ نرخ ارز‌ها به‌روزرسانی شد';
       syncRemoteData('/api/rates', { rates: nextRates }).then((remote) => {
         if (t) t.textContent = remote
           ? '✅ نرخ‌ها ذخیره و روی سایت منتشر شدند!'
@@ -1426,6 +1415,99 @@
     function showRemoteStatus(remote, label) {
       if (remote) return;
       console.warn(`[admin-sync] سرور برای «${label}» در دسترس نیست؛ فقط local ذخیره شد.`);
+    }
+
+    /* ---------------- استعلام‌های مشتریان (سرور) ---------------- */
+    let adminOrdersCache = [];
+
+    async function loadCustomerOrders() {
+      try {
+        const result = await apiRequest('/api/orders', { method: 'GET', credentials: 'include' });
+        adminOrdersCache = Array.isArray(result?.data) ? result.data : [];
+      } catch {
+        adminOrdersCache = [];
+      }
+      renderCustomerOrders();
+      updateDashboardMetrics();
+    }
+
+    function renderCustomerOrders() {
+      const host = document.getElementById('customer-orders-wrapper');
+      if (!host) return;
+      const orders = adminOrdersCache;
+      if (!orders.length) {
+        host.innerHTML = '<p style="color: var(--text-muted);">هنوز استعلامی ثبت نشده است.</p>';
+        return;
+      }
+      const statusLabels = { new: 'جدید', contacted: 'تماس گرفته شد', invoiced: 'فاکتور شد', closed: 'بسته شد' };
+      host.innerHTML = `
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>مشتری</th>
+              <th>لینک محصول</th>
+              <th>تماس</th>
+              <th>وضعیت</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map((o) => `
+              <tr>
+                <td>${escapeHTML(o.name || 'مشتری')}</td>
+                <td><a href="${escAttr(o.link)}" target="_blank" rel="noopener noreferrer" style="color: var(--cyan); font-size: 0.85rem;">مشاهده لینک</a></td>
+                <td>${escapeHTML(o.phone || '-')}</td>
+                <td>
+                  <select class="form-control" data-quote-id="${escAttr(String(o.id))}" data-quote-status>
+                    ${['new', 'contacted', 'invoiced', 'closed'].map((s) => `
+                      <option value="${s}" ${o.status === s ? 'selected' : ''}>${statusLabels[s]}</option>
+                    `).join('')}
+                  </select>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      host.querySelectorAll('[data-quote-status]').forEach((select) => {
+        select.addEventListener('change', async (event) => {
+          const id = event.target.dataset.quoteId;
+          const status = event.target.value;
+          const remote = await syncRemoteData('/api/orders/status', { id, status });
+          if (remote) {
+            const idx = adminOrdersCache.findIndex((o) => String(o.id) === String(id));
+            if (idx > -1) adminOrdersCache[idx].status = status;
+            updateDashboardMetrics();
+          }
+        });
+      });
+    }
+
+    /* ---------------- گوش‌دهندهٔ همگام‌سازی لحظه‌ای (SSE) ---------------- */
+    let adminSSE = null;
+
+    function subscribeAdminSync() {
+      if (adminSSE || typeof EventSource === 'undefined') return;
+      try {
+        const src = new EventSource('/api/events');
+        src.addEventListener('store-update', () => {
+          // هر تغییر روی سرور (از سایت یا ادمین دیگر) → به‌روزرسانی زندهٔ این پنل
+          TrendStore.init();
+          hydrateRateInputs();
+          renderCMS();
+          renderSpecialOfferEditor();
+          renderTestimonialsAdmin();
+          renderNewsAdmin();
+          loadCustomerOrders();
+          updateDashboardMetrics();
+        });
+        src.onerror = () => {
+          if (src.readyState === EventSource.CLOSED) adminSSE = null;
+        };
+        adminSSE = src;
+      } catch (error) {
+        console.warn('[admin-sync] SSE unavailable:', error);
+      }
     }
 
     function renderTestimonialsAdmin() {
@@ -1492,6 +1574,8 @@
       updateDashboardMetrics();
       renderTestimonialsAdmin();
       renderNewsAdmin();
+      loadCustomerOrders();
+      subscribeAdminSync();
       if (typeof renderCMS === 'function') renderCMS();
       if (typeof renderSpecialOfferEditor === 'function') renderSpecialOfferEditor();
     }
