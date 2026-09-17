@@ -45,6 +45,26 @@
 
 خروجی را در `ADMIN_PASSWORD_SHA256` بگذارید. رمز خام را هیچ‌وقت کامیت نکنید.
 
+## ماندگاری داده (Render Disk)
+
+روی پلن رایگان/معمولی، فایل‌های `backend/data/*.json` با هر redeploy ریست می‌شوند. راه‌حل:
+
+1. در Render: سرویس → **Disks** → Add Disk:
+   - **Mount Path:** `/var/data/trendkargo`
+   - **Size:** ۱ گیگ کافی است
+2. در **Environment Variables** سرویس اضافه کنید:
+   - `DATA_DIR=/var/data/trendkargo`
+3. با اولین اجرا، فایل‌ها از نسخهٔ مخزن (seed) روی دیسک کپی می‌شوند؛ بعد از آن فقط همان دیسک خوانده/نوشته می‌شود و با redeploy **پاک نمی‌شود**.
+
+## اتصال دامنهٔ شخصی (مثلاً trendkargo.ir)
+
+1. در Render: سرویس → **Settings → Custom Domains** → Add → `trendkargo.ir` (و اگر خواستید `www.trendkargo.ir`).
+2. Render دو رکورد DNS می‌دهد؛ در پنل دامنه‌تان ( nic.ir یا هر registrar ) این‌ها را بگذارید:
+   - `A` برای `@` به IP داده‌شده، یا `CNAME` برای `www` به آدرس `xxx.onrender.com`
+3. چند دقیقه تا چند ساعت صبر کنید؛ HTTPS خودکار (Let's Encrypt) صادر می‌شود.
+4. بعد از اتصال: ادمین و سایت هر دو روی دامنهٔ خودتان‌اند و نیازی به تغییر کد نیست (API هم‌مبدا است).
+5. سئو: چون دامنه همان دامنهٔ قبلی است، `sitemap.xml` و `robots.txt` معتبر می‌مانند.
+
 ## نکات مهم
 
 - **دامنهٔ شخصی:** در Render/Railway می‌توانید دامنهٔ خودتان (مثلاً `trendkargo.ir`) را وصل کنید؛ HTTPS خودکار است.

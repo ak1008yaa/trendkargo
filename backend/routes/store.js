@@ -8,7 +8,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 
 const clients = new Set();
 let storeVersion = 0;

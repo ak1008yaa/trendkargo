@@ -8,11 +8,29 @@ const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_DIR = path.join(__dirname, 'data');
+// ----------------------------------------------------------------------------
+// مسیر ذخیره داده — قابل تنظیم با متغیر محیطی برای دیسک دائمی (Render Disk).
+// اگر DATA_DIR تعریف نشده باشد، پوشه پیش‌فرض backend/data استفاده می‌شود.
+// ----------------------------------------------------------------------------
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 
-// Ensure data directory exists
+// Ensure data directory exists + seed from repo copy on first boot (e.g. fresh Disk)
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const SEED_DIR = path.join(__dirname, 'data');
+const SEED_FILES = ['products.json', 'news.json', 'rates.json', 'special-offer.json', 'testimonials.json', 'discounts.json'];
+for (const file of SEED_FILES) {
+  try {
+    const target = path.join(DATA_DIR, file);
+    const seed = path.join(SEED_DIR, file);
+    if (!fs.existsSync(target) && fs.existsSync(seed)) {
+      fs.copyFileSync(seed, target);
+      console.log(`[seed] ${file} copied to DATA_DIR`);
+    }
+  } catch (e) {
+    console.error(`[seed] ${file}:`, e.message);
+  }
 }
 
 // Middleware

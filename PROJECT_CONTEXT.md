@@ -109,5 +109,10 @@ npm start            # http://localhost:3000 — هم سایت و هم API
 - `js/script.js`: `RemoteSync` — لود از `/api/store`، رندر مجدد همه بخش‌ها، اشتراک SSE با debounce؛ بدون سرور = رفتار قبلی localStorage.
 - `admin.html`: ذخیره محصولات/پیشنهاد/اخبار/نرخ/نظرات علاوه بر local روی `/api/*`؛ toast وضعیت انتشار (منتشر شد / سرور در دسترس نیست).
 - `tools/sse-check.cjs`: اسکریپت کمکی تست دستی SSE.
-- اعتبارسنجی: `node --check` همه فایل‌ها؛ سرور واقعی بالا آمد؛ `/api/health`، `/api/store`، `POST /api/news` و دریافت رویداد `store-update` در استریم SSE همگی پاس شدند.
-- نکته: رمز ادمین هنوز از هش ثابت `ADMIN_PASSWORD_HASH` است؛ برای production باید به متغیر محیطی منتقل شود.
+- اعتبارسنجی backend: `node --check` همه فایل‌ها؛ تست واقعی با `DATA_DIR` موقت — هر ۶ فایل seed روی مسیر جدید کپی و `/api/store` سالم برگشت؛ پوشه تست پاک شد.
+- نکته: احراز هویت ادمین از `ADMIN_USER` و `ADMIN_PASSWORD_SHA256` محیطی می‌آید (fallback توسعه حفظ شده).
+
+### استقرار و ماندگاری داده (بخش DEPLOY)
+- `backend/server.js` + هر ۷ route: `DATA_DIR` از `process.env.DATA_DIR`؛ seed خودکار فایل‌ها روی دیسک تازه در اولین بوت.
+- `backend/Procfile` (`web: node server.js`)، `backend/.env.example` (+`DATA_DIR`)، `docs/DEPLOY.md` (+بخش Render Disk و اتصال دامنه شخصی با DNS).
+- اعتبارسنجی: تست بالا (seed + store) پاس شد.
