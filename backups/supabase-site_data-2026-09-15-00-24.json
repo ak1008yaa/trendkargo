@@ -1,0 +1,18 @@
+{
+  "exportedAt": "2026-09-15T00:24:28.000Z",
+  "projectRef": "zepoeywugldczcnvnlyn",
+  "tables": {
+    "site_data": [
+      {
+        "key": "invoices",
+        "value": [],
+        "updated_at": "2026-09-15T00:01:44.341003+00:00"
+      },
+      {
+        "key": "products",
+        "value": [],
+        "updated_at": "2026-09-15T00:01:44.341003+00:00"
+      }
+    ]
+  }
+}

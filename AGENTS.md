@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Memory
+
+**At the start of every session, read `MEMORY.md` (project root).** It is the agent's persistent memory: user preferences (Persian, creativity-first, JOLFAA9 profile for Gemini), the official design reference (motionsites.ai), installed skills, the 7-agent team, browser automation setup, test findings, and the open backlog. Keep it updated after major changes.
+
 ## Project overview
 
 This repository is a static storefront for a Persian-language cargo/import business named Trend Cargo. It is not a framework application; the site is served as plain HTML, CSS, and JavaScript files from the project root.

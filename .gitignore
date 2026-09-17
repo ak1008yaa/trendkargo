@@ -36,3 +36,18 @@ __pycache__/
 .env.*
 !.env.example
 *.pem
+supabase/.env-service.js
+supabase/.temp/
+
+# Temp / test artifacts
+# ---------------------------------------------------------------------------
+browser/*-out.txt
+browser/*-err.txt
+browser/*.pid
+browser/gemini-outputs/
+browser/aistudio-outputs/
+browser/spark-outputs/
+browser/screenshots/
+browser/node_modules/
+browser/package-lock.json
+backups/*.bundle

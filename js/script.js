@@ -15,6 +15,10 @@
 const WHATSAPP_NUMBER = '989374443386';
 const FALLBACK_IMG = 'assets/img/products/photo-1526738549149-8e07eca6c147-w600.jpg';
 
+// ---- Supabase — شمارش بازدید روزانه (کلید anon عمومی است و امن) ----
+const SUPABASE_URL = 'https://zepoeywugldczcnvnlyn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplcG9leXd1Z2xkY3pjbnZubHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0MjAyNTYsImV4cCI6MjEwNDk5NjI1Nn0.Y4qNjZQJs7x0Z-4RwfE7YgxX49rDlJ8YbMgiyEFgdIQ';
+
 const STORAGE_KEYS = Object.freeze({
   products:     'trendcargo_custom_products',
   specialOffer: 'trendcargo_special_offer',
@@ -93,6 +97,88 @@ function debounce(fn, wait = 200) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  SUPABASE STORE — منبع حقیقت مشترک بین ادمین و سایت اصلی                    */
+/*  فرانت (سایت اصلی): خواندن anon + polling ۱۰ ثانیه                           */
+/*  ادمین: نوشتن با service_role که فقط در admin.html لود میشود                */
+/* -------------------------------------------------------------------------- */
+
+const SupabaseStore = (() => {
+  // ---- کلید نوشتن ادمین (service_role)؛ فقط داخل admin.html بارگذاری میشود ----
+  const serviceKey = window.SUPABASE_SERVICE_KEY || '';
+  const writeKey = serviceKey || SUPABASE_ANON_KEY;
+  const headers = {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: 'Bearer ' + writeKey,
+    'Content-Type': 'application/json',
+  };
+
+  const cache = new Map(); // key -> { value, ts }
+  let lastFetchTs = null;
+  let listeners = [];
+
+  return {
+    get available() { return !!SUPABASE_URL && !!SUPABASE_ANON_KEY; },
+
+    /** خواندن از سرور؛ اگر keys آرایه خالی/تهی باشد همه را میخواند. */
+    async pull(keys = null) {
+      try {
+        const body = keys && keys.length ? JSON.stringify({ p_keys: keys }) : JSON.stringify({});
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_site_data`, {
+          method: 'POST', headers, body, cache: 'no-store',
+        });
+        if (!r.ok) throw new Error('pull http ' + r.status);
+        const rows = await r.json();
+        const tsByKey = {};
+        for (const row of rows) {
+          cache.set(row.k, { value: row.v, ts: row.ts });
+          tsByKey[row.k] = row.ts;
+        }
+        lastFetchTs = Date.now();
+        return tsByKey;
+      } catch (e) {
+        return null;
+      }
+    },
+
+    /** نوشتن — فقط از admin.html فراخوانی میشود (کلید service_role دارد) */
+    async write(key, value) {
+      if (!serviceKey) return { ok: false, reason: 'no service key' };
+      try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/set_site_data`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: 'Bearer ' + serviceKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ p_key: key, p_value: value }),
+        });
+        return { ok: r.ok };
+      } catch (e) {
+        return { ok: false, reason: String(e) };
+      }
+    },
+
+    /** بهروزرسانی‌های سرور → فراخوانی listeners */
+    onUpdate(cb) {
+      listeners.push(cb);
+    },
+
+    /** فراخوانی دورهای توسط polling */
+    async tickPolling() {
+      const ts = await this.pull();
+      if (!ts) return;
+      for (const [key, entry] of cache) {
+        for (const cb of listeners) cb(key, entry.value, entry.ts);
+      }
+    },
+
+    cache,
+    get lastFetchTs() { return lastFetchTs; },
+  };
+})();
+
+/* -------------------------------------------------------------------------- */
 /*  REMOTE SYNC — اتصال لحظه‌ای به بک‌اند (در صورت اجرا بودن سرور)           */
 /*  سایت اصلی هنگام لود از /api/store می‌خواند و با SSE (EventSource)        */
 /*  هر ذخیرهٔ ادمین را همان لحظه — بدون رفرش — روی همهٔ دستگاه‌ها می‌گیرد.   */
@@ -113,6 +199,14 @@ const RemoteSync = {
   },
 
   async pullAll() {
+    // اول از Supabase (اگر در دسترس)، بعداً fallback به backend (legacy)
+    if (SupabaseStore.available) {
+      const ok = await SupabaseStore.pull();
+      if (ok) {
+        this.applySupabaseCache();
+        return true;
+      }
+    }
     try {
       const res = await fetch('api/store', { cache: 'no-store' });
       if (!res.ok) return false;
@@ -145,6 +239,52 @@ const RemoteSync = {
     } catch (e) {
       return false;
     }
+  },
+
+  /** خواندن از cache ساپابیس به storage محلی (اگر مقدار هست) */
+  applySupabaseCache() {
+    if (!SupabaseStore.available) return false;
+    const c = SupabaseStore.cache;
+    let applied = false;
+    const products = c.get('products')?.value;
+    if (Array.isArray(products) && products.length) {
+      Storage.set(STORAGE_KEYS.products, products); applied = true;
+    }
+    const so = c.get('special_offer')?.value;
+    if (so && typeof so === 'object' && !Array.isArray(so)) {
+      Storage.set(STORAGE_KEYS.specialOffer, so); applied = true;
+    }
+    const news = c.get('news')?.value;
+    if (Array.isArray(news)) { Storage.set(STORAGE_KEYS.news, news); applied = true; }
+    const test = c.get('testimonials')?.value;
+    if (Array.isArray(test) && test.length) {
+      Storage.set(STORAGE_KEYS.testimonials, test); applied = true;
+    }
+    const rates = c.get('rates')?.value;
+    if (rates && typeof rates === 'object') {
+      Storage.set(STORAGE_KEYS.rates, rates);
+      Storage.set(STORAGE_KEYS.lastRates, rates); applied = true;
+    }
+    const disc = c.get('discounts')?.value;
+    if (Array.isArray(disc)) {
+      try { localStorage.setItem('trendcargo_discounts', JSON.stringify(disc)); } catch {}
+      applied = true;
+    }
+    return applied;
+  },
+
+  /** Polling هر ۱۰ ثانیه از ساپابیس و apply به storage + رندر */
+  startPolling() {
+    if (this._poll) return;
+    if (!SupabaseStore.available) return;
+    this._poll = setInterval(async () => {
+      try {
+        const ok = await SupabaseStore.pull();
+        if (!ok) return;
+        const changed = this.applySupabaseCache();
+        if (changed) this.rerenderAll();
+      } catch (e) { /* silent */ }
+    }, 10000);
   },
 
   rerenderAll() {
@@ -659,17 +799,26 @@ const TrendStore = {
   saveProducts(list) {
     if (Array.isArray(list)) this.products = list;
     Storage.set(STORAGE_KEYS.products, this.products);
+    if (typeof SupabaseStore !== 'undefined' && SupabaseStore.available) {
+      SupabaseStore.write('products', this.products);
+    }
   },
 
   saveSpecialOffer(offer) {
     if (offer && typeof offer === 'object') this.specialOffer = offer;
     Storage.set(STORAGE_KEYS.specialOffer, this.specialOffer);
+    if (typeof SupabaseStore !== 'undefined' && SupabaseStore.available) {
+      SupabaseStore.write('special_offer', this.specialOffer);
+    }
   },
 
   saveRates(next) {
     this.rates = { ...this.rates, ...(next || {}) };
     Storage.set(STORAGE_KEYS.rates, this.rates);
     Storage.set(STORAGE_KEYS.lastRates, this.rates);
+    if (typeof SupabaseStore !== 'undefined' && SupabaseStore.available) {
+      SupabaseStore.write('rates', this.rates);
+    }
   },
 
   getRate(code) {
@@ -1206,6 +1355,9 @@ function getTestimonials() {
 
 function saveTestimonials(list) {
   Storage.set(STORAGE_KEYS.testimonials, list);
+  if (typeof SupabaseStore !== 'undefined' && SupabaseStore.available && window.SUPABASE_SERVICE_KEY) {
+    SupabaseStore.write('testimonials', list);
+  }
 }
 
 function renderTestimonials() {
@@ -1628,6 +1780,52 @@ function initNavbar() {
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
+/*  VISIT TRACKING (Supabase — بازدید روزانه)                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * ثبت بازدید روزانهٔ سایت در Supabase.
+ * بازدید یکتا با شناسهٔ مرورگر (localStorage) و page_views با هر بارگذاری.
+ * fire-and-forget: خطای ردیابی هرگز تجربهٔ کاربر را خراب نمیکند.
+ */
+function trackDailyVisit() {
+  try {
+    const visitorId = (() => {
+      let id = localStorage.getItem('trendcargo_visitor_id');
+      if (!id) {
+        id = (crypto.randomUUID)
+          ? crypto.randomUUID()
+          : `v-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem('trendcargo_visitor_id', id);
+      }
+      return id;
+    })();
+
+    const url = `${SUPABASE_URL}/rest/v1/rpc/track_visit`;
+    const body = JSON.stringify({ p_visitor: visitorId });
+    // prefer synchronous XHR (تضمین میکنه تا RPC اجرا بشه و timeoutش به DB برسد)
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+      xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(body);
+      return;
+    } catch { /* پایین به fallback */ }
+    // fallback: sendBeacon
+    if (navigator.sendBeacon) {
+      try {
+        const blob = new Blob([body], { type: 'application/json' });
+        navigator.sendBeacon(url, blob);
+        return;
+      } catch { /* ignore */ }
+    }
+    fetch(url, { method: 'POST', headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+  } catch { /* ردیابی هرگز نباید سایت را بشکند */ }
+}
+
+/* -------------------------------------------------------------------------- */
 /*  BOOTSTRAP                                                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -1650,6 +1848,9 @@ document.addEventListener('DOMContentLoaded', () => {
   startLiveToasts();
   registerServiceWorker();
   RemoteSync.boot();
+  // ابتدا بکش از سرور، سپس polling شروع شود
+  RemoteSync.pullAll().then(() => { try { RemoteSync.startPolling(); } catch {} });
+  trackDailyVisit();
 
 
 

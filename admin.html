@@ -228,6 +228,41 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1rem;
     }
+
+    /* ---- Visit Stats (بازدید روزانه) ---- */
+    .visits-chart {
+      display: flex; align-items: flex-end; gap: 6px;
+      height: 220px; padding: 1.2rem 0.5rem 0;
+      overflow-x: auto;
+    }
+    .visits-chart .v-col {
+      flex: 1; min-width: 26px; max-width: 56px;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      gap: 6px; height: 100%;
+    }
+    .visits-chart .v-col .v-bar-wrap {
+      flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center;
+    }
+    .visits-chart .v-bar {
+      width: 100%; max-width: 38px; min-height: 4px;
+      background: linear-gradient(180deg, var(--cyan), rgba(56, 189, 248, 0.2));
+      border-radius: 8px 8px 0 0;
+      transition: height 0.45s ease;
+    }
+    .visits-chart .v-col.is-today .v-bar {
+      background: linear-gradient(180deg, #fb923c, rgba(251, 146, 60, 0.2));
+    }
+    .visits-chart .v-count { font-size: 0.72rem; color: #cbd5e1; }
+    .visits-chart .v-day  { font-size: 0.66rem; color: #64748b; white-space: nowrap; }
+    .visits-chart .v-col.is-today .v-day { color: #fb923c; font-weight: 700; }
+    .visits-empty { color: #64748b; padding: 2rem; text-align: center; width: 100%; }
+    .visits-chart-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 0.8rem; flex-wrap: wrap; margin-top: 1rem;
+      color: #94a3b8; font-size: 0.85rem;
+    }
+    .visits-chart-footer strong { color: #e2e8f0; }
+
     .metric-card {
       background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(17, 31, 47, 0.8));
       border: 1px solid var(--border);
@@ -505,6 +540,7 @@
           <button class="nav-item" data-section="orders">سفارش‌ها</button>
           <button class="nav-item" data-section="discounts">تخفیف‌ها</button>
           <button class="nav-item" data-section="testimonials">نظرات مشتریان</button>
+          <button class="nav-item" data-section="visits">آمار بازدید</button>
           <button class="nav-item" data-section="settings">تنظیمات</button>
         </div>
 
@@ -514,7 +550,7 @@
             <span class="online-dot"></span>
           </div>
           <strong>آنلاین و آماده عملیات</strong>
-          <small>آخرین به‌روزرسانی: همین لحظه</small>
+          <small id="status-last-update">آخرین به‌روزرسانی: همین لحظه</small>
         </div>
       </aside>
 
@@ -615,6 +651,58 @@
             <div class="top-actions" style="justify-content:flex-start; margin-top: 1rem;">
               <button class="btn btn-save" onclick="saveInvoiceFromAdmin()">💾 ثبت فاکتور / ارسال به شیت</button>
               <button class="btn btn-site" onclick="openInvoicePreview()">🧾 پیش‌نمایش فاکتور</button>
+            </div>
+          </section>
+        </section>
+
+        <section class="admin-section" id="section-visits">
+          <section class="metrics-grid">
+            <div class="metric-card">
+              <div class="top">
+                <span class="label">بازدید امروز</span>
+                <span class="trend neutral" id="visits-live-tag">LIVE</span>
+              </div>
+              <div class="value" id="visits-today">۰</div>
+              <div class="sub">بازدید یکتا</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="top">
+                <span class="label">دیروز</span>
+              </div>
+              <div class="value" id="visits-yesterday">۰</div>
+              <div class="sub">بازدید یکتا</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="top">
+                <span class="label">۷ روز اخیر</span>
+              </div>
+              <div class="value" id="visits-week">۰</div>
+              <div class="sub">مجموع بازدید یکتا</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="top">
+                <span class="label">۳۰ روز اخیر</span>
+              </div>
+              <div class="value" id="visits-month">۰</div>
+              <div class="sub">مجموع بازدید یکتا</div>
+            </div>
+          </section>
+
+          <section class="panel" style="margin-top: 1rem;">
+            <div class="panel-header">
+              <h3>نمودار بازدید روزانه — ۱۴ روز اخیر</h3>
+              <span class="chip">Supabase</span>
+            </div>
+            <div id="visits-chart" class="visits-chart" aria-label="نمودار بازدید روزانه">
+              <div class="visits-empty">در حال بارگذاری…</div>
+            </div>
+            <div class="visits-chart-footer">
+              <span>مجموع کل بازدید یکتا: <strong id="visits-total">۰</strong></span>
+              <span>مجموع کل بازدید صفحات: <strong id="visits-total-views">۰</strong></span>
+              <button class="btn btn-site" onclick="loadVisitStats()">🔄 به‌روزرسانی</button>
             </div>
           </section>
         </section>
@@ -765,6 +853,7 @@
   <div class="toast" id="toast">✅ تغییرات با موفقیت ذخیره شدند!</div>
 
   <script src="js/script.js"></script>
+  <script src="supabase/.env-service.js"></script>
   <script src="js/blog-data.js"></script>
   <script src="js/blog-admin.js"></script>
   <script>
@@ -800,6 +889,24 @@
     }
 
     async function syncRemoteData(path, payload) {
+      // 1) Supabase (منبع حقیقت جدید — بدون نیاز به بک‌اند)
+      try {
+        const map = {
+          '/api/products': ['products', payload.products],
+          '/api/special-offer': ['special_offer', payload.offer],
+          '/api/discounts': ['discounts', payload.discounts],
+          '/api/rates': ['rates', payload.rates],
+          '/api/testimonials': ['testimonials', payload.testimonials],
+          '/api/news': ['news', payload.news],
+        };
+        if (map[path]) {
+          const [key, val] = map[path];
+          const r = await supabaseWrite(key, val);
+          if (r && r.ok) return { ok: true };
+        }
+      } catch (e) { console.warn('[supabase write]', e); }
+
+      // 2) fallback به بک‌اند قدیمی
       try {
         const result = await apiRequest(path, {
           method: 'POST',
@@ -810,6 +917,24 @@
       } catch (error) {
         console.warn(`[admin-sync] ${path} failed:`, error.message || error);
         return null;
+      }
+    }
+
+    async function supabaseWrite(key, value) {
+      if (!window.SUPABASE_SERVICE_KEY) return { ok: false, reason: 'no service key' };
+      try {
+        const r = await fetch('https://zepoeywugldczcnvnlyn.supabase.co/rest/v1/rpc/set_site_data', {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: 'Bearer ' + window.SUPABASE_SERVICE_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ p_key: key, p_value: value }),
+        });
+        return { ok: r.ok };
+      } catch (e) {
+        return { ok: false, reason: String(e) };
       }
     }
 
@@ -1564,8 +1689,86 @@
       renderTestimonialsAdmin();
     }
 
+    // ---- Visit Stats (Supabase — بازدید روزانه) ----
+    const SUPABASE_URL = 'https://zepoeywugldczcnvnlyn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplcG9leXd1Z2xkY3pjbnZubHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0MjAyNTYsImV4cCI6MjEwNDk5NjI1Nn0.Y4qNjZQJs7x0Z-4RwfE7YgxX49rDlJ8YbMgiyEFgdIQ';
+
+    function faDigits(n) {
+      return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+    }
+
+    /** کلید تاریخ به وقت تهران (همسان با ردیفهای جدول daily_visits) */
+    function tehranDateKey(date) {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tehran' }).format(date);
+    }
+
+    function loadVisitStats() {
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/visit_stats`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ p_days: 30 }),
+      })
+        .then(r => r.json())
+        .then(rows => {
+          if (!Array.isArray(rows)) throw new Error('bad response');
+          renderVisitStats(rows);
+        })
+        .catch(() => {
+          const chart = document.getElementById('visits-chart');
+          if (chart) chart.innerHTML = '<div class="visits-empty">آمار بازدید در دسترس نیست — اتصال Supabase را بررسی کنید.</div>';
+        });
+    }
+
+    function renderVisitStats(rows) {
+      const byDay = new Map(rows.map(r => [r.day, r]));
+      const now = new Date();
+      const todayKey = tehranDateKey(now);
+      const yesterdayKey = tehranDateKey(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+      const zero = { unique_visitors: 0, page_views: 0 };
+      const todayRow = byDay.get(todayKey) || zero;
+      const yesterdayRow = byDay.get(yesterdayKey) || zero;
+      const sum = list => list.reduce((s, r) => s + Number(r.unique_visitors || 0), 0);
+      const sumViews = list => list.reduce((s, r) => s + Number(r.page_views || 0), 0);
+
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = faDigits(v); };
+      set('visits-today', Number(todayRow.unique_visitors));
+      set('visits-yesterday', Number(yesterdayRow.unique_visitors));
+      set('visits-week', sum(rows.slice(0, 7)));
+      set('visits-month', sum(rows));
+      set('visits-total', sum(rows));
+      set('visits-total-views', sumViews(rows));
+
+      // نمودار ۱۴ روز اخیر — قدیمی به جدید (راست به چپ طبیعی RTL)
+      const chart = document.getElementById('visits-chart');
+      if (!chart) return;
+      const slice = rows.slice(0, 14).reverse();
+      const max = Math.max(1, ...slice.map(r => Number(r.unique_visitors || 0)));
+      chart.innerHTML = slice.map(r => {
+        const uniq = Number(r.unique_visitors || 0);
+        const h = Math.max(3, Math.round((uniq / max) * 100));
+        const isToday = r.day === todayKey;
+        const dayLabel = faDigits(r.day.slice(8, 10)) + '/' + faDigits(r.day.slice(5, 7));
+        return `
+          <div class="v-col ${isToday ? 'is-today' : ''}" title="${r.day}: ${uniq} بازدید یکتا / ${r.page_views} بازدید صفحه">
+            <span class="v-count">${faDigits(uniq)}</span>
+            <div class="v-bar-wrap"><div class="v-bar" style="height:${h}%"></div></div>
+            <span class="v-day">${isToday ? 'امروز' : dayLabel}</span>
+          </div>`;
+      }).join('');
+    }
+
     function initAdminUi() {
       bindNavigation();
+      loadVisitStats();
+      const statusUpdate = document.getElementById('status-last-update');
+      if (statusUpdate) {
+        statusUpdate.textContent = 'آخرین بهروزرسانی: ' +
+          new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+      }
       renderDiscounts();
       renderOrdersTable();
       hydrateRateInputs();
