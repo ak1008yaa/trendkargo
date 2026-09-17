@@ -56,9 +56,11 @@ function writeData(filename, data) {
   }
 }
 
-// Password hash verification
-const ADMIN_PASSWORD_HASH = 'e03896efeec0a98c9ebe92ed37bafd43ac96900dec57c6af58d1f04787e8ea9b';
-const ADMIN_USERNAME = 'admin';
+// Password hash verification (env-driven; legacy constant as dev fallback)
+const ADMIN_PASSWORD_HASH =
+  process.env.ADMIN_PASSWORD_SHA256 ||
+  'e03896efeec0a98c9ebe92ed37bafd43ac96900dec57c6af58d1f04787e8ea9b';
+const ADMIN_USERNAME = process.env.ADMIN_USER || 'admin';
 
 function verifyPassword(password) {
   const hash = crypto.createHash('sha256').update(password).digest('hex');

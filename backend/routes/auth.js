@@ -2,8 +2,12 @@ const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
 
-const ADMIN_PASSWORD_HASH = 'e03896efeec0a98c9ebe92ed37bafd43ac96900dec57c6af58d1f04787e8ea9b';
-const ADMIN_USERNAME = 'admin';
+// نام کاربری و هش رمز از متغیرهای محیطی می‌آیند تا رمز در کد/گیت نباشد.
+// در صورت نبود متغیر، هش پیش‌فرض توسعه استفاده می‌شود (تولیدی: حتماً تعریف کنید).
+const ADMIN_USERNAME = process.env.ADMIN_USER || 'admin';
+const ADMIN_PASSWORD_HASH =
+  process.env.ADMIN_PASSWORD_SHA256 ||
+  'e03896efeec0a98c9ebe92ed37bafd43ac96900dec57c6af58d1f04787e8ea9b';
 
 function verifyPassword(password) {
   const hash = crypto.createHash('sha256').update(password).digest('hex');
