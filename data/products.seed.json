@@ -1,0 +1,47 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "category": "gadget",
+      "catName": "گجت و دیجیتال",
+      "title": "مینی پرینتر حرارتی جیبی فوممو بدون جوهر",
+      "price": "۱,۹۸۰,۰۰۰",
+      "rawPrice": 1980000,
+      "tag": "پرفروش‌ترین تمو",
+      "mainImg": "assets/img/products/photo-1612815154858-60aa4c59eaa6-w600.jpg",
+      "gallery": [
+        "assets/img/products/photo-1612815154858-60aa4c59eaa6-w600.jpg",
+        "assets/img/products/photo-1588872657578-7efd1f1555ed-w600.jpg",
+        "assets/img/products/photo-1526738549149-8e07eca6c147-w600.jpg"
+      ],
+      "desc": "چاپگر فوری بدون نیاز به تعویض جوهر و ریبون؛ چاپ مستقیم عکس، یادداشت روزانه، استیکر و بارکد از گوشی با بلوتوث.",
+      "specs": [
+        "فناوری: چاپ حرارتی مستقیم ۲۰۰DPI",
+        "باتری: ۱۰۰۰mAh شارژی با Type-C",
+        "همراه با ۱ رول کاغذ حرارتی برچسب‌دار"
+      ]
+    },
+    {
+      "id": 2,
+      "category": "gadget",
+      "catName": "گجت و دیجیتال",
+      "title": "شارژر وایرلس ۳ کاره مگنتی تاشو مسافرتی ۱۵W",
+      "price": "۲,۲۵۰,۰۰۰",
+      "rawPrice": 2250000,
+      "tag": "ترند تیک‌تاک",
+      "mainImg": "assets/img/placeholder.svg",
+      "gallery": [
+        "assets/img/placeholder.svg",
+        "assets/img/products/photo-1586953208448-b95a79798f07-w600.jpg"
+      ],
+      "desc": "شارژ همزمان گوشی آیفون/سامسونگ، ساعت هوشمند و ایرپاد",
+      "specs": [
+        "توان شارژ: ۱۵W",
+        "بدنه آلومینیومی تاشو",
+        "سازگار با آیفون و سامسونگ"
+      ]
+    }
+  ],
+  "specialOffer": {},
+  "lastUpdated": "2026-09-14T00:00:00.000Z"
+}

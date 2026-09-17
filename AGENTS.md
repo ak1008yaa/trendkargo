@@ -24,7 +24,8 @@ Primary entry points:
 ## Common workflows
 
 * Serve locally for manual QA: `python -m http.server 8000`
-* Package the static site for distribution: `python pack_project.py`
+* Package the static site for distribution: `python pack_project.py` (excludes backend/, tools/, data/)
+* Localize any externally hosted images: `node tools/localize-images.cjs` (add `--dry-run` to preview)
 * No automated frontend test suite is configured here. Validate changes by opening the site in a browser and checking the affected page flow and browser console.
 
 ## Important files
@@ -33,7 +34,21 @@ Primary entry points:
 * admin.html: admin dashboard for product management, invoice creation, discounts, and settings.
 * invoice.html: printable invoice preview page.
 * sw.js: service worker cache configuration; update the cache version when changing static assets.
-* vercel.json: hosting routes and security headers.
+* vercel.json: hosting routes, security headers, CSP, and asset cache rules.
+* tools/localize-images.cjs: downloads any externally hot-linked image into assets/img/ and rewrites all references to local paths (see "Images" below).
+* assets/img/: all site imagery is stored locally and served from the host. Never re-introduce third-party image hot-links.
+* backend/: optional standalone Express API used only by admin.html for syncing (not deployed on Vercel).
+* data/products.seed.json: reference/backup copy of the catalog. Nothing loads it automatically.
+* README.md: developer-facing project overview and file map.
+
+## Images
+
+All images live under assets/img/ and are served from the project host (Vercel); there is no
+third-party image hot-linking. The CSP `img-src` is intentionally narrow (`'self' data:`).
+When adding an external image, run `node tools/localize-images.cjs` to localize it, or use
+`node tools/localize-images.cjs --dry-run` to preview the mapping. Any missing or upstream-deleted
+photo is automatically redirected to `assets/img/placeholder.svg` so broken images never reach users.
+
 
 ## Project-specific rules
 

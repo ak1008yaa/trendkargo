@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <meta name="googlebot" content="noindex, nofollow">
   <title>پیش‌فاکتور رسمی ترندز کارگو | Trend Cargo Invoice</title>
+  <meta name="description" content="پیش‌فاکتور رسمی و قابل چاپ ترندز کارگو برای سفارش‌های خرید از تمو، شین و آمازون">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://trendkargo.ir/invoice.html">
+  <meta property="og:title" content="پیش‌فاکتور رسمی ترندز کارگو">
+  <meta property="og:description" content="پیش‌فاکتور رسمی و قابل چاپ ترندز کارگو برای سفارش‌های خرید از تمو، شین و آمازون">
+  <meta property="og:url" content="https://trendkargo.ir/invoice.html">
+  <meta property="og:image" content="https://trendkargo.ir/assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Estedad:wght@100..900&family=Vazirmatn:wght@300..900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --font: 'Vazirmatn', sans-serif;
+      --font: 'Estedad', 'Vazirmatn', sans-serif;
       --bg: #07090e;
       --card-bg: #0f172a;
       --cyan: #38bdf8;
@@ -124,5 +129,71 @@
       <button class="btn-print" onclick="window.print()">🖨️ چاپ فاکتور / ذخیره PDF</button>
     </div>
   </div>
+
+  <script>
+    // هیدریت فاکتور از آخرین سفارش ثبت‌شده در پنل ادمین (localStorage)
+    (function hydrateInvoiceFromStorage() {
+      let invoice = null;
+      try {
+        invoice = JSON.parse(localStorage.getItem('trendcargo_last_invoice') || 'null');
+      } catch (error) {
+        invoice = null;
+      }
+      if (!invoice || typeof invoice !== 'object' || !invoice.id) return;
+
+      const esc = (str) => String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const faNum = (value) => Number(value || 0).toLocaleString('fa-IR');
+      const statusMap = { pending: 'در انتظار تسویه', paid: 'تسویه کامل ۱۰۰٪', shipped: 'در حال ارسال' };
+
+      const meta = document.querySelector('.inv-meta');
+      if (meta) {
+        meta.innerHTML = `
+          <p><strong>شناسه فاکتور:</strong> ${esc(invoice.id)}</p>
+          <p><strong>تاریخ صدور:</strong> ${esc(new Date(invoice.createdAt || Date.now()).toLocaleDateString('fa-IR'))}</p>
+          <p><strong>وضعیت:</strong> ${esc(statusMap[invoice.status] || 'ثبت شده')}</p>`;
+      }
+
+      const buyerCol = document.querySelector('.inv-info-col');
+      if (buyerCol) {
+        buyerCol.innerHTML = `
+          <h3>مشخصات خریدار:</h3>
+          <p><strong>نام خریدار:</strong> ${esc(invoice.customer || 'سفارش‌دهنده محترم')}</p>
+          <p><strong>شماره تماس:</strong> ${esc(invoice.phone || '-')}</p>
+          <p><strong>آدرس تحویل:</strong> ایران، هاب توزیع اکسپرس</p>`;
+      }
+
+      const tableRow = document.querySelector('.inv-table tbody tr');
+      if (tableRow) {
+        tableRow.innerHTML = `
+          <td>۱</td>
+          <td>${esc(invoice.product || 'پکیج اقلام سفارش‌گذاری شده')}</td>
+          <td>۱ بسته</td>
+          <td>استاندارد</td>
+          <td>${faNum(invoice.amount)} ${esc(String(invoice.currency || 'USD').toUpperCase())}</td>`;
+      }
+
+      const summary = document.querySelector('.inv-summary');
+      if (summary) {
+        summary.innerHTML = `
+          <div class="inv-sum-row">
+            <span>قیمت پایه کالا در مبدأ:</span>
+            <span>${faNum(invoice.amount)} ${esc(String(invoice.currency || 'USD').toUpperCase())} (نرخ: ${faNum(invoice.rate)} تومان)</span>
+          </div>
+          <div class="inv-sum-row">
+            <span>کارمزد خدمات، تست فیزیکی در ایروان و بسته‌بندی پلمپ:</span>
+            <span>مشخص در قیمت نهایی</span>
+          </div>
+          <div class="inv-sum-row">
+            <span>هزینه باربری بین‌المللی ارمنستان به تبریز:</span>
+            <span>${faNum(invoice.shipping)} تومان</span>
+          </div>
+          <div class="inv-sum-total">
+            <span>مبلغ کل فاکتور نهایی:</span>
+            <span>${faNum(invoice.total)} تومان</span>
+          </div>`;
+      }
+    })();
+  </script>
 </body>
 </html>

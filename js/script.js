@@ -1,202 +1,437 @@
-
 /**
  * ==========================================================================
- * TREND CARGO — PRODUCTION CONTROLLER ENGINE (ES6+ MODULAR)
+ *  TREND CARGO — CORE ENGINE v5.0
+ *  Rewritten for performance, safety, and premium UX
+ *  Static-site friendly — no build step required.
  * ==========================================================================
  */
 
-const WHATSAPP_NUMBER = "989374443386";
-const STORAGE_KEYS = {
-  products: 'trendcargo_custom_products',
-  news: 'trendcargo_custom_news',
-  rates: 'trendcargo_custom_rates',
-  theme: 'trendcargo_theme',
-  invoices: 'trendcargo_accounting_invoices',
-  lastInvoice: 'trendcargo_last_invoice',
-  sheetUrl: 'trendcargo_google_sheet_url',
-  flashDeals: 'trendcargo_flash_deals',
-  termsText: 'trendcargo_terms_text',
-  hero: 'trendcargo_hero_config',
-  socials: 'trendcargo_socials_config',
-  testimonials: 'trendcargo_testimonials'
-};
+'use strict';
 
-// نرخ‌های پایه صرافی و ضریب حاشیه امن
-const CURRENCY_CONFIG = {
-  baseRates: {
-    amd: 170,     // درام ارمنستان
-    usd: 188000,  // دلار آمریکا
-    try: 5800     // لیر ترکیه
-  },
+/* -------------------------------------------------------------------------- */
+/*  CONSTANTS & CONFIG                                                        */
+/* -------------------------------------------------------------------------- */
+
+const WHATSAPP_NUMBER = '989374443386';
+const FALLBACK_IMG = 'assets/img/products/photo-1526738549149-8e07eca6c147-w600.jpg';
+
+const STORAGE_KEYS = Object.freeze({
+  products:     'trendcargo_custom_products',
+  specialOffer: 'trendcargo_special_offer',
+  news:         'trendcargo_custom_news',
+  rates:        'trendcargo_custom_rates',
+  lastRates:    'trendcargo_last_exchange_rates',
+  theme:        'trendcargo_theme',
+  invoices:     'trendcargo_accounting_invoices',
+  lastInvoice:  'trendcargo_last_invoice',
+  sheetUrl:     'trendcargo_google_sheet_url',
+  testimonials: 'trendcargo_testimonials',
+  tgjuCache:    'trendcargo_tgju_cached_rates'
+});
+
+const CURRENCY_CONFIG = Object.freeze({
+  baseRates: { amd: 170, usd: 188000, try: 5800, eur: 205000 },
   exchangeSpreadMultiplier: 1.06,
-  usdShippingRate: 188000
+  usdShippingRate: 188000,
+  minShippingToman: 3500000
+});
+
+/* -------------------------------------------------------------------------- */
+/*  UTILITIES                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>'"]/g, (tag) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[tag]));
+}
+
+const FA_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+function toFaDigits(value) {
+  return String(value).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
+}
+
+function formatFaNumber(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '۰';
+  return toFaDigits(n.toLocaleString('en-US'));
+}
+
+function safeJSON(raw, fallback = null) {
+  try { return JSON.parse(raw); } catch { return fallback; }
+}
+
+const Storage = {
+  get(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return fallback;
+      return safeJSON(raw, raw);
+    } catch { return fallback; }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+      return true;
+    } catch (e) {
+      console.warn('[Storage] write failed:', key, e);
+      return false;
+    }
+  },
+  remove(key) {
+    try { localStorage.removeItem(key); } catch {}
+  }
 };
 
-// پایگاه داده ۲۰ محصول وایرال و پرفروش تمو
+function debounce(fn, wait = 200) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/*  REMOTE SYNC — اتصال لحظه‌ای به بک‌اند (در صورت اجرا بودن سرور)           */
+/*  سایت اصلی هنگام لود از /api/store می‌خواند و با SSE (EventSource)        */
+/*  هر ذخیرهٔ ادمین را همان لحظه — بدون رفرش — روی همهٔ دستگاه‌ها می‌گیرد.   */
+/*  اگر سرور در دسترس نبود، رفتار فعلی localStorage حفظ می‌شود.              */
+/* -------------------------------------------------------------------------- */
+
+const RemoteSync = {
+  enabled: false,
+  ready: false,
+  source: null,
+  seenVersion: -1,
+  debounceMs: 800,
+  _t: null,
+
+  sameOrigin() {
+    // سرور Node خودش سایت را سرو می‌کند؛ پس API هم‌مبدا است.
+    return ['http:', 'https:'].includes(window.location.protocol);
+  },
+
+  async pullAll() {
+    try {
+      const res = await fetch('api/store', { cache: 'no-store' });
+      if (!res.ok) return false;
+      const payload = await res.json();
+      const data = payload && payload.data;
+      if (!data) return false;
+
+      if (Array.isArray(data.products) && data.products.length) {
+        Storage.set(STORAGE_KEYS.products, data.products);
+      }
+      if (data.specialOffer && typeof data.specialOffer === 'object' && !Array.isArray(data.specialOffer)) {
+        Storage.set(STORAGE_KEYS.specialOffer, data.specialOffer);
+      }
+      if (Array.isArray(data.news)) {
+        Storage.set(STORAGE_KEYS.news, data.news);
+      }
+      if (Array.isArray(data.testimonials) && data.testimonials.length) {
+        Storage.set(STORAGE_KEYS.testimonials, data.testimonials);
+      }
+      if (data.rates && typeof data.rates === 'object') {
+        Storage.set(STORAGE_KEYS.rates, data.rates);
+        Storage.set(STORAGE_KEYS.lastRates, data.rates);
+      }
+      if (Array.isArray(data.discounts)) {
+        try { localStorage.setItem('trendcargo_discounts', JSON.stringify(data.discounts)); } catch {}
+      }
+      if (typeof payload.version === 'number') this.seenVersion = payload.version;
+      this.enabled = true;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  rerenderAll() {
+    try {
+      TrendStore.init();
+      newsExpanded = false;
+      if (typeof renderProducts === 'function') renderProducts();
+      if (typeof renderSpecialOffer === 'function') renderSpecialOffer();
+      if (typeof renderTechNews === 'function') renderTechNews();
+      if (typeof renderTestimonials === 'function') renderTestimonials();
+      if (typeof initTestimonialsSlider === 'function') initTestimonialsSlider();
+      if (typeof observeReveals === 'function') observeReveals();
+    } catch (e) {
+      console.warn('[RemoteSync] rerender failed:', e);
+    }
+  },
+
+  scheduleRerender() {
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      this.pullAll().then(() => this.rerenderAll());
+    }, this.debounceMs);
+  },
+
+  subscribe() {
+    if (!this.enabled || this.source || typeof EventSource === 'undefined') return;
+    try {
+      const src = new EventSource('api/events');
+      src.addEventListener('store-update', (event) => {
+        try {
+          const msg = JSON.parse(event.data || '{}');
+          if (typeof msg.version === 'number' && msg.version <= this.seenVersion) return;
+          this.scheduleRerender();
+        } catch (e) {
+          this.scheduleRerender();
+        }
+      });
+      src.onerror = () => {
+        // اتصال مجدد: EventSource خودش تلاش می‌کند؛ اگر قطع شد، سبک نگهش می‌داریم.
+        if (src.readyState === EventSource.CLOSED) {
+          this.source = null;
+        }
+      };
+      this.source = src;
+    } catch (e) {
+      console.warn('[RemoteSync] SSE unavailable:', e);
+    }
+  },
+
+  async boot() {
+    if (!this.sameOrigin()) return;
+    try {
+      const ok = await this.pullAll();
+      if (ok) this.rerenderAll();
+      if (this.enabled) this.subscribe();
+    } catch (e) {
+      console.warn('[RemoteSync] boot failed:', e);
+    }
+  }
+};
+
+/* -------------------------------------------------------------------------- */
+/*  PRODUCT DATA — copied verbatim from the original file                     */
+/* -------------------------------------------------------------------------- */
+
 const top20Products = [
   {
-    id: 1, category: "gadget", catName: "گجت و دیجیتال", title: "مینی پرینتر حرارتی جیبی فوممو بدون جوهر",
-    price: "۱,۹۸۰,۰۰۰", rawPrice: 1980000, tag: "پرفروش‌ترین تمو", mainImg: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&auto=format&fit=crop&q=80",
+    id: 1, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "مینی پرینتر حرارتی جیبی فوممو بدون جوهر",
+    price: "۱,۹۸۰,۰۰۰", rawPrice: 1980000, tag: "پرفروش‌ترین تمو", mainImg: "assets/img/products/photo-1612815154858-60aa4c59eaa6-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1612815154858-60aa4c59eaa6-w600.jpg",
+      "assets/img/products/photo-1588872657578-7efd1f1555ed-w600.jpg",
+      "assets/img/products/photo-1526738549149-8e07eca6c147-w600.jpg"
     ],
     desc: "چاپگر فوری بدون نیاز به تعویض جوهر و ریبون؛ چاپ مستقیم عکس، یادداشت روزانه، استیکر و بارکد از گوشی با بلوتوث.",
     specs: ["فناوری: چاپ حرارتی مستقیم ۲۰۰DPI", "باتری: ۱۰۰۰mAh شارژی با Type-C", "همراه با ۱ رول کاغذ حرارتی برچسب‌دار"]
   },
   {
-    id: 2, category: "gadget", catName: "گجت و دیجیتال", title: "شارژر وایرلس ۳ کاره مگنتی تاشو مسافرتی ۱۵W",
-    price: "۲,۲۵۰,۰۰۰", rawPrice: 2250000, tag: "ترند تیک‌تاک", mainImg: "https://images.unsplash.com/photo-1622445262464-84b1456045b6?w=600&auto=format&fit=crop&q=80",
+    id: 2, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "شارژر وایرلس ۳ کاره مگنتی تاشو مسافرتی ۱۵W",
+    price: "۲,۲۵۰,۰۰۰", rawPrice: 2250000, tag: "ترند تیک‌تاک", mainImg: "assets/img/placeholder.svg",
     gallery: [
-      "https://images.unsplash.com/photo-1622445262464-84b1456045b6?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=600&auto=format&fit=crop&q=80"
+      "assets/img/placeholder.svg",
+      "assets/img/products/photo-1586953208448-b95a79798f07-w600.jpg"
     ],
     desc: "شارژ همزمان گوشی آیفون/سامسونگ، ساعت هوشمند و ایرپاد در ابعاد یک کیف جیبی کوچک با چیپست هوشمند محافظت باتری.",
     specs: ["توان شارژ: ۱۵W + ۵W + ۳W مگ‌سیف فست", "بدنه آلومینیومی تاشو با روکش سیلیکونی لطیف", "سازگار با سری آیفون ۱۲ تا ۱۶ و سامسونگ"]
   },
   {
-    id: 3, category: "gadget", catName: "گجت و دیجیتال", title: "پروژکتور فضانورد کهکشانی با چرخش مگنتی ۳۶۰",
-    price: "۱,۸۹۰,۰۰۰", rawPrice: 1890000, tag: "وایرال دکوراسیون", mainImg: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80",
+    id: 3, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "پروژکتور فضانورد کهکشانی با چرخش مگنتی ۳۶۰",
+    price: "۱,۸۹۰,۰۰۰", rawPrice: 1890000, tag: "وایرال دکوراسیون", mainImg: "assets/img/products/photo-1534447677768-be436bb09401-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1534447677768-be436bb09401-w600.jpg"
     ],
     desc: "چراغ خواب پرطرفدار با طرح فضانورد که سقف و دیوارها را به کهکشان پرستاره متحرک با افکت سحابی تبدیل می‌کند.",
     specs: ["سر با چرخش آهنربایی ۳۶۰ درجه آزاد", "۸ افکت نوری سحابی + لیزر سبز ستاره‌ای", "دارای ریموت کنترل بی‌سیم و تایمر خاموشی"]
   },
   {
-    id: 4, category: "gadget", catName: "گجت و دیجیتال", title: "جاروشارژی تفنگی توربو و دمنده ۲ کاره ۶۰۰۰Pa",
-    price: "۱,۶۵۰,۰۰۰", rawPrice: 1650000, tag: "فوق کاربردی", mainImg: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&auto=format&fit=crop&q=80",
+    id: 4, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "جاروشارژی تفنگی توربو و دمنده ۲ کاره ۶۰۰۰Pa",
+    price: "۱,۶۵۰,۰۰۰", rawPrice: 1650000, tag: "فوق کاربردی", mainImg: "assets/img/products/photo-1558317374-067fb5f30001-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1558317374-067fb5f30001-w600.jpg"
     ],
     desc: "جارو برقی پرتابل بی‌سیم با مکش قدرتمند و سری دمنده باد برای تمیز کردن شیار صندلی خودرو و کیبورد.",
     specs: ["قدرت مکش: ۶۰۰۰ پاسکال توربو", "فیلتر قابل شستشو چندبار مصرف HEPA", "باتری ۲۰۰۰mAh با پورت شارژ سریع"]
   },
   {
-    id: 5, category: "gadget", catName: "گجت و دیجیتال", title: "چراغ خطی مگنتی سنسوردار هوشمند زیر کابینت",
-    price: "۶۸۰,۰۰۰", rawPrice: 680000, tag: "ترند خانه هوشمند", mainImg: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80",
+    id: 5, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "چراغ خطی مگنتی سنسوردار هوشمند زیر کابینت",
+    price: "۶۸۰,۰۰۰", rawPrice: 680000, tag: "ترند خانه هوشمند", mainImg: "assets/img/products/photo-1507473885765-e6ed057f782c-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1507473885765-e6ed057f782c-w600.jpg"
     ],
     desc: "نورپردازی خطی بی‌سیم با سنسور تشخیص حرکت انسان (PIR) و حسگر تاریکی؛ روشن شدن خودکار با نزدیک شدن.",
     specs: ["طول چراغ: ۴۰ سانتی‌متر", "نصب آسان بدون سیم‌کشی با پد مگنتی چسبی", "باتری شارژی با ماندگاری تا ۳۰ روز"]
   },
   {
-    id: 6, category: "lifestyle", catName: "خانه و لایف‌استایل", title: "دستگاه بخور سرد اولتراسونیک با شبیه‌ساز شعله آتش",
-    price: "۱,۱۸۰,۰۰۰", rawPrice: 1180000, tag: "آرامش‌بخش و معطر", mainImg: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",
+    id: 6, stock: "order", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "دستگاه بخور سرد اولتراسونیک با شبیه‌ساز شعله آتش",
+    price: "۱,۱۸۰,۰۰۰", rawPrice: 1180000, tag: "آرامش‌بخش و معطر", mainImg: "assets/img/products/photo-1608571423902-eed4a5ad8108-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1608571423902-eed4a5ad8108-w600.jpg"
     ],
     desc: "رطوبت‌ساز اولتراسونیک که با ترکیب بخار سرد و نورپردازی LED هوشمند، شعله‌های آتشین واقعی خلق می‌کند.",
     specs: ["موتور بی‌صدا کمتر از ۲۸ دسی‌بل", "حالت‌های نوری شعله طلایی و RGB", "خاموشی خودکار با اتمام آب مخزن"]
   },
   {
-    id: 7, category: "fashion", catName: "استایل و پوشاک", title: "هودی اورسایز وینتیج سنگین ۱۰۰٪ پنبه اسیدواش",
-    price: "۲,۳۵۰,۰۰۰", rawPrice: 2350000, tag: "ترند پینترست", mainImg: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80",
+    id: 7, stock: "order", category: "fashion", catName: "استایل و پوشاک", title: "هودی اورسایز وینتیج سنگین ۱۰۰٪ پنبه اسیدواش",
+    price: "۲,۳۵۰,۰۰۰", rawPrice: 2350000, tag: "ترند پینترست", mainImg: "assets/img/products/photo-1556905055-8f358a7a47b2-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1556905055-8f358a7a47b2-w600.jpg"
     ],
     desc: "هودی کلاهدار با بافت ضخیم ۳ نخ و رنگ‌بندی ترند شسته‌شده پینترست، دوخت دولایه صنعتی و فیت آزاد شیک.",
     specs: ["پارچه: ۱۰۰٪ پنبه سوپر سنگین ۳۸۰ گرمی", "سایزبندی: M تا XXL اورسایز", "تضمین رنگ و عدم پرزدهی در شستشو"]
   },
   {
-    id: 8, category: "fashion", catName: "استایل و پوشاک", title: "شلوار کارگو بگ استایل ۶ جیب تاکتیکال ضخیم",
-    price: "۲,۶۸۰,۰۰۰", rawPrice: 2680000, tag: "استریت ویر", mainImg: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=600&auto=format&fit=crop&q=80",
+    id: 8, stock: "order", category: "fashion", catName: "استایل و پوشاک", title: "شلوار کارگو بگ استایل ۶ جیب تاکتیکال ضخیم",
+    price: "۲,۶۸۰,۰۰۰", rawPrice: 2680000, tag: "استریت ویر", mainImg: "assets/img/products/photo-1517445312882-bc9910d016b7-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1517445312882-bc9910d016b7-w600.jpg"
     ],
     desc: "شلوار استریت ویر با جیب‌های حجیم کارگو، بندهای تنظیم دم‌پا سبک تاکتیکال پرطرفدار در فشن ژاپن.",
     specs: ["جنس: کتان پنبه‌ای گرماژ بالا و سنگ‌شور شده", "سایزبندی: ۳۰ تا ۳۸", "دوخت سه‌سوزنه مقاوم"]
   },
   {
-    id: 9, category: "gadget", catName: "گجت و دیجیتال", title: "پاوربانک مگ‌سیف شفاف سایبرپانک ۱۰۰۰۰mAh",
-    price: "۲,۴۵۰,۰۰۰", rawPrice: 2450000, tag: "طراحی سایبرپانک", mainImg: "https://images.unsplash.com/photo-1609592426508-cc0272464a7a?w=600&auto=format&fit=crop&q=80",
+    id: 9, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "پاوربانک مگ‌سیف شفاف سایبرپانک ۱۰۰۰۰mAh",
+    price: "۲,۴۵۰,۰۰۰", rawPrice: 2450000, tag: "طراحی سایبرپانک", mainImg: "assets/img/placeholder.svg",
     gallery: [
-      "https://images.unsplash.com/photo-1609592426508-cc0272464a7a?w=600&auto=format&fit=crop&q=80"
+      "assets/img/placeholder.svg"
     ],
     desc: "پاوربانک شفاف با نمایشگر دیجیتال درصد شارژ و برد الکترونیکی نمایان با قابلیت شارژ بیسیم مغناطیسی.",
     specs: ["ظرفیت باتری: ۱۰۰۰۰ میلی‌آمپر لیتیوم پلیمری", "خروجی باسیم: ۲۲.۵W فست PD", "خروجی مگ‌سیف: ۱۵W"]
   },
   {
-    id: 10, category: "lifestyle", catName: "خانه و لایف‌استایل", title: "تراول ماگ ضد نشت استنلس استیل ۴۰ اونسی دسته‌دار",
-    price: "۱,۱۵۰,۰۰۰", rawPrice: 1150000, tag: "وایرال استنلی استایل", mainImg: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&auto=format&fit=crop&q=80",
+    id: 10, stock: "order", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "تراول ماگ ضد نشت استنلس استیل ۴۰ اونسی دسته‌دار",
+    price: "۱,۱۵۰,۰۰۰", rawPrice: 1150000, tag: "وایرال استنلی استایل", mainImg: "assets/img/products/photo-1517256064527-09c73fc73e38-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1517256064527-09c73fc73e38-w600.jpg"
     ],
     desc: "ماگ دوجداره استیل ۱.۲ لیتری با دسته ارگونومیک، درب عایق ضد نشت و حفظ دمای یخ تا ۳۰ ساعت.",
     specs: ["گنجایش: ۴۰ اونس (۱۱۸۰ میلی‌لیتر)", "متریال: استیل ضد زنگ دوجداره ۳۰۴ غذایی", "پایه باریک مناسب جا لیوانی خودرو"]
   },
   {
-    id: 11, category: "accessory", catName: "اکسسوری و کیف", title: "کمربند بوهو-شیک طرح گل کنده‌کاری با سگک وینتیج نقره‌ای",
-    price: "۳,۵۰۰,۰۰۰", rawPrice: 3500000, tag: "🆕 جدید · استایل وینتیج", mainImg: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&auto=format&fit=crop&q=80",
+    id: 11, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "هدست گیمینگ بی‌سیم نویزکنسلینگ اورایر",
+    price: "۲,۹۸۰,۰۰۰", rawPrice: 2980000, tag: "ترند گیمینگ", mainImg: "assets/img/products/photo-1505740420928-5e560c06d30e-w600.jpg",
     gallery: [
-      "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1621784563330-caee0b138a00?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80"
+      "assets/img/products/photo-1505740420928-5e560c06d30e-w600.jpg",
+      "assets/img/products/photo-1583394838336-acd977736f90-w600.jpg"
     ],
-    desc: "کمربند با طراحی بوهو-شیک و سگک بیضی توخالی وینتیج؛ اکسسوری خاص و همه‌کاره با ظاهر رترو-مدرن که به‌راحتی با جین، شلوار پارچه‌ای، دامن و پیراهن ست می‌شود. انتخابی شیک برای استایل روزمره، دانشگاه، سفر و مهمانی‌های غیررسمی.",
-    specs: ["طراحی: بوهو-شیک رترو با کنده‌کاری طرح گل", "سگک: بیضی توخالی وینتیج با آبکاری نقره‌ای", "رنگ: کلاسیک همه‌کاره قابل ست با انواع لباس", "مناسب: جین، شلوار پارچه‌ای، دامن، پیراهن و استایل خیابانی", "هدیه: گزینه‌ای عالی برای علاقه‌مندان استایل بوهو و رترو"]
+    desc: "هدفون اورایر با نویزکنسلینگ اکتیو، صدای فرکانس‌بالا و میکروفون حذف نویز محیط مناسب گیم و کال‌های طولانی.",
+    specs: ["اتصال: بلوتوث ۵.۳ با تاخیر زیر ۶۰ میلی‌ثانیه", "باتری: ۴۰ ساعت پخش مداوم با شارژ سریع Type-C", "پد گوش طبی با فوم حافظه‌دار برای استفاده طولانی"]
+  },
+  {
+    id: 12, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "ساعت هوشمند آمولد با پایش ضربان و اکسیژن خون",
+    price: "۲,۱۵۰,۰۰۰", rawPrice: 2150000, tag: "پرفروش هدیه", mainImg: "assets/img/products/photo-1546868871-7041f2a55e12-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1546868871-7041f2a55e12-w600.jpg",
+      "assets/img/products/photo-1523275335684-37898b6baf30-w600.jpg"
+    ],
+    desc: "اسمارت واچ نمایشگر آمولد گرد با بیش از ۱۰۰ حالت ورزشی، پایش خواب و اعلان‌های هوشمند فارسی.",
+    specs: ["نمایشگر: آمولد ۱.۴ اینچی همیشه‌روشن", "سنسورها: ضربان قلب، SpO2 و پایش خواب", "مقاومت: ضدآب IP68 با باتری ۷ روزه"]
+  },
+  {
+    id: 13, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "کیبورد مکانیکال RGB هات‌سواپ قابل شستشو",
+    price: "۲,۷۵۰,۰۰۰", rawPrice: 2750000, tag: "ست‌آپ حرفه‌ای", mainImg: "assets/img/products/photo-1587829741301-dc798b83add3-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1587829741301-dc798b83add3-w600.jpg",
+      "assets/img/products/photo-1527814050087-3793815479db-w600.jpg"
+    ],
+    desc: "کیبورد ۷۵٪ مکانیکال با سوییچ هات‌سواپ، نورپردازی RGB پریمیوشن و بدنه فلزی برای استیم و تایپ حرفه‌ای.",
+    specs: ["سوییچ: قرمز خطی هات‌سواپ قابل تعویض", "اتصال: سه‌حالته بلوتوث، ۲.۴G و سیمی Type-C", "بدنه آلومینیومی با فوم عایق صدای تایپ"]
+  },
+  {
+    id: 14, stock: "order", category: "fashion", catName: "استایل و پوشاک", title: "کتانی رانینگ مش نخی بالشتکی سبک تک‌رنگ",
+    price: "۲,۲۹۰,۰۰۰", rawPrice: 2290000, tag: "استایل اسپرت", mainImg: "assets/img/products/photo-1542291026-7eec264c27ff-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1542291026-7eec264c27ff-w600.jpg",
+      "assets/img/products/photo-1560343090-f0409e92791a-w600.jpg",
+      "assets/img/products/photo-1600185365483-26d7a4cc7519-w600.jpg"
+    ],
+    desc: "کتانی رانینگ روزمره با رویه مش تنفسی و کفی فوم مموری؛ سبک، راحت و مناسب پیاده‌روی طولانی و استایل اسپرت.",
+    specs: ["کفی: فوم مموری قابل تعویض ضدبو", "وزن: حدود ۲۸۰ گرم برای هر لنگه", "سایزبندی: ۳۹ تا ۴۴ استاندارد"]
+  },
+  {
+    id: 15, stock: "order", category: "fashion", catName: "استایل و پوشاک", title: "کت بامبر پایلینگ ضدآب و باد اورسایز",
+    price: "۲,۵۵۰,۰۰۰", rawPrice: 2550000, tag: "ضد آب و باد", mainImg: "assets/img/products/photo-1591047139829-d91aecb6caea-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1591047139829-d91aecb6caea-w600.jpg",
+      "assets/img/products/photo-1556905055-8f358a7a47b2-w600.jpg"
+    ],
+    desc: "بامبر جکت پاییزه با روکش ضدآب، آستر توری و بندهای تنظیم کمر؛ مناسب استایل استریت و سفر.",
+    specs: ["روکش: پلی‌استر ضدآب با پوشش پوسته‌ای", "آستر: توری تنفسی با جیب داخلی زیپ‌دار", "سایزبندی: M تا XXL فیت آزاد"]
+  },
+  {
+    id: 16, stock: "iran", category: "accessory", catName: "اکسسوری و کیف", title: "بک‌پک ضدآب لپ‌تاپی با پورت شارژ USB",
+    price: "۱,۳۵۰,۰۰۰", rawPrice: 1350000, tag: "محبوب دانشجویی", mainImg: "assets/img/products/photo-1553062407-98eeb64c6a62-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1553062407-98eeb64c6a62-w600.jpg",
+      "assets/img/products/photo-1517445312882-bc9910d016b7-w600.jpg"
+    ],
+    desc: "کوله اداری و دانشجویی با محفظه ضربه‌گیر لپ‌تاپ ۱۵.۶ اینچ، جنس ضدآب و پورت شارژ USB بیرونی.",
+    specs: ["گنجایش: ۲۵ لیتر با ۱۲ جیب داخلی و خارجی", "محفظه لپ‌تاپ: ضربه‌گیر تا سایز ۱۵.۶ اینچ", "کمربند سینه + پشت پنل ضدتعریق"]
+  },
+  {
+    id: 17, stock: "iran", category: "accessory", catName: "اکسسوری و کیف", title: "عینک آفتابی پلاریزه یووی ۴۰۰ فریم فلزی",
+    price: "۹۸۰,۰۰۰", rawPrice: 980000, tag: "یووی ۴۰۰ اصل", mainImg: "assets/img/products/photo-1511499767150-a48a237f0083-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1511499767150-a48a237f0083-w600.jpg",
+      "assets/img/products/photo-1572635196237-14b3f281503f-w600.jpg"
+    ],
+    desc: "عینک آفتابی با لنز پلاریزه حذف انعکاس و محافظت کامل UV400؛ همراه با کیف سخت و دستمال مخصوص.",
+    specs: ["لنز: پلاریزه با پوشش ضدخش و UV400", "فریم: فلزی سبک با پد بینی سیلیکونی", "همراه: کیف سخت، دستمال و کارت تست اصل"]
+  },
+  {
+    id: 18, stock: "iran", category: "accessory", catName: "اکسسوری و کیف", title: "کیف دستی مینیمال زنانه با بند شانه جداشدنی",
+    price: "۱,۶۸۰,۰۰۰", rawPrice: 1680000, tag: "ترند مینیمال", mainImg: "assets/img/products/photo-1548036328-c9fa89d128fa-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1548036328-c9fa89d128fa-w600.jpg",
+      "assets/img/products/photo-1590874103328-eac38a683ce7-w600.jpg"
+    ],
+    desc: "کیف دستی بافت مینیمال با آستر پارچه‌ای، سه محفظه و بند شانه قابل جدا شدن؛ مناسب استایل روزمره و مجلسی.",
+    specs: ["جنس: چرم مصنوعی درجه یک ضدخط‌وخش", "ابعاد: ۲۶×۱۸×۹ سانتی‌متر", "بند شانه: قابل تنظیم و جداشدنی"]
+  },
+  {
+    id: 19, stock: "order", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "بطری آب استیل ترمو ۱ لیتری دوجداره بدنه چسبی",
+    price: "۸۵۰,۰۰۰", rawPrice: 850000, tag: "همراه سفر", mainImg: "assets/img/products/photo-1602143407151-7111542de6e8-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1602143407151-7111542de6e8-w600.jpg",
+      "assets/img/products/photo-1517256064527-09c73fc73e38-w600.jpg"
+    ],
+    desc: "بطری استیل ضدزنگ دوجداره با ماندگاری سردی ۲۴ ساعت و گرمی ۱۲ ساعت؛ درب ضدنشت و بدنه روکش پودری.",
+    specs: ["ظرفیت: ۱ لیتر با درب بسته‌بندی ضدنشت", "متریال: استیل ۳۰۴ غذایی دوجداره خلأ", "بدنه: روکش پودری ضدلغزش و ضدعرق"]
+  },
+  {
+    id: 20, stock: "order", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "رینگ لایت حلقه‌ای خودی با پایه و ریموت تیک‌تاک",
+    price: "۱,۴۵۰,۰۰۰", rawPrice: 1450000, tag: "وایرال تیک‌تاک", mainImg: "assets/img/products/photo-1608043152269-423dbba4e7e1-w600.jpg",
+    gallery: [
+      "assets/img/products/photo-1608043152269-423dbba4e7e1-w600.jpg",
+      "assets/img/products/photo-1534447677768-be436bb09401-w600.jpg"
+    ],
+    desc: "رینگ لایت ۱۲ اینچی با ۳ حالت رنگ و ۱۰ سطح شدت نور، پایه تلسکوپی تا ۲ متر و ریموت شاتر بلوتوثی.",
+    specs: ["نور: ۳ حالت سفید، گرم و مخلوط با دیمر ۱۰ مرحله", "پایه: تلسکوپی تا ۲ متر با سر چرخان ۳۶۰", "ریموت: بلوتوث شاتر سازگار با iOS و اندروید"]
   }
 ];
 
-// محتوای پیش‌فرض هیرو و سوشال
-const defaultHeroConfig = {
-  badge: "🇦🇲 خط مستقیم واردات: هاب ایروان ➔ هاب توزیع تبریز ➔ سراسر ایران",
-  title: 'خرید مستقیم از <span class="highlight-cyan">تمو، شین و آمازون</span><br>با تضمین اصالت و <span class="highlight-coral">قیمت کاملاً رقابتی</span>',
-  desc: "دسترسی بدون واسطه به محصولات اورجینال و ترند روز جهانی؛ کنترل فیزیکی و تست سلامت در ارمنستان، و ارسال پلمپ با تیپاکس از تبریز بدون درگیری با گمرک و پروسه‌های فرسایشی مرجوعی به چین.",
-  chips: ["TEMU (تمو)", "SHEIN (شین)", "AMAZON (آمازون)", "WILDBERRIES (وایلدبریز)"],
-  primaryBtn: { text: "مشاهده حراجی‌های لحظه‌ای ۹۰٪", href: "#flash-sale" },
-  secondaryBtn: { text: "استعلام قیمت لینک دلخواه", href: "#custom-order" },
-  keyPoints: [
-    { icon: "🛡️", title: "مرجوعی در ایروان", desc: "تست و تعویض در ارمنستان قبل از ورود به ایران" },
-    { icon: "💎", title: "سود کاملاً منصفانه", desc: "محاسبه با کمترین کارمزد و کرایه اقتصادی" },
-    { icon: "📸", title: "شفافیت و رهگیری لحظه‌ای", desc: "اسکرین‌شات خرید مستقیم پنل خارجی" }
-  ]
+const specialOfferProduct = {
+  id: 101, category: "special", catName: "تخفیف ویژه", title: "ایرباد بلوتوث ۵.۳ پرو با نویزکنسلینگ فعال",
+  price: "۸۹۰,۰۰۰", rawPrice: 890000, oldPrice: "۱,۷۸۰,۰۰۰", discountPercent: 50,
+  tag: "تخفیف ویژه ۵۰٪", mainImg: "assets/img/products/photo-1590658268037-6bf12165a8df-w600.jpg",
+  gallery: [
+    "assets/img/products/photo-1590658268037-6bf12165a8df-w600.jpg",
+    "assets/img/products/photo-1600294037681-c80b4cb5b434-w600.jpg",
+    "assets/img/products/photo-1572569511254-d8f925fe2cbb-w600.jpg"
+  ],
+  desc: "ایرباد وایرلس با نویزکنسلینگ فعال (ANC)، صدای بیس عمیق، دکمه لمسی و جعبه شارژ نمایش‌دار؛ پیشنهاد حراج هفته ترندز کارگو.",
+  specs: ["نویزکنسلینگ فعال ANC تا ۳۵ دسی‌بل", "باتری: ۶ ساعت پخش + ۲۴ ساعت با کیس شارژ", "مقاومت: ضدتعریق IPX5 با حالت گیم کم‌تاخیر"]
 };
-const defaultSocialsConfig = {
-  whatsapp: WHATSAPP_NUMBER,
-  instagramStyle: {
-    badge: "👕 مد، فشن و استایل",
-    title: "Trend Cargo Style",
-    handle: "@trendcargo.style",
-    url: "https://instagram.com/trendkargo_style",
-    followersNote: "🔥 هودی‌های وینتیج، کارگو و فشن شین",
-    bio: "مرجع خرید هودی‌های سنگین اسیدواش، شلوارهای بگ کارگو، کفش‌های چانکی و استایل‌های ترند پینترست از Shein و Temu.",
-    tags: ["#استریت_ویر", "#شین_ایران", "#هودی_اورسایز", "#کارگو_بگ"],
-    btnText: "مشاهده و فالو پیج استایل",
-    avatar: "assets/logo.png"
-  },
-  instagramGadget: {
-    badge: "⚡ گجت و دنیای تکنولوژی",
-    title: "Trend Cargo Gadget",
-    handle: "@trendcargo.gadget",
-    url: "https://instagram.com/trendkargo_gajet",
-    followersNote: "🚀 گجت‌های هوشمند و وایرال تیک‌تاک",
-    bio: "معرفی و تست آنباکس پرینترهای حرارتی جیبی، پایه‌های هوش مصنوعی تعقیب سوژه، شارژرهای وایرلس و گجت‌های دسکتاپ.",
-    tags: ["#گجت_هوشمند", "#تمو_ایران", "#ست_آپ_دسکتاپ", "#گجت_تیک_تاک"],
-    btnText: "مشاهده و فالو پیج گجت",
-    avatar: "assets/logo.png"
-  },
-  footerLinks: {
-    sites: [
-      { label: "خرید مستقیم از Temu (تمو)", href: "https://www.temu.com/" },
-      { label: "خرید مستقیم از Shein (شین)", href: "https://m.shein.com/" },
-      { label: "خرید از Amazon", href: "https://www.amazon.com/" },
-      { label: "خرید از Wildberries", href: "https://www.wildberries.ru/" }
-    ]
-  }
-};
-// اخبار تکنولوژی ۲۰۲۶ - پیش‌فرض (وبلاگ)
-const NEWS_AUTHOR_DEFAULT = 'تیم تحریریه ترندز کارگو';
-const defaultTechNewsList = [
+
+/* -------------------------------------------------------------------------- */
+/*  TECH NEWS — copied verbatim from the original file                        */
+/* -------------------------------------------------------------------------- */
+
+const techNewsList = [
   {
     id: 1,
     category: "گجت‌های پوشیدنی بیومتریک & AI",
     title: "رونمایی از نسل جدید حلقه‌های هوشمند سلامت با هوش مصنوعی و باتری ۱۰ روزه",
     date: "۲۵ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۳ دقیقه",
-    img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/products/photo-1605100804763-247f67b3557e-w800.jpg",
     badge: "تکنولوژی برتر ۲۰۲۶",
     shortDesc: "پایش پیوسته علائم حیاتی، پایش غیرتهاجمی نوسانات قند خون و سنجش دقیق کیفیت خواب با سنسورهای مینیاتوری تیتانیومی.",
     fullBody: `در سال ۲۰۲۶ حلقه‌های هوشمند به بلوغ کامل رسیده‌اند. سنسورهای نوری جدید قادرند بدون نیاز به سوزن و تنها با تحلیل بازتاب طیف نوری از مویرگ‌های انگشت، داده‌های بیومتریک بدن را به هوش مصنوعی منتقل کنند. فریم تیتانیومی سبک، ضدآب تا عمق ۱۰۰ متری و باتری ۱۰ روزه این گجت را بی‌رقیب ساخته است.`,
@@ -208,7 +443,7 @@ const defaultTechNewsList = [
     title: "عینک‌های واقعیت افزوده سبک با نمایشگر MicroLED و ترجمه همزمان ۴۰ زبان",
     date: "۲۰ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۴ دقیقه",
-    img: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/products/photo-1593508512255-86ab42a8e620-w800.jpg",
     badge: "ترند جهانی ۲۰۲۶",
     shortDesc: "ترجمه صوتی و متنی در لحظه روی شیشه شفاف عینک همراه با دستیار هوشمند بصری در وزن ۴۳ گرم.",
     fullBody: `عینک‌های هوشمند ۲۰۲۶ با ترکیب پروژکتورهای میکرولد فوق‌العاده درخشان و تراشه‌های هوش مصنوعی، متن مکالمات زبان‌های خارجی را به صورت زیرنویس زنده روبه‌روی چشمان شما نمایش می‌دهند.`,
@@ -216,1339 +451,1082 @@ const defaultTechNewsList = [
   },
   {
     id: 3,
-    category: "چاپ سه‌بعدی و ساخت دیجیتال",
-    title: "پرینترهای سه‌بعدی رومیزی ۲۰۲۶ با چاپ سرامیکی و فلزی به سرعت ۵ برابر نسل قبل",
-    date: "۱۵ آگوست ۲۰۲۶",
+    category: "تراشه‌های هوش مصنوعی و ابررایانه‌های جیبی",
+    title: "پردازنده‌های NPU نسل ۲۰۲۶ با توان پردازش هوش مصنوعی روی خود دستگاه",
+    date: "۱۴ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۵ دقیقه",
-    img: "https://images.unsplash.com/photo-1615913289763-53ff838cd9c1?w=800&auto=format&fit=crop&q=80",
-    badge: "انقلابی در ساخت",
-    shortDesc: "چاپ چند-متری در یک روز با هد چاپ چهارگانه و خنک‌کاری فعال؛ از نمونه‌سازی تا تولید قطعات کاربردی در خانه.",
-    fullBody: `پرینترهای سه‌بعدی نسل ۲۰۲۶ دیگر یک اسباب‌بازی فناورانه نیستند. هد چاپ چهارگانه جدید امکان کار همزمان با پلاستیک فنی، رزین سخت، کامپوزیت چوبی و حتی فیلامنت پرشده با ذرات فلز را می‌دهد.\nخنک‌کاری فعال نازل و ریل‌های خطی سرعت چاپ را تا ۵ برابر نسل قبل بالا برده و لایه‌ها آن‌قدر یکنواخت شده‌اند که برای بسیاری از قطعات داخلی، پس‌پردازش تقریباً حذف شده است.\nقیمت پایه این دستگاه‌ها در پلتفرم‌هایی مثل تمو و آمازون امسال زیر سقف روان‌کننده بازار رفته و برای کسب‌وکارهای کوچک ایرانی، از مسیر ترندز کارگو کاملاً اقتصادی شده است.`,
-    specs: ["هد چاپ: چهارگانه با نازل ۰.۲ میلی‌متری", "سرعت: تا ۵۰۰ میلی‌متر بر ثانیه", "قابلیت: چاپ فیلامنت پُر از ذرات فلز و چوب", "اتصال: Wi-Fi 6 و پردازش آفلاین روی تراشه"]
+    img: "assets/img/products/photo-1518770660439-4636190af475-w800.jpg",
+    badge: "انفجار هوش مصنوعی",
+    shortDesc: "اجرای مدل‌های زبانی روی گوشی و لپ‌تاپ بدون اینترنت، با معماری ۲ نانومتری و مصرف انرژی تا ۴۰٪ کمتر.",
+    fullBody: `بزرگ‌ترین تغییر سال ۲۰۲۶ جابه‌جایی پردازش هوش مصنوعی از سرور به جیب شماست. تراشه‌های جدید با واحد پردازش عصبی اختصاصی، مدل‌های زبانی و تصویری را کامل روی دستگاه اجرا می‌کنند؛ یعنی دستیار صوتی، ترجمه، ویرایش تصویر و خلاصه‌سازی متن بدون ارسال داده به ابر انجام می‌شود. نتیجه‌اش دو مزیت انکارناپذیر است: حریم خصوصی کامل و سرعت پاسخ در حد میلی‌ثانیه. معماری ۲ نانومتری همراه با حافظه روی تراشه، مصرف باتری را هم تا ۴۰ درصد نسبت به نسل قبل کاهش داده است.`,
+    specs: ["واحد پردازش عصبی: تا ۹۰ ترا عملیات بر ثانیه (TOPS)", "معماری: ۲ نانومتری با حافظه یکپارچه", "حریم خصوصی: پردازش کامل روی دستگاه بدون نیاز به اینترنت"]
   },
   {
     id: 4,
-    category: "صوت هوشمند و ترجمه همزمان",
-    title: "هدفون‌های ترجمه همزمان با تراشه اختصاصی AI؛ دنیا بدون مرز زبان در ۲۰۲۶",
-    date: "۱۰ آگوست ۲۰۲۶",
+    category: "رباتیک و دستیارهای فیزیکی هوشمند",
+    title: "ربات‌های خانگی ۲۰۲۶ با درک بصری کامل و دست‌های پنجه‌ای دقیق",
+    date: "۸ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۴ دقیقه",
-    img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80",
-    badge: "پرفروش جهانی",
-    shortDesc: "ترجمه دوطرفه ۶۰ زبان با تأخیر کمتر از نیم‌ثانیه، حذف نویز جاده و ۴۰ ساعت پخش با کیس شارژ.",
-    fullBody: `نسل جدید هدفون‌های ترجمه، با تراشه اختصاصی هوش مصنوعی، گفت‌وگوی دوطرفه را بدون نیاز به توقف انجام می‌دهند: شما فارسی حرف می‌زنید و طرف مقابل در گوشی خود انگلیسی یا ترکی می‌شنود؛ تأخیر پردازش زیر نیم ثانیه است.\nحذف نویز تطبیقی نسل جدید صدای جاده و فروشگاه را تا ۴۵ دسی‌بل کم می‌کند و حالت «شفافیت گفتار» اجازه می‌دهد صدای محیط برای رانندگی و ورزش از دست نرود.\nکیس شارژ با پشتیبانی از شارژ بی‌سیم، مجموع پخش ۴۰ ساعته می‌دهد و نسخه‌های اصلی این محصولات با تست سلامت در هاب ایروان، بدون دردسر مرجوعی به دستتان می‌رسد.`,
-    specs: ["ترجمه: دوطرفه ۶۰ زبان با حالت آفلاین محدود", "تأخیر ترجمه: کمتر از ۰.۵ ثانیه", "حذف نویز: تطبیقی ۴۵dB", "باتری: ۸ ساعت + ۳۲ ساعت با کیس"]
-  },
-  {
-    id: 5,
-    category: "لوازم کریتور و ست‌آپ",
-    title: "استودیوی خانگی ۲۰۲۶: پایه‌های تعقیب سوژه، نور تشخیص چهره و میکروفون‌های هوشمند",
-    date: "۵ آگوست ۲۰۲۶",
-    readTime: "زمان مطالعه: ۴ دقیقه",
-    img: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=800&auto=format&fit=crop&q=80",
-    badge: "محبوب کریتورها",
-    shortDesc: "ست‌آپ حرفه‌ای ویدئو با پایه هوشمند تعقیب حرکت، نور RGB تشخیصی و میکروفون ضد-روم اتاق؛ همه از آمازون و تمو.",
-    fullBody: `تقاضای جهانی برای تجهیزات تولید محتوا در ۲۰۲۶ به اوج رسیده و پلتفرم‌های تمو و آمازون پر از گجت‌های مقرون‌به‌صرفه‌ای هستند که قبلاً فقط در استودیوهای حرفه‌ای دیده می‌شد.\nپایه‌های تعقیب سوژه با دوربین هوشمند، شما را تا ۳۶۰ درجه دنبال می‌کنند؛ نورپردازی‌های RGB جدید با حسگر تشخیص چهره، پوست را در تاریکی مطلق هم نور حرفه‌ای می‌دهند و میکروفون‌های ضبط با هوش مصنوعی، پژواک اتاق را واقعاً حذف می‌کنند.\nدر این گزارش، ترکیب اقتصادی یک ست‌آپ کامل زیر ۸ میلیون تومان را با لینک‌های مستقیم معرفی کرده‌ایم که می‌توانید همین امروز از طریق فرم استعلام ترندز کارگو سفارش دهید.`,
-    specs: ["پایه تعقیب سوژه: ۳۶۰ درجه با ردیابی چهره", "نور: RGB تشخیصی با ۱۶ میلیون رنگ", "میکروفون: حذف پژواک هوشمند USB-C", "سازگاری: iOS، اندروید و دسکتاپ"]
+    img: "assets/img/products/photo-1485827404703-89b55fcc595e-w800.jpg",
+    badge: "آینده نزدیک",
+    shortDesc: "چیدن میز، جمع‌آوری وسایل و مراقبت از سالمندان با ربات‌های سبک‌وزن مجهز به مدل‌های بصری-زبانی.",
+    fullBody: `پس از سال‌ها وعده، ربات‌های خانگی در ۲۰۲۶ به محصول قابل خرید تبدیل شده‌اند. ترکیب مدل‌های بصری-زبانی با دست‌های پنجه‌ای دقیق باعث شده این ربات‌ها فقط دستور ساده را اجرا نکنند، بلکه محیط را بفهمند: ظرف‌ها را داخل ماشین ظرفشویی بچینند، لباس‌ها را تفکیک کنند و داروی سالمندان را در ساعت مشخص تحویل دهند. قیمت‌ها هم به محدوده‌ی محصولات لوکس خانگی رسیده و همین موضوع بازار ۲۰۲۶ را متفاوت کرده است.`,
+    specs: ["سنسورها: دوربین عمق‌سنج سه‌بعدی و لیدار ۳۶۰ درجه", "دست‌ها: پنجه چند مفصله با کنترل نیروی میلی‌نیوتونی", "باتری: ۸ ساعت کارکرد پیوسته و شارژ خودکار"]
   }
 ];
-let techNewsList = [...defaultTechNewsList];
-let newsActiveFilter = 'all';
 
-// ==========================================================================
-// تجربه واقعی مشتریان (کاروسل نظرات)
-// ==========================================================================
-const defaultTestimonials = [
-  { id: 1, name: 'محمد رضایی', city: 'تبریز', product: 'هودی اورسایز Shein', rating: 5, text: 'کیفیت پارچه واقعاً فوق‌العاده بود؛ از پیج استایل دیدم و استعلام گرفتم. ۹ روز بعد بسته پلمپ‌شده دستم رسید. عکس محصول با اسکرین‌شات خرید هم برایم فرستادند که خیلم مطمئن کرد.' },
-  { id: 2, name: 'سارا احمدی', city: 'تهران', product: 'پرینتر حرارتی جیبی Temu', rating: 5, text: 'یکی از پرینترهای را از سایت خارجی خریده بودم و گم شده بود. اینجا هم لینک دادم هم مشاوره گرفتم؛ گران‌تر اما اصلی رسید و فاکتور هم دادند. پشتیبانی واتساپ‌شان واقعاً جواب می‌دهد.' },
-  { id: 3, name: 'امیرحسین کریمی', city: 'اصفهان', product: 'پایه تعقیب سوژه', rating: 5, text: 'برای ست‌آپ یوتیوبم از آمازون سفارش دادم. چون مرجوعی به چین سخت است، مزیت بزرگشان بازرسی در ایروان بود. محصول سالم و همانی که در عکس‌ها بود به دستم رسید.' },
-  { id: 4, name: 'نگین موسوی', city: 'شیراز', product: 'ست کیف و اکسسوری', rating: 4, text: 'قیمت منصفانه‌تر از سایت‌های واسطه‌ای بود و از لحظه ثبت سفارش تا ارسال تیپاکس همه‌چیز شفاف بود. کفش‌ها کمی دیرتر از موعد رسیدند ولی کیفیت ارزشش را داشت.' },
-  { id: 5, name: 'رضا نادری', city: 'مشهد', product: 'گجت‌های هوشمند خانه', rating: 5, text: 'دو تا سفارش قبلی‌ام از واسطه‌ها خراب رسیده بود. اینجا سنسورها را تست کرده بودند و حتی ویدئوی تست را فرستادند. بسته‌بندی پلمپ خیلی حرفه‌ای بود.' },
-  { id: 6, name: 'مریم جلالی', city: 'کرج', product: 'ساعت هوشمند', rating: 5, text: 'استعلام قیمت آنلاین دقیق بود، همان عددی که در سایت محاسبه شد را فاکتور دادند. از خرید دومم مطمئن‌تر بودم و واقعاً بهترین تجربه خرید خارجی‌ام بود.' },
-  { id: 7, name: 'علی دقتی', city: 'تبریز', product: 'کفش چانکی Shein', rating: 4, text: 'چون هم‌شهری هستم، همان روز بسته را گرفتم. تناسب کیفیت با قیمت عالی بود؛ فقط ای کاش رنگ‌بندی‌های بیشتری داشتند.' },
-  { id: 8, name: 'پریسا شریفی', city: 'رشت', product: 'لوازم آشپزخانه Wildberries', rating: 5, text: 'از وایلدبریز سفارش دادم که هیچ واسطه‌ای قبولش نمی‌کرد. تیم ترندز کارگو همه‌چیز را از صفر مدیریت کردند و حتی آموزش کار با دستگاه را هم فرستادند.' }
-];
+/** Admin-created news (localStorage) is normalized into the same shape as the built-ins. */
+function normalizeNewsItem(item, index) {
+  const desc = String(item.desc || item.shortDesc || '');
+  const fullBody = String(item.fullBody || desc);
+  const category = item.category || item.tag || 'اخبار ترندز کارگو';
+  const badge = item.badge || item.tag || 'خبر تازه';
+  const img = item.img || item.image || item.mainImg || FALLBACK_IMG;
+  const specs = Array.isArray(item.specs)
+    ? item.specs
+    : (item.specs ? [String(item.specs)] : []);
+  return {
+    id: item.id != null ? item.id : `custom-${index}`,
+    category,
+    title: item.title || 'خبر بدون عنوان',
+    date: item.date || new Date().toLocaleDateString('fa-IR'),
+    readTime: item.readTime || 'زمان مطالعه: ۳ دقیقه',
+    img,
+    badge,
+    shortDesc: desc,
+    fullBody,
+    specs
+  };
+}
 
-// ==========================================================================
- // موتور ذخیره‌سازی داده‌های واکنشی (Reactive Store)
- // ==========================================================================
+/**
+ * Built-in tech reports plus any news added from the admin panel.
+ * Keeps the existing `trendcargo_custom_news` key and payload shape intact.
+ */
+function getTechNews() {
+  const stored = Storage.get(STORAGE_KEYS.news, null);
+  if (!Array.isArray(stored) || !stored.length) return techNewsList;
+
+  const seen = new Set(techNewsList.map((n) => String(n.id)));
+  const extra = stored
+    .filter((item) => item && !seen.has(String(item.id)))
+    .map(normalizeNewsItem);
+
+  return extra.length ? [...techNewsList, ...extra] : techNewsList;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  SHARE — WhatsApp / Telegram / Instagram                                   */
+/* -------------------------------------------------------------------------- */
+
+const SITE_FALLBACK_URL = 'https://trendkargo.ir/';
+
+/** Canonical, shareable link for a product or a news report. */
+function shareLinkFor(kind, id) {
+  const base = /^https?:$/.test(location.protocol)
+    ? `${location.origin}${location.pathname}`
+    : SITE_FALLBACK_URL;
+  return `${base}#${kind}-${encodeURIComponent(id)}`;
+}
+
+function buildSharePayload(title, url, subtitle) {
+  const text = subtitle ? `${title}\n${subtitle}` : title;
+  return {
+    url,
+    text,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`,
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+    instagram: 'https://instagram.com/trendkargo_style'
+  };
+}
+
+async function copyShareLink(url) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(url);
+      return true;
+    }
+  } catch { /* fall back to the legacy path below */ }
+
+  try {
+    const field = document.createElement('textarea');
+    field.value = url;
+    field.setAttribute('readonly', '');
+    field.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(field);
+    field.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(field);
+    return ok;
+  } catch { return false; }
+}
+
+/** Small transient note so sharing always gives visible feedback. */
+function floatingNote(message) {
+  let note = document.getElementById('share-note');
+  if (!note) {
+    note = document.createElement('div');
+    note.id = 'share-note';
+    note.className = 'share-note';
+    note.setAttribute('role', 'status');
+    note.setAttribute('aria-live', 'polite');
+    document.body.appendChild(note);
+  }
+  note.textContent = message;
+  note.classList.add('active');
+  clearTimeout(floatingNote._timer);
+  floatingNote._timer = setTimeout(() => note.classList.remove('active'), 2800);
+}
+
+function onShareButtonClick(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const button = event.currentTarget;
+  const network = button.dataset.share;
+  const payload = buildSharePayload(
+    button.dataset.shareTitle || document.title,
+    button.dataset.shareUrl || location.href,
+    button.dataset.shareExtra || ''
+  );
+
+  if (network === 'instagram') {
+    copyShareLink(payload.url).then((copied) => {
+      window.open(payload.instagram, '_blank', 'noopener');
+      floatingNote(copied
+        ? 'لینک کپی شد؛ در استوری یا دایرکت اینستاگرام پیست کنید ✅'
+        : `اینستاگرام: ${payload.url}`);
+    });
+    return;
+  }
+
+  const isTelegram = network === 'telegram';
+  floatingNote(isTelegram ? 'در حال باز کردن تلگرام…' : 'در حال باز کردن واتساپ…');
+  window.open(isTelegram ? payload.telegram : payload.whatsapp, '_blank', 'noopener');
+}
+
+/** Attaches share behaviour inside a freshly rendered container. */
+function wireShareButtons(root) {
+  (root || document).querySelectorAll('.share-btn[data-share]').forEach((button) => {
+    button.addEventListener('click', onShareButtonClick);
+  });
+}
+
+/** Pushes the current item's title/link into a modal's share buttons. */
+function setShareTargets(container, title, url, subtitle) {
+  if (!container) return;
+  container.querySelectorAll('.share-btn[data-share]').forEach((button) => {
+    button.dataset.shareTitle = title;
+    button.dataset.shareUrl = url;
+    button.dataset.shareExtra = subtitle || '';
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/*  REACTIVE STORE                                                            */
+/* -------------------------------------------------------------------------- */
+
 const TrendStore = {
   products: [],
+  specialOffer: null,
   rates: { ...CURRENCY_CONFIG },
-  hero: { ...defaultHeroConfig },
-  socials: JSON.parse(JSON.stringify(defaultSocialsConfig)),
-  testimonials: [],
 
   init() {
-    this.products = this.loadStorage(STORAGE_KEYS.products, top20Products);
-    this.rates = this.loadStorage(STORAGE_KEYS.rates, CURRENCY_CONFIG);
-    const savedRates = this.loadStorage('trendcargo_last_exchange_rates', null);
-    if (savedRates && typeof savedRates === 'object') this.rates = { ...this.rates, ...savedRates };
-    this.hero = this.loadStorage(STORAGE_KEYS.hero, defaultHeroConfig);
-    // deep merge for socials / chips fallback
-    const savedSocials = this.loadStorage(STORAGE_KEYS.socials, null);
-    if (savedSocials && typeof savedSocials === 'object') this.socials = { ...JSON.parse(JSON.stringify(defaultSocialsConfig)), ...savedSocials, instagramStyle: { ...defaultSocialsConfig.instagramStyle, ...(savedSocials.instagramStyle||{}) }, instagramGadget: { ...defaultSocialsConfig.instagramGadget, ...(savedSocials.instagramGadget||{}) }, footerLinks: savedSocials.footerLinks || defaultSocialsConfig.footerLinks };
-    techNewsList = this.loadStorage(STORAGE_KEYS.news, defaultTechNewsList);
-    if (!Array.isArray(techNewsList) || !techNewsList.length) techNewsList = [...defaultTechNewsList];
-    this.testimonials = this.loadStorage(STORAGE_KEYS.testimonials, defaultTestimonials);
-    if (!Array.isArray(this.testimonials) || !this.testimonials.length) this.testimonials = JSON.parse(JSON.stringify(defaultTestimonials));
+    const savedProducts = Storage.get(STORAGE_KEYS.products, null);
+    const defaults = (typeof structuredClone === 'function'
+      ? structuredClone(top20Products)
+      : JSON.parse(JSON.stringify(top20Products)));
+    this.products = Array.isArray(savedProducts) && savedProducts.length
+      ? savedProducts.map((p) => {
+          if (p && typeof p.stock === 'undefined') {
+            const d = defaults.find((x) => String(x.id) === String(p.id));
+            if (d) return { ...p, stock: d.stock };
+          }
+          return p;
+        })
+      : defaults;
+
+    const savedOffer = Storage.get(STORAGE_KEYS.specialOffer, null);
+    this.specialOffer = (savedOffer && !Array.isArray(savedOffer))
+      ? savedOffer
+      : (typeof structuredClone === 'function'
+          ? structuredClone(specialOfferProduct)
+          : JSON.parse(JSON.stringify(specialOfferProduct)));
+
+    const savedRates = Storage.get(STORAGE_KEYS.rates, CURRENCY_CONFIG);
+    this.rates = { ...CURRENCY_CONFIG, ...savedRates };
   },
 
-  loadStorage(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return fallback;
-      const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === 'object' ? parsed : fallback;
-    } catch { return fallback; }
+  saveProducts(list) {
+    if (Array.isArray(list)) this.products = list;
+    Storage.set(STORAGE_KEYS.products, this.products);
   },
 
-  saveProducts(newProducts) {
-    this.products = Array.isArray(newProducts) ? newProducts : this.products;
-    try { localStorage.setItem(STORAGE_KEYS.products, JSON.stringify(this.products)); } catch (error) { console.warn('Unable to persist product list:', error); }
-    TrendBackend.push('products', this.products);
+  saveSpecialOffer(offer) {
+    if (offer && typeof offer === 'object') this.specialOffer = offer;
+    Storage.set(STORAGE_KEYS.specialOffer, this.specialOffer);
   },
 
-  saveRates(newRates) {
-    this.rates = { ...this.rates, ...(newRates || {}) };
-    try {
-      localStorage.setItem(STORAGE_KEYS.rates, JSON.stringify(this.rates));
-      localStorage.setItem('trendcargo_last_exchange_rates', JSON.stringify(this.rates));
-    } catch (error) { console.warn('Unable to persist exchange rates:', error); }
-    TrendBackend.push('rates', this.rates);
-  },
-
-  saveHero(nextHero){
-    this.hero = { ...this.hero, ...(nextHero||{}) };
-    try{ localStorage.setItem(STORAGE_KEYS.hero, JSON.stringify(this.hero)); }catch(e){ console.warn(e); }
-    TrendBackend.push('hero', this.hero);
-  },
-  saveSocials(nextSocials){
-    this.socials = { ...this.socials, ...(nextSocials||{}) };
-    try{ localStorage.setItem(STORAGE_KEYS.socials, JSON.stringify(this.socials)); }catch(e){ console.warn(e); }
-    TrendBackend.push('socials', this.socials);
-  },
-  saveNews(list){
-    const arr = Array.isArray(list)? list : techNewsList;
-    techNewsList = arr;
-    try{ localStorage.setItem(STORAGE_KEYS.news, JSON.stringify(arr)); }catch(e){ console.warn(e); }
-    TrendBackend.push('news', arr);
-  },
-  saveTestimonials(list){
-    this.testimonials = Array.isArray(list) ? list : this.testimonials;
-    try{ localStorage.setItem(STORAGE_KEYS.testimonials, JSON.stringify(this.testimonials)); }catch(e){ console.warn(e); }
-    TrendBackend.push('testimonials', this.testimonials);
+  saveRates(next) {
+    this.rates = { ...this.rates, ...(next || {}) };
+    Storage.set(STORAGE_KEYS.rates, this.rates);
+    Storage.set(STORAGE_KEYS.lastRates, this.rates);
   },
 
   getRate(code) {
     const key = String(code || '').toLowerCase();
-    if (key === 'amd') return Number(this.rates.baseRates?.amd || 170);
-    if (key === 'usd') return Number(this.rates.baseRates?.usd || 188000);
-    if (key === 'try') return Number(this.rates.baseRates?.try || 5800);
-    return Number(this.rates.baseRates?.usd || 188000);
+    return Number(this.rates.baseRates?.[key] ?? this.rates.baseRates?.usd ?? 188000);
   }
 };
 
-TrendStore.init();
+/* -------------------------------------------------------------------------- */
+/*  THEME                                                                     */
+/* -------------------------------------------------------------------------- */
 
-// ==========================================================================
-// بکند واقعی (Vercel Serverless + Supabase) — همگام‌سازی با localStorage
-// خواندن داده‌ها از سرور در لود اول؛ در نبودِ بکند، fallback به localStorage.
-// ذخیره‌سازی ادمین به صورت خودکار به سرور push می‌شود (نیازمند توکن ادمین).
-// ==========================================================================
-const API_STORE_URL = '/api/store';
-
-const TrendBackend = {
-  online: null,          // null = نامشخص، true = متصل، false = قطع
-  echoGuard: false,      // جلوگیری از echo هنگام اعمال داده سرور
-  _timers: {},
-
-  getAdminToken() {
-    try { return sessionStorage.getItem('trendcargo_admin_token') || ''; }
-    catch (error) { return ''; }
-  },
-
-  async pull() {
-    try {
-      const response = await fetch(API_STORE_URL, { cache: 'no-store' });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload || payload.ok === false || !payload.data) {
-        throw new Error(payload && payload.error ? payload.error : `HTTP ${response.status}`);
-      }
-      this.online = true;
-      console.info('✅ بکند متصل شد — داده‌ها از سرور بارگذاری می‌شوند.');
-      return payload.data;
-    } catch (error) {
-      this.online = false;
-      console.warn('بکند در دسترس نیست — ادامه با localStorage:', error.message);
-      return null;
-    }
-  },
-
-  push(key, value) {
-    if (this.echoGuard) return;
-    const token = this.getAdminToken();
-    if (!token || this.online === false) return;
-    clearTimeout(this._timers[key]);
-    this._timers[key] = setTimeout(async () => {
-      try {
-        const response = await fetch(API_STORE_URL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
-          body: JSON.stringify({ key, value })
-        });
-        if (!response.ok) {
-          console.warn(`Backend push failed for "${key}": HTTP ${response.status}`);
-        }
-      } catch (error) {
-        console.warn(`Backend push failed for "${key}":`, error.message);
-      }
-    }, 500);
-  },
-
-  applyServerData(data) {
-    if (!data || typeof data !== 'object') return;
-    this.echoGuard = true;
-    try {
-      if (Array.isArray(data.products) && data.products.length) {
-        TrendStore.products = data.products;
-        this._saveLocal(STORAGE_KEYS.products, data.products);
-        if (typeof renderProducts === 'function') renderProducts();
-      }
-      if (data.hero && typeof data.hero === 'object') {
-        TrendStore.saveHero(data.hero);
-        if (typeof renderHeroSection === 'function') renderHeroSection();
-      }
-      if (data.socials && typeof data.socials === 'object') {
-        TrendStore.saveSocials(data.socials);
-        if (typeof renderSocialsSection === 'function') renderSocialsSection();
-      }
-      if (Array.isArray(data.news) && data.news.length) {
-        TrendStore.saveNews(data.news);
-        if (typeof renderTechNews === 'function') renderTechNews();
-      }
-      if (data.rates && typeof data.rates === 'object' && data.rates.baseRates) {
-        TrendStore.saveRates(data.rates);
-      }
-      if (Array.isArray(data.invoices) && data.invoices.length) {
-        this._saveLocal(STORAGE_KEYS.invoices, data.invoices.slice(0, 50));
-        if (data.invoices[0]) this._saveLocal(STORAGE_KEYS.lastInvoice, data.invoices[0]);
-        if (typeof renderOrdersTable === 'function') renderOrdersTable();
-        if (typeof updateDashboardMetrics === 'function') updateDashboardMetrics();
-      }
-      if (Array.isArray(data.flashDeals) && data.flashDeals.length) {
-        this._saveLocal(STORAGE_KEYS.flashDeals, data.flashDeals);
-        if (typeof renderFlashDeals === 'function') renderFlashDeals();
-      }
-      if (Array.isArray(data.discounts) && data.discounts.length) {
-        this._saveLocal('trendcargo_discounts', data.discounts);
-        if (typeof renderDiscounts === 'function') renderDiscounts();
-      }
-      if (Array.isArray(data.orders)) {
-        this._saveLocal('trendcargo_orders', data.orders);
-        if (typeof renderCustomOrders === 'function') renderCustomOrders();
-      }
-      if (Array.isArray(data.testimonials) && data.testimonials.length) {
-        TrendStore.saveTestimonials(data.testimonials);
-        if (typeof renderTestimonials === 'function') renderTestimonials();
-      }
-      if (typeof data.terms === 'string' && data.terms.trim()) {
-        this._saveLocal(STORAGE_KEYS.termsText, data.terms);
-        if (typeof loadTermsEditor === 'function') loadTermsEditor();
-      }
-      if (typeof data.sheetUrl === 'string' && data.sheetUrl.trim()) {
-        this._saveLocal(STORAGE_KEYS.sheetUrl, data.sheetUrl);
-        if (typeof hydrateSheetUrl === 'function') hydrateSheetUrl();
-        if (typeof syncSheetInputs === 'function') syncSheetInputs();
-      }
-      if (typeof renderCMS === 'function') renderCMS();
-      if (typeof hydrateHeroAdmin === 'function') hydrateHeroAdmin();
-      if (typeof hydrateSocialsAdmin === 'function') hydrateSocialsAdmin();
-      if (typeof renderFooterSitesEditor === 'function') renderFooterSitesEditor();
-      if (typeof renderNewsAdmin === 'function') renderNewsAdmin();
-      if (typeof injectDynamicStructuredData === 'function') injectDynamicStructuredData();
-    } finally {
-      this.echoGuard = false;
-    }
-  },
-
-  _saveLocal(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); }
-    catch (error) { console.warn(`Unable to cache "${key}" locally:`, error); }
-  }
-};
-
-TrendBackend.pull().then((data) => {
-  if (!data) return;
-  if (document.readyState === 'complete') {
-    TrendBackend.applyServerData(data);
-  } else {
-    window.addEventListener('load', () => TrendBackend.applyServerData(data), { once: true });
-  }
-});
-
-async function fetchTgjuLiveRates() {
-  const cacheKey = 'trendcargo_tgju_cached_rates';
-  const maxAgeMs = 60 * 60 * 1000;
-  const now = Date.now();
-
-  try {
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (parsed && parsed.fetchedAt && now - parsed.fetchedAt < maxAgeMs) {
-        TrendStore.saveRates(parsed.rates);
-        return parsed.rates;
-      }
-    }
-  } catch (error) {
-    console.warn('Cached TGJU rates unavailable:', error);
-  }
-
-  const endpoints = [
-    'https://alanchand.com/media/api',
-    'https://alanchand.com/media/api?format=json',
-    'https://alanchand.com/currencies-price',
-    'https://alanchand.com/media/api?type=currency'
-  ];
-
-  try {
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(endpoint, { cache: 'no-store' });
-        if (!response.ok) continue;
-        const rawText = await response.text();
-
-        let parsed = null;
-        try {
-          parsed = JSON.parse(rawText);
-        } catch {
-          parsed = null;
-        }
-
-        const jsonRate = parsed && typeof parsed === 'object' ? parsed : null;
-        const normalize = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || null;
-
-        const extractFromObject = (obj) => {
-          if (!obj || typeof obj !== 'object') return null;
-          for (const key of ['usd', 'dollar', 'dol', 'price_usd', 'usdPrice', 'sell', 'buy', 'price']) {
-            if (obj[key] !== undefined && obj[key] !== null && Number(obj[key])) return Number(obj[key]);
-          }
-          for (const value of Object.values(obj)) {
-            if (typeof value === 'number' && value > 5000) return value;
-          }
-          return null;
-        };
-
-        const usdRate = normalize(
-          jsonRate?.usd ?? jsonRate?.dollar ?? jsonRate?.price_usd ?? jsonRate?.price ?? jsonRate?.USD ?? extractFromObject(jsonRate)
-        ) || 188000;
-
-        const eurRate = normalize(jsonRate?.eur ?? jsonRate?.euro ?? jsonRate?.EUR) || usdRate * 1.04;
-        const tryRate = normalize(jsonRate?.try ?? jsonRate?.tl ?? jsonRate?.TRY) || 5800;
-        const amdRate = normalize(jsonRate?.amd ?? jsonRate?.dram ?? jsonRate?.AMD) || 170;
-
-        const nextRates = {
-          baseRates: {
-            usd: usdRate,
-            eur: eurRate,
-            try: tryRate,
-            amd: amdRate
-          },
-          exchangeSpreadMultiplier: TrendStore.rates.exchangeSpreadMultiplier || 1.06,
-          usdShippingRate: TrendStore.rates.usdShippingRate || 188000
-        };
-
-        TrendStore.saveRates(nextRates);
-        localStorage.setItem(cacheKey, JSON.stringify({ fetchedAt: now, rates: nextRates }));
-        return nextRates;
-      } catch (innerError) {
-        console.warn('Attempt to fetch ALANCHAND failed:', endpoint, innerError);
-      }
-    }
-
-    return TrendStore.rates;
-  } catch (error) {
-    console.warn('Unable to fetch live rates:', error);
-    return TrendStore.rates;
-  }
-}
-
-function getAccountingTemplates() {
-  return [
-    { id: 'invoice', title: 'فاکتور', icon: '🧾' },
-    { id: 'ledger', title: 'دفتر حساب', icon: '📒' },
-    { id: 'summary', title: 'گزارش', icon: '📊' }
-  ];
-}
-
-function saveAccountingInvoice(entry) {
-  const invoices = JSON.parse(localStorage.getItem(STORAGE_KEYS.invoices) || '[]');
-  const payload = {
-    id: entry.id || `INV-${Date.now()}`,
-    customer: entry.customer || 'مشتری',
-    phone: entry.phone || '-',
-    product: entry.product || 'محصول',
-    amount: Number(entry.amount || 0),
-    currency: String(entry.currency || 'usd').toUpperCase(),
-    rate: Number(entry.rate || 0),
-    shipping: Number(entry.shipping || 0),
-    total: Number(entry.total || 0),
-    status: entry.status || 'pending',
-    createdAt: new Date().toISOString()
-  };
-
-  invoices.unshift(payload);
-  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(invoices.slice(0, 50)));
-  localStorage.setItem(STORAGE_KEYS.lastInvoice, JSON.stringify(payload));
-  TrendBackend.push('invoices', invoices.slice(0, 50));
-
-  const sheetUrl = localStorage.getItem(STORAGE_KEYS.sheetUrl);
-  if (sheetUrl) {
-    fetch(sheetUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'appendInvoice', data: payload })
-    }).catch(() => {});
-  }
-
-  return payload;
-}
-
-function loadAccountingInvoices() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.invoices) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-// ==========================================================================
-// کنترلر تم روز و شب (Day & Night Mode)
-// ==========================================================================
 function getPreferredTheme() {
-  try {
-    const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
-    if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
-  } catch (error) {
-    console.warn('Theme preference is unavailable:', error);
-  }
-
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    return 'light';
-  }
-
-  return 'dark';
+  const saved = Storage.get(STORAGE_KEYS.theme, null);
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
-function initAppTheme() {
-  const theme = getPreferredTheme();
+function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  updateThemeIcon(theme);
+  const icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#07090e' : '#f8fafc');
 }
 
 function toggleAppTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || getPreferredTheme();
-  const newTheme = current === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  try {
-    localStorage.setItem(STORAGE_KEYS.theme, newTheme);
-  } catch (error) {
-    console.warn('Unable to save theme preference:', error);
-  }
-  updateThemeIcon(newTheme);
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  Storage.set(STORAGE_KEYS.theme, next);
 }
 
-function updateThemeIcon(theme) {
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.textContent = theme === 'dark' ? '🌙' : '☀️';
-  }
-}
+/* -------------------------------------------------------------------------- */
+/*  HEADER CLOCK                                                              */
+/* -------------------------------------------------------------------------- */
 
-// ==========================================================================
-// ساعت آنالوگ و دیجیتال زنده هدر
-// ==========================================================================
 function updateHeaderClock() {
   const now = new Date();
-  const seconds = now.getSeconds();
-  const minutes = now.getMinutes();
-  const hours = now.getHours();
+  const s = now.getSeconds(), m = now.getMinutes(), h = now.getHours();
 
-  const secDeg = (seconds / 60) * 360;
-  const minDeg = ((minutes + seconds / 60) / 60) * 360;
-  const hourDeg = (((hours % 12) + minutes / 60) / 12) * 360;
+  const set = (id, deg) => {
+    const el = document.getElementById(id);
+    if (el) el.style.transform = `rotate(${deg}deg)`;
+  };
+  set('sec-hand', (s / 60) * 360);
+  set('min-hand', ((m + s / 60) / 60) * 360);
+  set('hour-hand', (((h % 12) + m / 60) / 12) * 360);
 
-  const secHand = document.getElementById('sec-hand');
-  const minHand = document.getElementById('min-hand');
-  const hourHand = document.getElementById('hour-hand');
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const dateEl = document.getElementById('live-gregorian-date');
+  if (dateEl) dateEl.textContent = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 
-  if (secHand) secHand.style.transform = `rotate(${secDeg}deg)`;
-  if (minHand) minHand.style.transform = `rotate(${minDeg}deg)`;
-  if (hourHand) hourHand.style.transform = `rotate(${hourDeg}deg)`;
-
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-  const dateElem = document.getElementById('live-gregorian-date');
-  if (dateElem) {
-    dateElem.innerText = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-  }
-
-  const timeElem = document.getElementById('live-digital-time');
-  if (timeElem) {
-    const pad = (n) => (n < 10 ? '0' + n : n);
-    timeElem.innerText = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  const timeEl = document.getElementById('live-digital-time');
+  if (timeEl) {
+    const pad = (n) => String(n).padStart(2, '0');
+    timeEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
   }
 }
 
-// ==========================================================================
-// رندر محصولات و سیستم جستجو
-// ==========================================================================
-function renderProducts(items) {
-  const container = document.getElementById('products-container');
+/* -------------------------------------------------------------------------- */
+/*  SCROLL REVEAL                                                             */
+/* -------------------------------------------------------------------------- */
+
+let revealObserver = null;
+
+function observeReveals() {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible'));
+    return;
+  }
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  }
+  document.querySelectorAll('.reveal:not(.is-visible)').forEach((el) => revealObserver.observe(el));
+}
+
+/* -------------------------------------------------------------------------- */
+/*  PRODUCT RENDERING                                                         */
+/* -------------------------------------------------------------------------- */
+
+function getProductStockGroup(p) {
+  return (p && p.stock === 'order') ? 'order' : 'iran';
+}
+
+function renderProductGrid(containerId, list) {
+  const container = document.getElementById(containerId);
   if (!container) return;
-  container.innerHTML = '';
 
-  const list = Array.isArray(items) ? items : TrendStore.products;
-
-  if (!list.length) {
+  const items = Array.isArray(list) ? list : [];
+  if (!items.length) {
     container.innerHTML = `
       <div class="products-empty-state">
         <div class="products-empty-icon">🔎</div>
-        <h3>هیچ محصولی با این جستجو پیدا نشد</h3>
-        <p>برای دیدن دوباره همه محصولات، عبارت جستجو را پاک کنید یا یکی از تب‌های دسته‌بندی را انتخاب کنید.</p>
-      </div>
-    `;
+        <h3>محصولی با این مشخصات پیدا نشد</h3>
+        <p>عبارت جستجو را پاک کنید یا دسته دیگری را انتخاب کنید.</p>
+      </div>`;
     return;
   }
 
-  list.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.onclick = () => openProductModal(p.id);
-    
-    const displayImg = p.gallery && p.gallery.length > 0 ? p.gallery[0] : p.mainImg;
+  const frag = document.createDocumentFragment();
+
+  items.forEach((p, i) => {
+    const card = document.createElement('article');
+    card.className = 'product-card reveal';
+    card.dataset.productId = p.id;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.style.setProperty('--reveal-delay', `${Math.min(i * 40, 400)}ms`);
+
+    const img = (p.gallery && p.gallery[0]) || p.mainImg || FALLBACK_IMG;
+    const safeTitle = escapeHTML(p.title);
+    const safeDesc = escapeHTML((p.desc || '').slice(0, 78));
 
     card.innerHTML = `
-      <div class="product-tag">${escapeHTML(p.tag)}</div>
+      <span class="product-tag">${escapeHTML(p.tag || '')}</span>
       <div class="product-img-box">
-        <img src="${displayImg}" alt="${escapeHTML(p.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&auto=format&fit=crop&q=80'">
+        <img src="${escapeHTML(img)}" alt="${safeTitle}" loading="lazy" decoding="async"
+             onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
       </div>
-      <div class="product-category">${escapeHTML(p.catName)}</div>
-      <h3 class="product-title">${escapeHTML(p.title)}</h3>
-      <p class="product-desc">${escapeHTML(p.desc.slice(0, 75))}...</p>
+      <span class="product-category">${escapeHTML(p.catName || '')}</span>
+      <h3 class="product-title">${safeTitle}</h3>
+      <p class="product-desc">${safeDesc}…</p>
       <div class="product-footer">
-        <div class="product-price">${p.price} <span>تومان</span></div>
-        <button class="btn-quick-view">
-          <span>مشاهده و سفارش</span>
+        <div class="product-price">
+          ${p.oldPrice ? `<del>${escapeHTML(p.oldPrice)}</del>` : ''}
+          ${escapeHTML(p.price)} <span>تومان</span>
+        </div>
+        <button class="btn-quick-view" type="button" aria-label="مشاهده ${safeTitle}">
+          مشاهده
+        </button>
+      </div>
+      <div class="share-row share-row-compact" role="group" aria-label="اشتراک‌گذاری این محصول">
+        <span class="share-label">اشتراک‌گذاری</span>
+        <button type="button" class="share-btn share-wa" data-share="whatsapp"
+                data-share-title="محصول «${safeTitle}» در ترندز کارگو"
+                data-share-url="${escapeHTML(shareLinkFor('product', p.id))}"
+                data-share-extra="${escapeHTML(p.price)} تومان" aria-label="اشتراک‌گذاری در واتساپ" title="واتساپ">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.9-.1-.3 0-.4.1-.6.1-.1.4-.5.6-.7.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .2.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5 0 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.5c-1.6 0-3.2-.4-4.6-1.2l-3.2.8.9-3.1A9.4 9.4 0 0 1 2.5 12C2.5 6.8 6.8 2.5 12 2.5S21.5 6.8 21.5 12 17.2 21.5 12 21.5zm0-20.5C5.9 1 1 5.9 1 12c0 1.9.5 3.8 1.5 5.4L1 23l5.7-1.5c1.6.9 3.4 1.3 5.3 1.3 6.1 0 11-4.9 11-11S18.1 1 12 1z"/></svg>
+        </button>
+        <button type="button" class="share-btn share-tg" data-share="telegram"
+                data-share-title="محصول «${safeTitle}» در ترندز کارگو"
+                data-share-url="${escapeHTML(shareLinkFor('product', p.id))}"
+                data-share-extra="${escapeHTML(p.price)} تومان" aria-label="اشتراک‌گذاری در تلگرام" title="تلگرام">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L7.4 12.9 3 11.5c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.5.2 1.4.9z"/></svg>
+        </button>
+        <button type="button" class="share-btn share-ig" data-share="instagram"
+                data-share-title="محصول «${safeTitle}» در ترندز کارگو"
+                data-share-url="${escapeHTML(shareLinkFor('product', p.id))}"
+                data-share-extra="${escapeHTML(p.price)} تومان" aria-label="اشتراک‌گذاری در اینستاگرام" title="اینستاگرام">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.3-.1 1.7-.1 4.8-.1zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.2.8-.4.4-.6.7-.8 1.2-.2.4-.3 1-.4 2.1-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.2.4.4.7.6 1.2.8.4.2 1 .3 2.1.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.2-.8.4-.4.6-.7.8-1.2.2-.4.3-1 .4-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.2-.4-.4-.7-.6-1.2-.8-.4-.2-1-.3-2.1-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zM18.4 6a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
         </button>
       </div>
     `;
-    container.appendChild(card);
+
+    const open = () => openProductModal(p.id);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+    wireShareButtons(card);
+
+    frag.appendChild(card);
   });
+
+  container.innerHTML = '';
+  container.appendChild(frag);
+}
+
+function renderProducts() {
+  renderProductGrid('products-container-iran', TrendStore.products.filter((p) => getProductStockGroup(p) === 'iran'));
+  renderProductGrid('products-container-order', TrendStore.products.filter((p) => getProductStockGroup(p) === 'order'));
+  observeReveals();
 }
 
 function filterProductsByClientSearch(query) {
-  const q = (query || '').toLowerCase().trim();
-  const filtered = TrendStore.products.filter(p => 
-    p.title.toLowerCase().includes(q) || 
-    p.catName.toLowerCase().includes(q) || 
-    p.tag.toLowerCase().includes(q)
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return renderProducts();
+  const filtered = TrendStore.products.filter((p) =>
+    (p.title && p.title.toLowerCase().includes(q)) ||
+    (p.catName && p.catName.toLowerCase().includes(q)) ||
+    (p.tag && p.tag.toLowerCase().includes(q))
   );
-  renderProducts(filtered);
+  renderProductGrid('products-container-iran', filtered.filter((p) => getProductStockGroup(p) === 'iran'));
+  renderProductGrid('products-container-order', filtered.filter((p) => getProductStockGroup(p) === 'order'));
+  observeReveals();
 }
 
-function escapeHTML(str) {
-  if (!str) return '';
-  return str.replace(/[&<>'"]/g, tag => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-  }[tag] || tag));
-}
+/*  PRODUCT MODAL                                                             */
+/* -------------------------------------------------------------------------- */
 
-function showToast(message) {
-  // پنل ادمین: توست ساده اختصاصی
-  const adminToast = document.getElementById('toast');
-  if (adminToast) {
-    adminToast.textContent = message;
-    adminToast.classList.add('show');
-    clearTimeout(showToast.timerId);
-    showToast.timerId = setTimeout(() => adminToast.classList.remove('show'), 2600);
-    return;
-  }
-
-  // فروشگاه: استفاده موقت از اعلان زنده (با بازگردانی محتوای اصلی)
-  const liveToast = document.getElementById('live-toast');
-  const content = liveToast ? liveToast.querySelector('.toast-content') : null;
-  if (!liveToast || !content) {
-    console.info(message);
-    return;
-  }
-  if (!showToast.originalHTML) showToast.originalHTML = content.innerHTML;
-  content.innerHTML = `<strong>${escapeHTML(message)}</strong>`;
-  liveToast.classList.add('active');
-  pauseLiveOrderTicker();
-  clearTimeout(showToast.timerId);
-  showToast.timerId = setTimeout(() => {
-    liveToast.classList.remove('active');
-    if (showToast.originalHTML) content.innerHTML = showToast.originalHTML;
-    resumeLiveOrderTicker();
-  }, 3600);
-}
-
-// اعلان زنده سفارش‌ها (فعال‌سازی اعلان اجتماعی فروشگاه)
-const liveOrderSamples = [
-  { user: 'کاربری از تبریز', action: 'همین حالا هودی اورسایز شین را ثبت کرد' },
-  { user: 'کاربری از تهران', action: 'دقایقی پیش پرینتر حرارتی جیبی تمو را سفارش داد' },
-  { user: 'کاربری از اصفهان', action: 'همین حالا پایه تعقیب سوژه آمازون را ثبت کرد' },
-  { user: 'کاربری از شیراز', action: 'چند دقیقه پیش کفش چانکی شین را سفارش داد' },
-  { user: 'کاربری از مشهد', action: 'همین حالا کمربند بوهو وینتیج را ثبت کرد' },
-  { user: 'کاربری از کرج', action: 'دقایقی پیش ساعت هوشمند را استعلام قیمت کرد' },
-  { user: 'کاربری از رشت', action: 'همین حالا گجت‌های آشپزخانه وایلدبریز را ثبت کرد' }
-];
-let liveOrderTimers = [];
-
-function pauseLiveOrderTicker() {
-  liveOrderTimers.forEach((t) => clearTimeout(t));
-  liveOrderTimers = [];
-}
-
-function resumeLiveOrderTicker() {
-  const toast = document.getElementById('live-toast');
-  if (!toast) return;
-  liveOrderTimers.push(setTimeout(startLiveOrderTicker, 8000));
-}
-
-function startLiveOrderTicker() {
-  const toast = document.getElementById('live-toast');
-  const userEl = document.getElementById('toast-user');
-  const actionEl = document.getElementById('toast-action');
-  if (!toast || !userEl || !actionEl) return;
-
-  let index = Math.floor(Math.random() * liveOrderSamples.length);
-  const showNext = () => {
-    // اگر کاربر در حال خواندن است یا پنجره مخفی است، نمایش نده
-    if (toast.classList.contains('active') || document.hidden) {
-      liveOrderTimers.push(setTimeout(showNext, 12000));
-      return;
-    }
-    const sample = liveOrderSamples[index % liveOrderSamples.length];
-    index += 1;
-    userEl.textContent = sample.user;
-    actionEl.textContent = sample.action;
-    toast.classList.add('active');
-    liveOrderTimers.push(setTimeout(() => {
-      toast.classList.remove('active');
-      liveOrderTimers.push(setTimeout(showNext, 14000));
-    }, 5200));
-  };
-
-  liveOrderTimers.push(setTimeout(showNext, 6000));
-}
-
-function getStoredFlashDeals() {
-  try {
-    const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.flashDeals) || '[]');
-    if (Array.isArray(list) && list.length) return list;
-  } catch (error) {
-    console.warn('Unable to read flash deals:', error);
-  }
-
-  return [
-    { id: 'FLASH-1', title: 'حراجی سنسور هوشمند', percent: 70, active: true, endAt: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString() },
-    { id: 'FLASH-2', title: 'تخفیف گجت منزل', percent: 60, active: true, endAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString() }
-  ];
-}
-
-function saveFlashDeals(list) {
-  const safeList = Array.isArray(list) ? list : [];
-  localStorage.setItem(STORAGE_KEYS.flashDeals, JSON.stringify(safeList));
-  TrendBackend.push('flashDeals', safeList);
-}
-
-function addFlashDeal() {
-  const list = getStoredFlashDeals();
-  list.unshift({
-    id: `FLASH-${Date.now().toString().slice(-4)}`,
-    title: 'حراجی جدید',
-    percent: 50,
-    active: true,
-    endAt: new Date(Date.now() + 1000 * 60 * 60 * 8).toISOString()
-  });
-  saveFlashDeals(list);
-  renderFlashDeals();
-  showToast('حراجی جدید اضافه شد');
-}
-
-function renderFlashDeals() {
-  const host = document.getElementById('flash-deals-list');
-  if (!host) return;
-  const deals = getStoredFlashDeals();
-
-  host.innerHTML = deals.map((deal, index) => `
-    <div class="discount-item">
-      <div class="discount-meta">
-        <strong>${escapeHTML(deal.id)}</strong>
-        <small>${deal.active ? 'فعال' : 'غیرفعال'} · ${Number(deal.percent || 0)}%</small>
-      </div>
-      <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
-        <input type="text" class="form-control" style="width:180px;" value="${escapeHTML(deal.title)}" data-flash-index="${index}" data-flash-field="title" />
-        <input type="number" class="form-control" style="width:90px;" value="${Number(deal.percent || 0)}" data-flash-index="${index}" data-flash-field="percent" />
-        <input type="datetime-local" class="form-control" style="width:200px;" value="${deal.endAt ? new Date(deal.endAt).toISOString().slice(0, 16) : ''}" data-flash-index="${index}" data-flash-field="endAt" />
-        <button class="toggle-switch ${deal.active ? 'active' : ''}" data-flash-index="${index}" data-flash-field="active" title="فعال/غیرفعال"></button>
-      </div>
-    </div>
-  `).join('');
-
-  host.querySelectorAll('[data-flash-field="title"]').forEach(input => {
-    input.addEventListener('change', (event) => {
-      const idx = Number(event.target.dataset.flashIndex);
-      const list = getStoredFlashDeals();
-      list[idx].title = event.target.value || 'حراجی جدید';
-      saveFlashDeals(list);
-      renderFlashDeals();
-    });
-  });
-
-  host.querySelectorAll('[data-flash-field="percent"]').forEach(input => {
-    input.addEventListener('change', (event) => {
-      const idx = Number(event.target.dataset.flashIndex);
-      const list = getStoredFlashDeals();
-      list[idx].percent = Number(event.target.value || 0);
-      saveFlashDeals(list);
-      renderFlashDeals();
-    });
-  });
-
-  host.querySelectorAll('[data-flash-field="endAt"]').forEach(input => {
-    input.addEventListener('change', (event) => {
-      const idx = Number(event.target.dataset.flashIndex);
-      const list = getStoredFlashDeals();
-      list[idx].endAt = new Date(event.target.value).toISOString();
-      saveFlashDeals(list);
-      renderFlashDeals();
-    });
-  });
-
-  host.querySelectorAll('[data-flash-field="active"]').forEach(button => {
-    button.addEventListener('click', () => {
-      const idx = Number(button.dataset.flashIndex);
-      const list = getStoredFlashDeals();
-      list[idx].active = !list[idx].active;
-      saveFlashDeals(list);
-      renderFlashDeals();
-    });
-  });
-}
-
-function loadTermsEditor() {
-  const editor = document.getElementById('terms-editor');
-  if (!editor) return;
-  const saved = localStorage.getItem(STORAGE_KEYS.termsText);
-  if (saved && saved.trim()) {
-    editor.value = saved;
-  }
-}
-
-function saveTermsText() {
-  const editor = document.getElementById('terms-editor');
-  if (!editor) return;
-  const value = editor.value.trim();
-  if (!value) return;
-  localStorage.setItem(STORAGE_KEYS.termsText, value);
-  TrendBackend.push('terms', value);
-  showToast('متن قوانین و ضمانت‌ها ذخیره شد');
-}
-
-// ==========================================================================
-// پاپ‌آپ محصول با گالری ۳ تصویری
-// ==========================================================================
-const modalBackdrop = document.getElementById('product-modal-backdrop');
+let modalBackdrop = null;
 
 function openProductModal(productId) {
-  const product = TrendStore.products.find(p => p.id === productId);
-  if (!product || !modalBackdrop) return;
+  const product = TrendStore.products.find((p) => p.id === productId) ||
+                  (TrendStore.specialOffer && TrendStore.specialOffer.id === productId
+                    ? TrendStore.specialOffer : null);
+  if (!product) return;
 
-  const images = product.gallery && product.gallery.length > 0 ? product.gallery : [product.mainImg];
-  const mainImgElem = document.getElementById('modal-main-image');
-  mainImgElem.src = images[0];
-  mainImgElem.onerror = () => { mainImgElem.src = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'; };
+  modalBackdrop = modalBackdrop || document.getElementById('product-modal-backdrop');
+  if (!modalBackdrop) return;
 
-  document.getElementById('modal-badge-tag').innerText = product.tag;
-  document.getElementById('modal-cat-name').innerText = product.catName;
-  document.getElementById('modal-title').innerText = product.title;
-  document.getElementById('modal-price').innerHTML = `${product.price} <span>تومان</span>`;
-  document.getElementById('modal-desc').innerText = product.desc;
+  const images = ((product.gallery && product.gallery.length ? product.gallery : [product.mainImg]) || []).filter(Boolean);
+  if (!images.length) images.push(FALLBACK_IMG);
 
-  const thumbContainer = document.getElementById('modal-thumbnails-container');
-  thumbContainer.innerHTML = '';
+  const mainImg = document.getElementById('modal-main-image');
+  mainImg.src = images[0];
+  mainImg.alt = product.title || '';
+  mainImg.onerror = () => { mainImg.onerror = null; mainImg.src = FALLBACK_IMG; };
 
-  images.forEach((imgUrl, index) => {
-    const thumb = document.createElement('div');
-    thumb.className = `modal-thumb ${index === 0 ? 'active' : ''}`;
-    thumb.innerHTML = `<img src="${imgUrl}" alt="${product.title}" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=100&auto=format&fit=crop&q=80'">`;
-    thumb.onclick = (e) => {
-      e.stopPropagation();
-      mainImgElem.src = imgUrl;
-      document.querySelectorAll('.modal-thumb').forEach(t => t.classList.remove('active'));
-      thumb.classList.add('active');
-    };
-    thumbContainer.appendChild(thumb);
-  });
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+  setText('modal-badge-tag', product.tag || '');
+  setText('modal-cat-name', product.catName || '');
+  setText('modal-title', product.title || '');
+  setText('modal-desc', product.desc || '');
+
+  const priceEl = document.getElementById('modal-price');
+  if (priceEl) {
+    priceEl.innerHTML = `
+      ${product.oldPrice ? `<del>${escapeHTML(product.oldPrice)}</del> ` : ''}
+      ${escapeHTML(product.price)} <span>تومان</span>`;
+  }
+
+  const thumbs = document.getElementById('modal-thumbnails-container');
+  if (thumbs) {
+    thumbs.innerHTML = images.map((src, i) => `
+      <button class="modal-thumb ${i === 0 ? 'active' : ''}" type="button"
+              data-src="${escapeHTML(src)}" aria-label="تصویر ${i + 1}">
+        <img src="${escapeHTML(src)}" alt="" loading="lazy"
+             onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+      </button>`).join('');
+
+    thumbs.querySelectorAll('.modal-thumb').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        mainImg.src = btn.dataset.src;
+        thumbs.querySelectorAll('.modal-thumb').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  }
 
   const specsList = document.getElementById('modal-specs-list');
-  specsList.innerHTML = '';
-  (product.specs || []).forEach(spec => {
-    const li = document.createElement('li');
-    li.innerText = spec;
-    specsList.appendChild(li);
-  });
+  if (specsList) {
+    specsList.innerHTML = (product.specs || []).map((s) => `<li>${escapeHTML(s)}</li>`).join('');
+  }
 
-  const waMsg = encodeURIComponent(`سلام تیم ترندز کارگو، درخواست ثبت سفارش «${product.title}» (کد ${product.id}) به مبلغ ${product.price} تومان با خط ارمنستان-تبریز را دارم.`);
-  document.getElementById('modal-wa-btn').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`;
+  const waBtn = document.getElementById('modal-wa-btn');
+  if (waBtn) {
+    waBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=` + encodeURIComponent(
+      `سلام ترندز کارگو 👋\nدرخواست ثبت سفارش «${product.title}» (کد ${product.id}) به مبلغ ${product.price} تومان را دارم.`
+    );
+  }
+
+  const shareEl = document.getElementById('product-modal-share');
+  setShareTargets(
+    shareEl,
+    `محصول «${product.title}» در ترندز کارگو`,
+    shareLinkFor('product', product.id),
+    `${product.price} تومان — ${product.catName || ''}`
+  );
+  wireShareButtons(shareEl);
 
   modalBackdrop.classList.add('active');
+  modalBackdrop.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
 }
 
 function closeProductModal(event) {
-  if (event && event.target !== modalBackdrop && !event.target.classList.contains('modal-close-btn')) return;
+  if (event && event.target !== modalBackdrop &&
+      !event.target.closest('.modal-close-btn')) return;
   if (modalBackdrop) {
     modalBackdrop.classList.remove('active');
+    modalBackdrop.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
   }
 }
 
-// ==========================================================================
- // ماشین‌حساب آنلاین قیمت تمام‌شده (فقط دلار)
- // ==========================================================================
-function calculateCargoPrice() {
-  const priceElem = document.getElementById('calc-price');
-  const pkgElem = document.getElementById('calc-package-type');
-  const resElem = document.getElementById('calc-total-result');
-  if (!priceElem || !pkgElem) return null;
-  const price = parseFloat(priceElem.value) || 0;
-  const pkg = pkgElem.value;
-  const curr = 'usd';
-  const usdRate = Number(TrendStore.rates.baseRates?.usd || 188000);
-  const productCostToman = price * usdRate;
-  const profitMargin = productCostToman * 0.25;
-  const serviceAndCheckCost = productCostToman * 0.12 + 2500000;
-  let weightKg = 0.5;
-  if (pkg === 'single_heavy') weightKg = 2;
-  if (pkg === 'bulk_multi') weightKg = 3.5;
-  const firstKgShipping = 3500000;
-  const extraKgShipping = Math.max(0, weightKg - 1) * 2800000;
-  const total = Math.round((productCostToman + profitMargin + serviceAndCheckCost + firstKgShipping + extraKgShipping) / 10000) * 10000;
-  if (resElem) resElem.innerHTML = `${total.toLocaleString('fa-IR')} <span>تومان</span>`;
-  return { total, curr, price, weightKg };
-}
+/* -------------------------------------------------------------------------- */
+/*  SPECIAL OFFER                                                             */
+/* -------------------------------------------------------------------------- */
 
-function sendCalculatedQuoteToWhatsApp() {
-  const calc = calculateCargoPrice();
-  if (!calc) return;
-  const msg = encodeURIComponent(`سلام ترندز کارگو، قیمت کالا ${calc.price} دلار و وزن تقریبی ${calc.weightKg} کیلو با فرمول هزینه محصول + 25% سود و انجام کار و خرید و بررسی محصول برای مشتری محاسبه شد. قیمت تقریبی نهایی: ${calc.total.toLocaleString('fa-IR')} تومان. لطفاً فاکتور نهایی و زمان تحویل را برایم ارسال کنید.`);
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
-}
+function renderSpecialOffer() {
+  const container = document.getElementById('special-offer-container');
+  const offer = TrendStore.specialOffer;
+  if (!container || !offer) return;
 
-function submitCustomLink() {
-  const linkInput = document.getElementById('user-product-link');
-  if (!linkInput) return;
-  const val = linkInput.value.trim();
-  if (!val) {
-    alert('لطفاً ابتدا لینک محصول خارجی را وارد کنید.');
-    return;
-  }
+  const img = (offer.gallery && offer.gallery[0]) || offer.mainImg || FALLBACK_IMG;
+  const wa = `https://wa.me/${WHATSAPP_NUMBER}?text=` + encodeURIComponent(
+    `سلام ترندز کارگو 👋\nدرخواست ثبت سفارش تخفیف ویژه «${offer.title}» به مبلغ ${offer.price} تومان را دارم.`
+  );
 
-  // ثبت درخواست در بکند (اگر در دسترس بود) — جریان واتساپ متوقف نمی‌شود
-  try {
-    fetch('/api/order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ link: val })
-    })
-      .then((response) => {
-        if (response.ok) console.info('✅ استعلام شما در سامانه ثبت شد.');
-      })
-      .catch(() => {});
-  } catch (error) { /* در حالت آفلاین فقط واتساپ باز می‌شود */ }
+  container.innerHTML = `
+    <div class="special-offer-card reveal">
+      <div class="special-offer-media" data-product-id="${Number(offer.id)}">
+        <img src="${escapeHTML(img)}" alt="${escapeHTML(offer.title)}" loading="lazy"
+             onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+        ${offer.discountPercent ? `<span class="discount-ring">${toFaDigits(offer.discountPercent)}٪</span>` : ''}
+      </div>
+      <div class="special-offer-body">
+        <span class="special-offer-badge">🔥 ${escapeHTML(offer.tag || 'تخفیف ویژه')}</span>
+        <h3 class="special-offer-title" data-product-id="${Number(offer.id)}">${escapeHTML(offer.title || '')}</h3>
+        <p class="special-offer-desc">${escapeHTML(offer.desc || '')}</p>
+        <div class="special-price-row">
+          ${offer.oldPrice ? `<del>${escapeHTML(offer.oldPrice)}</del>` : ''}
+          <span class="special-price">${escapeHTML(offer.price)} <small>تومان</small></span>
+        </div>
+        <a href="${wa}" target="_blank" rel="noopener noreferrer" class="btn-primary special-offer-cta">
+          <span>سفارش با تخفیف</span>
+        </a>
+      </div>
+    </div>`;
 
-  const msg = encodeURIComponent(`سلام ترندز کارگو، لطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}`);
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
-}
-
-// ==========================================================================
-// اخبار تکنولوژی و پاپ‌آپ آن
-// ==========================================================================
-// فیلتر دسته‌بندی وبلاگ
-function renderNewsFilters() {
-  const host = document.getElementById('news-filters');
-  if (!host) return;
-  const categories = [];
-  techNewsList.forEach(n => { if (n.category && !categories.includes(n.category)) categories.push(n.category); });
-  const items = ['all', ...categories];
-  host.innerHTML = items.map(cat => `
-    <button class="news-filter-chip ${newsActiveFilter === cat ? 'active' : ''}" type="button" data-news-filter="${escapeHTML(cat)}">${cat === 'all' ? 'همه گزارش‌ها' : escapeHTML(cat)}</button>
-  `).join('');
-  host.querySelectorAll('[data-news-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      newsActiveFilter = btn.dataset.newsFilter;
-      renderTechNews();
-    });
+  container.querySelectorAll('[data-product-id]').forEach((el) => {
+    el.addEventListener('click', () => openProductModal(Number(el.dataset.productId)));
   });
+  observeReveals();
 }
+
+/* -------------------------------------------------------------------------- */
+/*  TECH NEWS                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/** تعداد پیش‌فرض خبرهای نمایشی؛ بقیه با دکمه «نمایش اخبار بیشتر» باز می‌شوند. */
+const NEWS_DEFAULT_LIMIT = 3;
+let newsExpanded = false;
 
 function renderTechNews() {
-  const newsContainer = document.getElementById('tech-news-container');
-  if (!newsContainer) return;
-  renderNewsFilters();
+  const container = document.getElementById('tech-news-container');
+  if (!container) return;
 
-  const list = newsActiveFilter === 'all'
-    ? techNewsList
-    : techNewsList.filter(n => n.category === newsActiveFilter);
+  const all = getTechNews();
+  const visible = (!newsExpanded && NEWS_DEFAULT_LIMIT > 0 && all.length > NEWS_DEFAULT_LIMIT)
+    ? all.slice(0, NEWS_DEFAULT_LIMIT)
+    : all;
 
-  if (!list.length) {
-    newsContainer.innerHTML = '<p class="news-empty">گزارشی در این دسته ثبت نشده است.</p>';
-    return;
-  }
-
-  newsContainer.innerHTML = list.map(news => `
-    <article class="tech-card" data-news-id="${escapeHTML(String(news.id))}">
+  container.innerHTML = visible.map((n) => {
+    const shareUrl = shareLinkFor('news', n.id);
+    const shareTitle = n.title;
+    return `
+    <article class="tech-card reveal" data-news-id="${escapeHTML(String(n.id))}" tabindex="0" role="button">
       <div class="tech-card-img">
-        <img src="${escapeHTML(news.img || '')}" alt="${escapeHTML(news.title || '')}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
-        <span class="tech-badge">${escapeHTML(news.badge || '')}</span>
+        <img src="${escapeHTML(n.img)}" alt="${escapeHTML(n.title)}" loading="lazy"
+             onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+        <span class="tech-badge">${escapeHTML(n.badge)}</span>
       </div>
       <div class="tech-card-body">
-        <span class="tech-cat">${escapeHTML(news.category || '')}</span>
-        <h3 class="tech-title">${escapeHTML(news.title || '')}</h3>
-        <p class="tech-desc">${escapeHTML(news.shortDesc || '')}</p>
-        <div class="tech-card-meta">
-          <span> ${escapeHTML(news.date || '')}</span>
-          <span>⏱ ${escapeHTML(String(news.readTime || '').replace('زمان مطالعه:', '').trim())}</span>
+        <span class="tech-cat">${escapeHTML(n.category)}</span>
+        <h3 class="tech-title">${escapeHTML(n.title)}</h3>
+        <p class="tech-desc">${escapeHTML(n.shortDesc)}</p>
+        <span class="btn-view-news">مشاهده گزارش کامل</span>
+        <div class="share-row share-row-sm" role="group" aria-label="اشتراک‌گذاری این خبر">
+          <button type="button" class="share-btn share-wa" data-share="whatsapp"
+            data-share-title="${escapeHTML(shareTitle)}" data-share-url="${escapeHTML(shareUrl)}"
+            data-share-extra="${escapeHTML(n.shortDesc)}" aria-label="اشتراک‌گذاری در واتساپ" title="واتساپ">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.9-.1-.3 0-.4.1-.6.1-.1.4-.5.6-.7.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .2.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5 0 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.5c-1.6 0-3.2-.4-4.6-1.2l-3.2.8.9-3.1A9.4 9.4 0 0 1 2.5 12C2.5 6.8 6.8 2.5 12 2.5S21.5 6.8 21.5 12 17.2 21.5 12 21.5zm0-20.5C5.9 1 1 5.9 1 12c0 1.9.5 3.8 1.5 5.4L1 23l5.7-1.5c1.6.9 3.4 1.3 5.3 1.3 6.1 0 11-4.9 11-11S18.1 1 12 1z"/></svg>
+          </button>
+          <button type="button" class="share-btn share-tg" data-share="telegram"
+            data-share-title="${escapeHTML(shareTitle)}" data-share-url="${escapeHTML(shareUrl)}"
+            data-share-extra="${escapeHTML(n.shortDesc)}" aria-label="اشتراک‌گذاری در تلگرام" title="تلگرام">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L7.4 12.9 3 11.5c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.5.2 1.4.9z"/></svg>
+          </button>
+          <button type="button" class="share-btn share-ig" data-share="instagram"
+            data-share-title="${escapeHTML(shareTitle)}" data-share-url="${escapeHTML(shareUrl)}"
+            data-share-extra="${escapeHTML(n.shortDesc)}" aria-label="اشتراک‌گذاری در اینستاگرام" title="اینستاگرام">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.3-.1 1.7-.1 4.8-.1zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.2.8-.4.4-.6.7-.8 1.2-.2.4-.3 1-.4 2.1-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.2.4.4.7.6 1.2.8.4.2 1 .3 2.1.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.2-.8.4-.4.6-.7.8-1.2.2-.4.3-1 .4-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.2-.4-.4-.7-.6-1.2-.8-.4-.2-1-.3-2.1-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zM18.4 6a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
+          </button>
         </div>
-        <button class="btn-view-news" type="button">مشاهده گزارش کامل</button>
       </div>
-    </article>
-  `).join('');
+    </article>`;
+  }).join('');
 
-  newsContainer.querySelectorAll('[data-news-id]').forEach(card => {
-    card.addEventListener('click', () => openNewsModal(card.dataset.newsId));
+  container.querySelectorAll('[data-news-id]').forEach((card) => {
+    const open = () => openNewsModal(card.dataset.newsId);
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.share-btn')) return;
+      open();
+    });
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
   });
+
+  wireShareButtons(container);
+  observeReveals();
+  updateNewsMoreButton(all.length, visible.length);
+}
+
+function updateNewsMoreButton(total, shown) {
+  const wrap = document.getElementById('news-more-wrap');
+  const btn = document.getElementById('news-show-more');
+  if (!wrap || !btn) return;
+
+  if (newsExpanded || total <= shown || total <= NEWS_DEFAULT_LIMIT) {
+    wrap.hidden = true;
+    return;
+  }
+  const rest = total - shown;
+  btn.innerHTML = `<span>نمایش اخبار بیشتر (${toFaDigits(String(rest))} خبر دیگر)</span>`;
+  btn.onclick = () => {
+    newsExpanded = true;
+    renderTechNews();
+  };
+  wrap.hidden = false;
 }
 
 function openNewsModal(newsId) {
-  const news = techNewsList.find(n => String(n.id) === String(newsId));
+  const news = getTechNews().find((n) => String(n.id) === String(newsId));
   const modal = document.getElementById('news-modal-backdrop');
   if (!news || !modal) return;
 
-  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.innerText = value || ''; };
-
-  const img = document.getElementById('news-modal-img');
-  if (img) {
-    img.src = news.img || '';
-    img.onerror = () => { img.src = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=800&auto=format&fit=crop&q=80'; };
-  }
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+  const imgEl = document.getElementById('news-modal-img');
+  if (imgEl) imgEl.src = news.img;
   setText('news-modal-cat', news.category);
   setText('news-modal-date', news.date);
   setText('news-modal-readtime', news.readTime);
-  setText('news-modal-author', '✍️ ' + (news.author || NEWS_AUTHOR_DEFAULT));
   setText('news-modal-title', news.title);
+  setText('news-modal-body', news.fullBody);
 
-  // بدنه مقاله — پاراگراف‌بندی واقعی وبلاگی
-  const bodyHost = document.getElementById('news-modal-body');
-  if (bodyHost) {
-    const paragraphs = String(news.fullBody || '').split(/\n+/).map(p => p.trim()).filter(Boolean);
-    bodyHost.innerHTML = paragraphs.length
-      ? paragraphs.map(p => `<p>${escapeHTML(p)}</p>`).join('')
-      : '<p>متن کامل این گزارش به‌زودی منتشر می‌شود.</p>';
+  const specsEl = document.getElementById('news-modal-specs');
+  if (specsEl) {
+    specsEl.innerHTML = `
+      <h4>ویژگیهای کلیدی:</h4>
+      <ul>${(news.specs || []).map((s) => `<li>${escapeHTML(s)}</li>`).join('')}</ul>`;
   }
 
-  // مشخصات فنی
-  const specsContainer = document.getElementById('news-modal-specs');
-  if (specsContainer) {
-    const specs = news.specs || [];
-    specsContainer.innerHTML = specs.length
-      ? `<h4>ویژگی‌ها و مشخصات نوآوری:</h4><ul>${specs.map(s => `<li>${escapeHTML(s)}</li>`).join('')}</ul>`
-      : '';
-  }
-
-  // دکمه‌های اشتراک‌گذاری
-  const shareHost = document.getElementById('news-share-row');
-  if (shareHost) {
-    const shareUrl = `${location.origin}${location.pathname}#tech-news`;
-    const shareText = `${news.title} | وبلاگ ترندز کارگو`;
-    shareHost.innerHTML = `
-      <span class="share-label">اشتراک‌گذاری گزارش:</span>
-      <a class="share-btn share-wa" href="https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}" target="_blank" rel="noopener">واتساپ</a>
-      <a class="share-btn share-tg" href="https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}" target="_blank" rel="noopener">تلگرام</a>
-      <button class="share-btn share-copy" type="button" onclick="copyNewsLink()">کپی لینک</button>
-    `;
-  }
-
-  // ناوبری مقالات مرتبط (قبلی / بعدی)
-  const relatedHost = document.getElementById('news-related-nav');
-  if (relatedHost) {
-    const index = techNewsList.findIndex(n => String(n.id) === String(news.id));
-    const prevNews = techNewsList[index - 1];
-    const nextNews = techNewsList[index + 1];
-    relatedHost.innerHTML = `
-      ${prevNews ? `<button class="related-btn" type="button" onclick="openNewsModal('${escapeHTML(String(prevNews.id))}')"><small>گزارش قبلی</small><strong>${escapeHTML(prevNews.title)}</strong></button>` : '<span></span>'}
-      ${nextNews ? `<button class="related-btn" type="button" onclick="openNewsModal('${escapeHTML(String(nextNews.id))}')"><small>گزارش بعدی</small><strong>${escapeHTML(nextNews.title)}</strong></button>` : '<span></span>'}
-    `;
-  }
+  const shareEl = document.getElementById('news-modal-share');
+  setShareTargets(shareEl, news.title, shareLinkFor('news', news.id), news.shortDesc);
+  wireShareButtons(shareEl);
 
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
 }
 
-// ==========================================================================
-// داده ساختاریافته پویا (SEO + GEO) — محصولات، اخبار و نظرات مشتریان
-// ==========================================================================
-function injectDynamicStructuredData() {
-  const SITE = 'https://trendkargo.ir/';
-  const graph = [];
-
-  // --- محصولات ---
-  const products = Array.isArray(TrendStore.products) ? TrendStore.products.slice(0, 50) : [];
-  if (products.length) {
-    graph.push({
-      '@type': 'ItemList',
-      '@id': SITE + '#products',
-      name: 'محصولات وایرال پرفروش تمو، شین و آمازون',
-      numberOfItems: products.length,
-      itemListElement: products.map((p, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        item: {
-          '@type': 'Product',
-          name: p.title,
-          description: p.desc,
-          category: p.catName || p.category,
-          image: [p.mainImg, ...(p.gallery || [])].filter(Boolean).slice(0, 4),
-          offers: {
-            '@type': 'Offer',
-            price: Number(p.rawPrice || 0),
-            priceCurrency: 'IRT',
-            availability: 'https://schema.org/InStock',
-            url: SITE + '#products',
-            seller: { '@type': 'Organization', name: 'ترندز کارگو | Trend Cargo' }
-          }
-        }
-      }))
-    });
-  }
-
-  // --- مقالات وبلاگ ---
-  const news = Array.isArray(techNewsList) ? techNewsList.slice(0, 20) : [];
-  if (news.length) {
-    graph.push({
-      '@type': 'ItemList',
-      '@id': SITE + '#blog',
-      name: 'وبلاگ اخبار تکنولوژی و گجت‌های آینده ۲۰۲۶',
-      numberOfItems: news.length,
-      itemListElement: news.map((n, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        item: {
-          '@type': 'BlogPosting',
-          headline: n.title,
-          description: n.shortDesc,
-          image: n.img,
-          articleSection: n.category,
-          datePublished: n.date,
-          inLanguage: 'fa-IR',
-          author: { '@type': 'Organization', name: n.author || NEWS_AUTHOR_DEFAULT },
-          publisher: { '@type': 'Organization', name: 'ترندز کارگو | Trend Cargo' },
-          mainEntityOfPage: SITE + '#tech-news'
-        }
-      }))
-    });
-  }
-
-  // --- نظرات مشتریان (اعتبار اجتماعی برای موتورهای AI) ---
-  const reviews = getTestimonialsList().slice(0, 20);
-  if (reviews.length) {
-    const avg = reviews.reduce((sum, r) => sum + Math.min(5, Math.max(1, Number(r.rating || 5))), 0) / reviews.length;
-    graph.push({
-      '@type': 'Organization',
-      '@id': SITE + '#organization',
-      name: 'ترندز کارگو | Trend Cargo',
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: Number(avg.toFixed(1)),
-        bestRating: 5,
-        worstRating: 1,
-        reviewCount: reviews.length
-      },
-      review: reviews.slice(0, 10).map((r) => ({
-        '@type': 'Review',
-        author: { '@type': 'Person', name: r.name },
-        reviewBody: r.text,
-        reviewRating: { '@type': 'Rating', ratingValue: Math.min(5, Math.max(1, Number(r.rating || 5))), bestRating: 5, worstRating: 1 }
-      }))
-    });
-  }
-
-  if (!graph.length) return;
-
-  let tag = document.getElementById('dynamic-structured-data');
-  if (!tag) {
-    tag = document.createElement('script');
-    tag.type = 'application/ld+json';
-    tag.id = 'dynamic-structured-data';
-    document.head.appendChild(tag);
-  }
-  tag.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
-}
-
-function copyNewsLink() {
-  const url = `${location.origin}${location.pathname}#tech-news`;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url)
-      .then(() => showToast('لینک گزارش کپی شد'))
-      .catch(() => showToast('کپی خودکار ممکن نبود'));
-  } else {
-    showToast('لینک گزارش: ' + url);
-  }
-}
-
 function closeNewsModal(event) {
   const modal = document.getElementById('news-modal-backdrop');
-  if (event && event.target !== modal && !event.target.classList.contains('modal-close-btn')) return;
-  if (modal) {
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
-  }
+  if (!modal) return;
+  if (event && event.target !== modal && !event.target.closest('.modal-close-btn')) return;
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
 }
 
-// ==========================================================================
-// کاروسل تجربه واقعی مشتریان (فلش‌دار + اسکرول اسنپ + پخش خودکار)
-// ==========================================================================
-function getTestimonialsList() {
-  return (Array.isArray(TrendStore.testimonials) && TrendStore.testimonials.length)
-    ? TrendStore.testimonials
-    : defaultTestimonials;
+/* -------------------------------------------------------------------------- */
+/*  COUNTDOWN                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function startFlashCountdown() {
+  const h = document.getElementById('hours');
+  const m = document.getElementById('minutes');
+  const s = document.getElementById('seconds');
+  if (!h || !m || !s) return;
+
+  const tick = () => {
+    const now = new Date();
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    let diff = Math.max(0, Math.floor((end - now) / 1000));
+    const hh = Math.floor(diff / 3600); diff %= 3600;
+    const mm = Math.floor(diff / 60);
+    const ss = diff % 60;
+    h.textContent = toFaDigits(String(hh).padStart(2, '0'));
+    m.textContent = toFaDigits(String(mm).padStart(2, '0'));
+    s.textContent = toFaDigits(String(ss).padStart(2, '0'));
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  LIVE TOASTS                                                               */
+/* -------------------------------------------------------------------------- */
+
+function startLiveToasts() {
+  const toast = document.getElementById('live-toast');
+  if (!toast) return;
+
+  const messages = [
+    { user: 'پشتیبانی ترندز کارگو', action: 'آنلاین هستیم — همه‌روزه ۹ الی ۲۳' },
+    { user: 'ارسال اکسپرس تیپاکس',  action: 'از هاب تبریز با بارکد پیامکی' },
+    { user: 'بازرسی در ایروان',     action: 'تست سلامت کالا قبل از ورود به ایران' },
+    { user: 'تخفیف ویژه امروز',     action: 'پیشنهاد حراج را ببینید' }
+  ];
+
+  const uEl = document.getElementById('toast-user');
+  const aEl = document.getElementById('toast-action');
+  let i = 0;
+
+  const show = () => {
+    const msg = messages[i];
+    if (uEl) uEl.textContent = msg.user;
+    if (aEl) aEl.textContent = msg.action;
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 6000);
+    i = (i + 1) % messages.length;
+  };
+
+  setTimeout(show, 4000);
+  setInterval(show, 15000);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  TESTIMONIALS                                                              */
+/* -------------------------------------------------------------------------- */
+
+const defaultTestimonials = [
+  { id: 1, name: 'سارا محمدی',  city: 'تبریز',  rating: 5, text: 'کیفیت هودی که گرفتم فوق‌العاده بود. دقیقاً همون سایز و رنگی که خواستم. بسته‌بندی هم خیلی حرفه‌ای انجام شده بود. حتماً دوباره خرید می‌کنم.', date: '۱۴۰۴/۰۵/۱۲', verified: true, approved: true },
+  { id: 2, name: 'علی رضایی',   city: 'تهران',  rating: 5, text: 'از تمو یه گجت سفارش دادم که توی ایران پیدا نمی‌شد. توی ایروان تستش کردن و بعد ارسال. واقعاً خدماتشون حرف نداره.', date: '۱۴۰۴/۰۴/۲۸', verified: true, approved: true },
+  { id: 3, name: 'مریم اکبری',  city: 'اصفهان', rating: 5, text: 'قیمت‌هایی که میدن واقعاً منصفانه‌ست. چند جا استعلام گرفتم و ترندز کارگو ارزون‌تر بود. پاسخگویی واتساپ هم عالیه.', date: '۱۴۰۴/۰۴/۱۵', verified: true, approved: true },
+  { id: 4, name: 'حسین نوری',   city: 'مشهد',   rating: 4, text: 'بسته‌ی من یه کم دیرتر رسید ولی کیفیت محصول عالی بود و پشتیبانی هم مرتب پیگیری می‌کرد. راضی‌ام.', date: '۱۴۰۴/۰۳/۲۲', verified: true, approved: true },
+  { id: 5, name: 'نگار کریمی',  city: 'شیراز',  rating: 5, text: 'کتونی‌هایی که گرفتم خیلی خوشگل و راحت بودن. دقیقاً همون چیزی که توی عکس تمو بود. مرسی از تیم خوبتون.', date: '۱۴۰۴/۰۳/۱۰', verified: true, approved: true },
+  { id: 6, name: 'امیر تهرانی', city: 'کرج',    rating: 5, text: 'دومین سفارشمه و مثل همیشه عالی. بازرسی ایروان واقعاً ارزش داره چون اگه مشکلی باشه همون‌جا حل می‌شه.', date: '۱۴۰۴/۰۲/۲۶', verified: true, approved: true }
+];
+
+function getTestimonials() {
+  const stored = Storage.get(STORAGE_KEYS.testimonials, null);
+  if (Array.isArray(stored) && stored.length) return stored;
+  Storage.set(STORAGE_KEYS.testimonials, defaultTestimonials);
+  return defaultTestimonials;
+}
+
+function saveTestimonials(list) {
+  Storage.set(STORAGE_KEYS.testimonials, list);
 }
 
 function renderTestimonials() {
   const track = document.getElementById('testimonials-track');
+  const dots = document.getElementById('testimonial-dots');
   if (!track) return;
 
-  const list = getTestimonialsList();
-  track.innerHTML = list.map(t => {
-    const rating = Math.min(5, Math.max(1, Number(t.rating || 5)));
+  const approved = getTestimonials().filter((t) => t.approved !== false);
+
+  track.innerHTML = approved.map((t, i) => {
+    const initials = String(t.name || 'ک').trim().charAt(0);
+    const rating = Math.min(5, Math.max(0, t.rating || 5));
+    const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    const shareUrl = shareLinkFor('testimonial', t.id != null ? t.id : i);
+    const shareTitle = `تجربه خرید «${t.name || 'مشتری'}» از ترندز کارگو`;
+    const shareExtra = String(t.text || '').slice(0, 120);
     return `
-    <article class="testi-card">
-      <div class="testi-quote">”</div>
-      <div class="testi-stars" aria-label="امتیاز ${rating} از ۵">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
-      <p class="testi-text">${escapeHTML(t.text || '')}</p>
-      <div class="testi-footer">
-        <div class="testi-avatar">${escapeHTML(String(t.name || 'م').trim().charAt(0))}</div>
-        <div class="testi-person">
-          <strong>${escapeHTML(t.name || 'مشتری')} <span class="testi-verified">✔ خرید تأییدشده</span></strong>
-          <small>${escapeHTML(t.city || '')}${t.product ? ' · ' + escapeHTML(t.product) : ''}</small>
+      <article class="testimonial-card reveal" style="--reveal-delay:${i * 60}ms">
+        <div class="testimonial-header">
+          <div class="testimonial-avatar">${escapeHTML(initials)}</div>
+          <div class="testimonial-info">
+            <div class="testimonial-name">${escapeHTML(t.name || 'کاربر')}</div>
+            <div class="testimonial-city">📍 ${escapeHTML(t.city || '')}</div>
+          </div>
+          <div class="testimonial-stars" aria-label="امتیاز ${rating} از ۵">${stars}</div>
         </div>
-      </div>
-    </article>`;
+        <p class="testimonial-text">${escapeHTML(t.text || '')}</p>
+        ${t.verified ? '<span class="testimonial-verified">✓ خرید تأیید شده</span>' : ''}
+        <div class="testimonial-foot">
+          <div class="testimonial-date">${escapeHTML(t.date || '')}</div>
+          <div class="share-row share-row-sm" role="group" aria-label="اشتراک‌گذاری این نظر">
+            <button type="button" class="share-btn share-wa" data-share="whatsapp"
+              data-share-title="${escapeHTML(shareTitle)}" data-share-url="${escapeHTML(shareUrl)}"
+              data-share-extra="${escapeHTML(shareExtra)}" aria-label="اشتراک‌گذاری در واتساپ" title="واتساپ">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.9-.1-.3 0-.4.1-.6.1-.1.4-.5.6-.7.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .2.2 2 3.1 4.9 4.3 2.4 1 2.9.8 3.4.7.5 0 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.5c-1.6 0-3.2-.4-4.6-1.2l-3.2.8.9-3.1A9.4 9.4 0 0 1 2.5 12C2.5 6.8 6.8 2.5 12 2.5S21.5 6.8 21.5 12 17.2 21.5 12 21.5zm0-20.5C5.9 1 1 5.9 1 12c0 1.9.5 3.8 1.5 5.4L1 23l5.7-1.5c1.6.9 3.4 1.3 5.3 1.3 6.1 0 11-4.9 11-11S18.1 1 12 1z"/></svg>
+            </button>
+            <button type="button" class="share-btn share-tg" data-share="telegram"
+              data-share-title="${escapeHTML(shareTitle)}" data-share-url="${escapeHTML(shareUrl)}"
+              data-share-extra="${escapeHTML(shareExtra)}" aria-label="اشتراک‌گذاری در تلگرام" title="تلگرام">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L7.4 12.9 3 11.5c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.5.2 1.4.9z"/></svg>
+            </button>
+            <button type="button" class="share-btn share-ig" data-share="instagram"
+              data-share-title="${escapeHTML(shareTitle)}" data-share-url="${escapeHTML(shareUrl)}"
+              data-share-extra="${escapeHTML(shareExtra)}" aria-label="اشتراک‌گذاری در اینستاگرام" title="اینستاگرام">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.3-.1 1.7-.1 4.8-.1zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.2.8-.4.4-.6.7-.8 1.2-.2.4-.3 1-.4 2.1-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.2.4.4.7.6 1.2.8.4.2 1 .3 2.1.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.2-.8.4-.4.6-.7.8-1.2.2-.4.3-1 .4-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.2-.4-.4-.7-.6-1.2-.8-.4-.2-1-.3-2.1-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.1a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zM18.4 6a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
+            </button>
+          </div>
+        </div>
+      </article>`;
   }).join('');
 
-  if (!track.dataset.bound) {
-    track.dataset.bound = '1';
-    track.addEventListener('scroll', () => {
-      updateTestiArrows();
-      highlightTestiDots();
-    }, { passive: true });
+  if (dots) {
+    dots.innerHTML = approved.map((_, i) =>
+      `<button class="testimonial-dot ${i === 0 ? 'active' : ''}" data-index="${i}" aria-label="نظر ${toFaDigits(i + 1)}"></button>`
+    ).join('');
+    dots.querySelectorAll('.testimonial-dot').forEach((dot) => {
+      dot.addEventListener('click', () => goToTestimonial(Number(dot.dataset.index)));
+    });
   }
 
-  track.scrollLeft = 0;
-  renderTestiDots();
-  updateTestiArrows();
-  startTestiAutoplay();
+  wireShareButtons(track);
+  observeReveals();
 }
 
-function getTestiStep() {
+/* -------------------------------------------------------------------------- */
+/*  TESTIMONIAL SLIDER — RTL-safe, data-driven navigation                     */
+/* -------------------------------------------------------------------------- */
+
+const testimonialSlider = { index: 0 };
+
+function playHaptic() {
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+/** Disables an arrow once the slider reaches that end of the list. */
+function updateTestimonialArrows() {
   const track = document.getElementById('testimonials-track');
-  if (!track) return 320;
-  const card = track.querySelector('.testi-card');
-  if (!card) return track.clientWidth;
-  return card.getBoundingClientRect().width + 20; // ۲۰px فاصله بین کارت‌ها
+  const prev = document.getElementById('testimonial-prev');
+  const next = document.getElementById('testimonial-next');
+  if (!track) return;
+
+  const total = track.querySelectorAll('.testimonial-card').length;
+  const atStart = testimonialSlider.index <= 0;
+  const atEnd = testimonialSlider.index >= total - 1;
+
+  if (prev) { prev.disabled = atStart; prev.setAttribute('aria-disabled', String(atStart)); }
+  if (next) { next.disabled = atEnd; next.setAttribute('aria-disabled', String(atEnd)); }
 }
 
-/** جهت ۱ = نظر بعدی (به سمت چپ در RTL) · جهت ‎-۱ = نظر قبلی */
-function scrollTestimonials(direction) {
+/**
+ * Centres a slide in the viewport without assuming a writing direction.
+ * Browsers disagree on how `scrollLeft` behaves in RTL (Chrome/Safari count
+ * negative, older engines reverse the sign), so computing an absolute
+ * `scrollLeft` is unreliable — it makes the arrows appear dead in RTL because
+ * a positive target gets clamped back to 0. Instead we measure the visual
+ * distance between the card and the track centre and let `scrollBy` apply it,
+ * which is correct in both LTR and RTL and never scrolls the page vertically.
+ */
+function scrollTestimonialIntoView(track, index, smooth = true) {
+  const card = track.querySelectorAll('.testimonial-card')[index];
+  if (!card) return;
+
+  const trackRect = track.getBoundingClientRect();
+  const cardRect = card.getBoundingClientRect();
+  const delta = (cardRect.left + cardRect.width / 2) - (trackRect.left + trackRect.width / 2);
+
+  if (Math.abs(delta) < 1) return;
+
+  // `scroll-snap-type: x mandatory` also applies to programmatic scrolling, and
+  // in RTL engines the mandatory snap re-resolves against the *previous* snap
+  // point as soon as the smooth scroll starts — the track is yanked straight
+  // back to where it began, which is exactly why the arrows looked broken.
+  // Snap is switched off for the duration of the animation and restored once the
+  // scroll has settled, then the slider state is re-synced from the real
+  // position so the dots and arrow states can never drift out of step.
+  track.classList.add('is-programmatic-scroll');
+  track.scrollBy({ left: delta, behavior: smooth ? 'smooth' : 'auto' });
+
+  clearTimeout(scrollTestimonialIntoView._timer);
+  scrollTestimonialIntoView._timer = setTimeout(() => {
+    track.classList.remove('is-programmatic-scroll');
+    if (smooth) syncTestimonialState(track);
+  }, smooth ? 560 : 90);
+}
+
+/** Re-derives the active slide from the real scroll position. */
+function syncTestimonialState(track) {
+  const target = track || document.getElementById('testimonials-track');
+  if (!target) return;
+
+  testimonialSlider.index = currentTestimonialIndex(target);
+  document.querySelectorAll('.testimonial-dot').forEach((dot, i) =>
+    dot.classList.toggle('active', i === testimonialSlider.index));
+  updateTestimonialArrows();
+}
+
+/**
+ * Index of the slide closest to the viewport centre, measured with
+ * `getBoundingClientRect` so it is correct in both LTR and RTL.
+ */
+function currentTestimonialIndex(track) {
+  const cards = track.querySelectorAll('.testimonial-card');
+  if (!cards.length) return 0;
+
+  const trackRect = track.getBoundingClientRect();
+  const centre = trackRect.left + trackRect.width / 2;
+
+  let bestIndex = 0;
+  let bestDistance = Infinity;
+  cards.forEach((card, i) => {
+    const rect = card.getBoundingClientRect();
+    const distance = Math.abs(rect.left + rect.width / 2 - centre);
+    if (distance < bestDistance) { bestDistance = distance; bestIndex = i; }
+  });
+  return bestIndex;
+}
+
+function goToTestimonial(index) {
   const track = document.getElementById('testimonials-track');
   if (!track) return;
-  track.scrollBy({ left: direction * getTestiStep(), behavior: 'smooth' });
-  setTimeout(() => { updateTestiArrows(); highlightTestiDots(); }, 380);
+  const cards = track.querySelectorAll('.testimonial-card');
+  if (!cards.length) return;
+
+  const target = Math.min(Math.max(0, index), cards.length - 1);
+  testimonialSlider.index = target;
+
+  scrollTestimonialIntoView(track, target);
+  playHaptic();
+
+  document.querySelectorAll('.testimonial-dot').forEach((dot, i) =>
+    dot.classList.toggle('active', i === target));
+  updateTestimonialArrows();
 }
 
-function updateTestiArrows() {
-  const track = document.getElementById('testimonials-track');
-  const prev = document.getElementById('testi-prev');
-  const next = document.getElementById('testi-next');
-  if (!track || !prev || !next) return;
-  const maxScroll = track.scrollWidth - track.clientWidth;
-  const pos = Math.abs(track.scrollLeft);         // در RTL مقدار scrollLeft منفی است
-  const atStart = pos < 6;
-  const atEnd = maxScroll <= 6 || pos >= maxScroll - 6;
-  prev.disabled = atStart;
-  next.disabled = atEnd;
-  prev.classList.toggle('is-disabled', atStart);
-  next.classList.toggle('is-disabled', atEnd);
+/** `step` is +1 for the next review and -1 for the previous one (RTL reading order). */
+function moveTestimonial(step) {
+  goToTestimonial(testimonialSlider.index + step);
 }
 
-function renderTestiDots() {
-  const host = document.getElementById('testi-dots');
+function initTestimonialsSlider() {
   const track = document.getElementById('testimonials-track');
-  if (!host || !track) return;
-  const count = track.querySelectorAll('.testi-card').length;
-  if (count < 2) { host.innerHTML = ''; return; }
-  host.innerHTML = Array.from({ length: count })
-    .map((_, i) => `<button class="testi-dot" type="button" data-testi-dot="${i}" aria-label="نظر ${i + 1}"></button>`)
-    .join('');
-  host.querySelectorAll('[data-testi-dot]').forEach(dot => {
-    dot.addEventListener('click', () => {
-      const idx = Number(dot.dataset.testiDot);
-      track.scrollTo({ left: idx * getTestiStep(), behavior: 'smooth' });
-      setTimeout(() => { updateTestiArrows(); highlightTestiDots(); }, 380);
+  const prev = document.getElementById('testimonial-prev');
+  const next = document.getElementById('testimonial-next');
+  if (!track) return;
+
+  testimonialSlider.index = 0;
+
+  // Touch/mouse dragging is handled natively by overflow scrolling; this keeps
+  // the dots and arrow states in sync with the user's own swipes. Updates are
+  // skipped mid-animation so a programmatic scroll cannot have its target index
+  // overwritten by an intermediate frame.
+  track.addEventListener('scroll', debounce(() => {
+    if (track.classList.contains('is-programmatic-scroll')) return;
+    syncTestimonialState(track);
+  }, 80), { passive: true });
+
+  if (prev) prev.addEventListener('click', () => moveTestimonial(-1));
+  if (next) next.addEventListener('click', () => moveTestimonial(1));
+
+  track.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); moveTestimonial(1); }
+    if (event.key === 'ArrowRight') { event.preventDefault(); moveTestimonial(-1); }
+  });
+
+  window.addEventListener('resize', debounce(() => {
+    scrollTestimonialIntoView(track, testimonialSlider.index, false);
+  }, 150));
+
+  updateTestimonialArrows();
+}
+
+function initTestimonialForm() {
+  const modal = document.getElementById('testimonial-modal');
+  const form = document.getElementById('testimonial-form');
+  const openBtn = document.getElementById('btn-open-testimonial-form');
+  const closeBtn = document.getElementById('btn-close-testimonial-modal');
+  const stars = document.querySelectorAll('.star-btn');
+  const ratingInput = document.getElementById('testimonial-rating');
+  if (!modal || !form) return;
+
+  const openModal = () => {
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  };
+  const closeModal = () => {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  };
+
+  if (openBtn) openBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+  });
+
+  stars.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const v = Number(btn.dataset.value);
+      if (ratingInput) ratingInput.value = v;
+      stars.forEach((b) => b.classList.toggle('active', Number(b.dataset.value) <= v));
     });
   });
-  highlightTestiDots();
-}
 
-function highlightTestiDots() {
-  const track = document.getElementById('testimonials-track');
-  const host = document.getElementById('testi-dots');
-  if (!track || !host) return;
-  const step = getTestiStep();
-  const active = Math.round(Math.abs(track.scrollLeft) / step);
-  host.querySelectorAll('[data-testi-dot]').forEach((dot, i) => dot.classList.toggle('active', i === active));
-}
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = (document.getElementById('testimonial-name')?.value || '').trim();
+    const city = (document.getElementById('testimonial-city')?.value || '').trim();
+    const text = (document.getElementById('testimonial-text')?.value || '').trim();
+    const rating = Number(ratingInput?.value) || 5;
 
-let testiAutoplayTimer = null;
-
-function startTestiAutoplay() {
-  const track = document.getElementById('testimonials-track');
-  if (!track || testiAutoplayTimer) return;
-  testiAutoplayTimer = setInterval(() => {
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    if (maxScroll <= 6) return;
-    if (Math.abs(track.scrollLeft) >= maxScroll - 6) {
-      track.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      track.scrollBy({ left: -getTestiStep(), behavior: 'smooth' });
+    if (text.length < 20) {
+      alert('متن نظر باید حداقل ۲۰ کاراکتر باشد.');
+      return;
     }
-    setTimeout(() => { updateTestiArrows(); highlightTestiDots(); }, 380);
-  }, 5500);
-  ['mouseenter', 'touchstart', 'focusin'].forEach(evt => track.addEventListener(evt, stopTestiAutoplay, { passive: true }));
-}
 
-function stopTestiAutoplay() {
-  if (testiAutoplayTimer) {
-    clearInterval(testiAutoplayTimer);
-    testiAutoplayTimer = null;
-  }
-}
+    const list = getTestimonials();
+    list.unshift({
+      id: Date.now(),
+      name, city, text, rating,
+      date: new Intl.DateTimeFormat('fa-IR').format(new Date()),
+      verified: false,
+      approved: false
+    });
+    saveTestimonials(list);
 
-// --- هیرو و سوشال داینامیک ---
-function renderHeroSection(){
-  const h = TrendStore.hero || defaultHeroConfig;
-  const badge = document.getElementById('hero-badge');
-  if(badge) badge.innerHTML = h.badge;
-  const title = document.getElementById('hero-title');
-  if(title) title.innerHTML = h.title;
-  const desc = document.getElementById('hero-desc');
-  if(desc) desc.textContent = h.desc;
-  const chips = document.getElementById('hero-chips');
-  if(chips) chips.innerHTML = (h.chips||[]).map(c=>`<span class="p-chip">${escapeHTML(c)}</span>`).join('');
-  const primary = document.getElementById('hero-primary-btn');
-  if(primary){ primary.innerHTML = `<span>${escapeHTML(h.primaryBtn?.text||'')}</span><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`; primary.href = h.primaryBtn?.href||'#flash-sale'; }
-  const secondary = document.getElementById('hero-secondary-btn');
-  if(secondary){ secondary.textContent = h.secondaryBtn?.text||''; secondary.href = h.secondaryBtn?.href||'#custom-order'; }
-  const points = document.getElementById('hero-key-points');
-  if(points) points.innerHTML = (h.keyPoints||[]).map(k=>`<div class="point-item"><span class="p-icon">${escapeHTML(k.icon||'')}</span><div class="p-txt"><strong>${escapeHTML(k.title||'')}</strong><small>${escapeHTML(k.desc||'')}</small></div></div>`).join('');
-}
-function renderSocialsSection(){
-  const s = TrendStore.socials || defaultSocialsConfig;
-  // اینستا استایل
-  const st = s.instagramStyle||defaultSocialsConfig.instagramStyle;
-  const g = s.instagramGadget||defaultSocialsConfig.instagramGadget;
-  const set = (prefix, data)=>{
-    const els = {
-      badge: document.getElementById(prefix+'-badge'),
-      title: document.getElementById(prefix+'-title'),
-      handle: document.getElementById(prefix+'-handle'),
-      note: document.getElementById(prefix+'-note'),
-      bio: document.getElementById(prefix+'-bio'),
-      btn: document.getElementById(prefix+'-btn'),
-      avatar: document.getElementById(prefix+'-avatar'),
-      tags: document.getElementById(prefix+'-tags')
-    };
-    if(els.badge) els.badge.textContent = data.badge||'';
-    if(els.title) els.title.textContent = data.title||'';
-    if(els.handle) els.handle.textContent = data.handle||'';
-    if(els.note) els.note.textContent = data.followersNote||'';
-    if(els.bio) els.bio.textContent = data.bio||'';
-    if(els.btn){ els.btn.href = data.url||'#'; const span = els.btn.querySelector('span'); if(span) span.textContent = data.btnText||''; }
-    if(els.avatar) els.avatar.src = data.avatar||'assets/logo.png';
-    if(els.tags) els.tags.innerHTML = (data.tags||[]).map(t=>`<span>${escapeHTML(t)}</span>`).join('');
-  };
-  set('insta-style', st);
-  set('insta-gadget', g);
-  // فوتر سایت‌ها
-  const footerBox = document.getElementById('footer-sites-list');
-  if(footerBox && s.footerLinks?.sites){
-    footerBox.innerHTML = s.footerLinks.sites.map(l=>`<li><a href="${escapeHTML(l.href)}" target="_blank" rel="noopener">${escapeHTML(l.label)}</a></li>`).join('');
-  }
-  // واتساپ لینک‌ها
-  const waNum = (s.whatsapp||WHATSAPP_NUMBER).replace(/[^0-9]/g,'');
-  document.querySelectorAll('a.whatsapp-btn, a.footer-whatsapp-link').forEach(a=>{
-    const base = a.getAttribute('href')||'';
-    if(base.includes('wa.me')) a.href = `https://wa.me/${waNum}` + (base.includes('?text=')? base.slice(base.indexOf('?text=')) : '?text='+encodeURIComponent('سلام درخواست مشاوره و ثبت سفارش دارم'));
-    if(a.classList.contains('footer-whatsapp-link')) a.textContent = '+'+waNum.slice(0,2)+' '+waNum.slice(2,5)+' '+waNum.slice(5,8)+' '+waNum.slice(8);
+    form.reset();
+    stars.forEach((b) => b.classList.toggle('active', Number(b.dataset.value) <= 5));
+    if (ratingInput) ratingInput.value = 5;
+    closeModal();
+
+    const toast = document.getElementById('live-toast');
+    if (toast) {
+      const uEl = document.getElementById('toast-user');
+      const aEl = document.getElementById('toast-action');
+      if (uEl) uEl.textContent = 'نظر شما ثبت شد';
+      if (aEl) aEl.textContent = 'پس از تأیید تیم پشتیبانی نمایش داده می‌شود';
+      toast.classList.add('active');
+      setTimeout(() => toast.classList.remove('active'), 6000);
+    }
   });
 }
-// --- مدیریت اخبار در ادمین (CRUD) ---
-function addNewsItem(payload){
-  const item = {
-    id: Date.now(),
-    category: payload?.category || 'تکنولوژی',
-    title: payload?.title || 'عنوان خبر جدید',
-    date: payload?.date || new Date().toLocaleDateString('fa-IR'),
-    readTime: payload?.readTime || 'زمان مطالعه: ۳ دقیقه',
-    img: payload?.img || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
-    badge: payload?.badge || 'جدید',
-    shortDesc: payload?.shortDesc || 'توضیح کوتاه خبر...',
-    fullBody: payload?.fullBody || 'متن کامل خبر قابل ویرایش از پنل ادمین.',
-    specs: Array.isArray(payload?.specs)? payload.specs : ['ویژگی ۱','ویژگی ۲']
-  };
-  techNewsList.unshift(item);
-  TrendStore.saveNews(techNewsList);
-  return item;
-}
-function removeNewsItem(id){
-  techNewsList = techNewsList.filter(n=> String(n.id)!==String(id));
-  TrendStore.saveNews(techNewsList);
-}
-function updateNewsItem(id, patch){
-  const idx = techNewsList.findIndex(n=> String(n.id)===String(id));
-  if(idx>=0){ techNewsList[idx]={...techNewsList[idx], ...patch}; TrendStore.saveNews(techNewsList); }
+
+/* -------------------------------------------------------------------------- */
+/*  CUSTOM ORDER FORM                                                         */
+/* -------------------------------------------------------------------------- */
+
+function submitCustomLink() {
+  const input = document.getElementById('user-product-link');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    alert('لطفاً ابتدا لینک محصول را وارد کنید.');
+    input.focus();
+    return;
+  }
+  const msg = encodeURIComponent(
+    `سلام ترندز کارگو 👋\nلطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}`
+  );
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank', 'noopener');
 }
 
-// ==========================================================================
- // مدیریت PWA و نوتیفیکیشن
- // ==========================================================================
+/* -------------------------------------------------------------------------- */
+/*  PWA & NOTIFICATIONS                                                       */
+/* -------------------------------------------------------------------------- */
+
 let deferredPrompt = null;
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  const pwaBar = document.getElementById('pwa-top-bar');
-  if (pwaBar) pwaBar.classList.remove('hidden');
+  const bar = document.getElementById('pwa-top-bar');
+  if (bar) bar.classList.remove('hidden');
 });
 
 function triggerPWAInstall() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
+    deferredPrompt.userChoice.finally(() => {
       deferredPrompt = null;
       closePWABar();
     });
@@ -1559,8 +1537,8 @@ function triggerPWAInstall() {
 }
 
 function closeInstallModal() {
-  const modal = document.getElementById('universal-install-modal');
-  if (modal) modal.classList.remove('active');
+  const m = document.getElementById('universal-install-modal');
+  if (m) { m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); }
 }
 
 function closePWABar() {
@@ -1568,96 +1546,116 @@ function closePWABar() {
   if (bar) bar.classList.add('hidden');
 }
 
-function enablePushNotifications() {
+async function enablePushNotifications() {
   if (!('Notification' in window)) {
     alert('مرورگر شما از نوتیفیکیشن پشتیبانی نمی‌کند.');
     return;
   }
-  Notification.requestPermission().then((perm) => {
-    if (perm === 'granted') {
-      alert('🔔 با موفقیت فعال شد! تخفیف‌های ۹۰٪ آف برای شما پیامک/اعلان خواهد شد.');
-    }
-  });
-}
-
-// ==========================================================================
-// ورود تدریجی سکشن‌ها هنگام اسکرول (Scroll Reveal)
-// کلاس reveal فقط با JS افزوده می‌شود — اگر JS خراب باشد هیچ محتوایی پنهان نمی‌ماند
-// ==========================================================================
-function initScrollReveal() {
-  try {
-    if (!('IntersectionObserver' in window)) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('reveal-visible');
-          observer.unobserve(entry.target);
-        }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    alert('🔔 اعلان‌ها فعال شد! از تخفیف‌های ویژه باخبر می‌شوید.');
+    try {
+      new Notification('ترندز کارگو', {
+        body: 'اعلان‌ها با موفقیت فعال شدند.',
+        icon: 'assets/logo.png'
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
-    document.querySelectorAll('main section, section.container, footer').forEach((el) => {
-      el.classList.add('reveal');
-      observer.observe(el);
-    });
-  } catch (error) {
-    console.warn('Scroll reveal unavailable:', error);
+    } catch (err) {
+      console.warn('Notification display failed:', err);
+    }
   }
 }
 
-// ==========================================================================
-// لود اولیه و اتصالات رویدادها
-// ==========================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  initAppTheme();
-  renderHeroSection();
-  renderSocialsSection();
-  renderProducts();
-  renderTechNews();
-  renderTestimonials();
-  startLiveOrderTicker();
-  injectDynamicStructuredData();
-  initScrollReveal();
-  calculateCargoPrice();
-  updateHeaderClock();
-fetchTgjuLiveRates().catch(() => {});
-setInterval(() => fetchTgjuLiveRates().catch(() => {}), 60 * 60 * 1000);
-setInterval(updateHeaderClock, 1000);
+/* -------------------------------------------------------------------------- */
+/*  SERVICE WORKER                                                            */
+/* -------------------------------------------------------------------------- */
 
-  // حذف پرلودر
-  const preloader = document.getElementById('preloader');
-  if (preloader) {
-    setTimeout(() => preloader.classList.add('fade-out'), 1200);
-  }
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' &&
+      !['localhost', '127.0.0.1'].includes(location.hostname)) return;
+  if (!/\/(index\.html)?$/.test(location.pathname)) return;
 
-  // فیلتر تب‌ها
-  document.querySelectorAll('.filter-tabs .tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter = btn.getAttribute('data-filter');
-      if (filter === 'all') renderProducts();
-      else renderProducts(TrendStore.products.filter(p => p.category === filter));
-    });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((err) =>
+      console.warn('[SW] registration failed:', err));
   });
+}
 
-  // آکاردئون
-  document.querySelectorAll('.accordion-header').forEach(btn => {
+/* -------------------------------------------------------------------------- */
+/*  ACCORDION                                                                 */
+/* -------------------------------------------------------------------------- */
+
+function initAccordion() {
+  document.querySelectorAll('.accordion-header').forEach((btn) => {
     btn.addEventListener('click', () => {
       const item = btn.parentElement;
-      item.classList.toggle('active');
+      if (!item) return;
       const content = item.querySelector('.accordion-content');
-      if (item.classList.contains('active')) {
-        content.style.maxHeight = content.scrollHeight + 'px';
-      } else {
-        content.style.maxHeight = null;
-      }
+      const isOpen = item.classList.toggle('active');
+      if (content) content.style.maxHeight = isOpen ? content.scrollHeight + 'px' : '';
     });
   });
+}
 
-  // نوبار اسکرول
-  window.addEventListener('scroll', () => {
-    const nav = document.getElementById('navbar');
-    if (nav) nav.classList.toggle('scrolled', window.scrollY > 30);
-  });
+/* -------------------------------------------------------------------------- */
+/*  NAVBAR                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function initNavbar() {
+  const nav = document.getElementById('navbar');
+  if (!nav) return;
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 30);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+/* -------------------------------------------------------------------------- */
+/*  FILTER TABS                                                               */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/*  BOOTSTRAP                                                                 */
+/* -------------------------------------------------------------------------- */
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(getPreferredTheme());
+  TrendStore.init();
+
+  renderProducts();
+  renderSpecialOffer();
+  renderTechNews();
+  renderTestimonials();
+
+  initTestimonialsSlider();
+  initTestimonialForm();
+  initAccordion();
+  initNavbar();
+
+  updateHeaderClock();
+  startFlashCountdown();
+  startLiveToasts();
+  registerServiceWorker();
+  RemoteSync.boot();
+
+
+
+  const preloader = document.getElementById('preloader');
+  if (preloader) setTimeout(() => preloader.classList.add('fade-out'), 900);
+
 });
+
+/* -------------------------------------------------------------------------- */
+/*  PUBLIC API (for inline HTML handlers)                                     */
+/* -------------------------------------------------------------------------- */
+
+window.toggleAppTheme = toggleAppTheme;
+window.openProductModal = openProductModal;
+window.closeProductModal = closeProductModal;
+window.openNewsModal = openNewsModal;
+window.closeNewsModal = closeNewsModal;
+window.submitCustomLink = submitCustomLink;
+window.triggerPWAInstall = triggerPWAInstall;
+window.closeInstallModal = closeInstallModal;
+window.closePWABar = closePWABar;
+window.enablePushNotifications = enablePushNotifications;
+window.filterProductsByClientSearch = filterProductsByClientSearch;

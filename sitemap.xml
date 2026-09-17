@@ -1,20 +1,20 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://trendkargo.ir/</loc>
-    <lastmod>2026-09-15</lastmod>
+    <lastmod>2026-09-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="fa-IR" href="https://trendkargo.ir/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://trendkargo.ir/"/>
     <image:image>
       <image:loc>https://trendkargo.ir/assets/logo.png</image:loc>
-      <image:title>ترندز کارگو | خرید مستقیم از تمو، شین و آمازون</image:title>
-      <image:caption>سرویس خرید مستقیم و کارگو از تمو، شین، آمازون و وایلدبریز با بازرسی در ایروان و ارسال از تبریز</image:caption>
+      <image:title>ترندز کارگو | خرید مستقیم از تمو و شین</image:title>
     </image:image>
   </url>
+  <url>
+    <loc>https://trendkargo.ir/invoice.html</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
 </urlset>
-
