@@ -37,13 +37,29 @@ function getConfig() {
   return { url, key, adminToken, configured: Boolean(url && key) };
 }
 
-/** مقایسه امن توکن (بدون نشتی زمانی) */
+/** احراز هویت: یا رمز اصلی ادمین (ADMIN_TOKEN) یا توکن امضاشده صادرشده از /api/auth */
 function isAuthorized(req, adminToken) {
   const provided = String(req.headers['x-admin-token'] || '');
   if (!adminToken || !provided) return false;
+
+  // ۱) رمز مستقیم ادمین (سازگاری با نسخه قبلی)
   const a = Buffer.from(provided);
   const b = Buffer.from(adminToken);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+  if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+
+  // ۲) توکن امضاشده جلسه:  <expiryMs>.<hmac>
+  const parts = provided.split('.');
+  if (parts.length === 2) {
+    const expiry = Number(parts[0]);
+    const signature = String(parts[1]);
+    if (!Number.isFinite(expiry) || expiry < Date.now()) return false;
+    const expected = crypto.createHmac('sha256', adminToken).update(`tc-session:${expiry}`).digest('hex');
+    const x = Buffer.from(signature);
+    const y = Buffer.from(expected);
+    return x.length === y.length && crypto.timingSafeEqual(x, y);
+  }
+
+  return false;
 }
 
 function supabaseFetch(config, path, options = {}) {

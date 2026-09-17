@@ -24,11 +24,11 @@ const product = {
   price: '۳,۵۰۰,۰۰۰',
   rawPrice: 3500000,
   tag: '🆕 جدید · استایل وینتیج',
-  mainImg: 'https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&auto=format&fit=crop&q=80',
+  mainImg: 'assets/img/unsplash-1624222247344-550fb60583dc.webp',
   gallery: [
-    'https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1621784563330-caee0b138a00?w=600&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80'
+    'assets/img/unsplash-1624222247344-550fb60583dc.webp',
+    'assets/img/unsplash-1621784563330-caee0b138a00.webp',
+    'assets/img/unsplash-1548036328-c9fa89d128fa.webp'
   ],
   desc: 'کمربند با طراحی بوهو-شیک و سگک بیضی توخالی وینتیج؛ اکسسوری خاص و همه‌کاره با ظاهر رترو-مدرن که به‌راحتی با جین، شلوار پارچه‌ای، دامن و پیراهن ست می‌شود. انتخابی شیک برای استایل روزمره، دانشگاه، سفر و مهمانی‌های غیررسمی.',
   specs: [

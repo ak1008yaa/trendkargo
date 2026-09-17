@@ -347,9 +347,25 @@
         gap: 0.5rem;
       }
     }
+
+    /* پس‌زمینه نوری متحرک (Aurora) — مشترک با صفحه اصلی */
+    .bg-aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .aurora-orb { position: absolute; border-radius: 50%; filter: blur(110px); will-change: transform, opacity; }
+    .aurora-orb-cyan { width: 560px; height: 560px; top: -12%; right: -8%; background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 65%); animation: auroraDrift1 26s ease-in-out infinite alternate; }
+    .aurora-orb-coral { width: 620px; height: 620px; bottom: -16%; left: -10%; background: radial-gradient(circle, rgba(251, 146, 60, 0.14) 0%, transparent 65%); animation: auroraDrift2 34s ease-in-out infinite alternate; }
+    .aurora-orb-violet { width: 480px; height: 480px; top: 38%; left: 42%; background: radial-gradient(circle, rgba(167, 139, 250, 0.11) 0%, transparent 65%); animation: auroraDrift3 42s ease-in-out infinite alternate-reverse; }
+    @keyframes auroraDrift1 { 0% { transform: translate(0,0) scale(1); opacity: .9; } 50% { transform: translate(-120px, 90px) scale(1.15); opacity: .7; } 100% { transform: translate(60px, 160px) scale(.92); opacity: 1; } }
+    @keyframes auroraDrift2 { 0% { transform: translate(0,0) scale(1); opacity: .85; } 50% { transform: translate(140px, -110px) scale(1.12); opacity: .65; } 100% { transform: translate(-70px, -170px) scale(.95); opacity: 1; } }
+    @keyframes auroraDrift3 { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(-90px, -80px) scale(1.2); } 100% { transform: translate(110px, 60px) scale(.9); } }
+    @media (prefers-reduced-motion: reduce) { .aurora-orb { animation: none; } }
   </style>
 </head>
 <body>
+  <div class="bg-aurora" aria-hidden="true">
+    <div class="aurora-orb aurora-orb-cyan"></div>
+    <div class="aurora-orb aurora-orb-coral"></div>
+    <div class="aurora-orb aurora-orb-violet"></div>
+  </div>
   <div class="page-shell">
     <header class="topbar">
       <div class="brand">

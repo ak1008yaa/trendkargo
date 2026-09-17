@@ -422,9 +422,27 @@
       .sidebar { padding: 0.9rem; }
       .brand-box .title { font-size: 1.4rem; }
     }
+  <style>
+    /* پس‌زمینه نوری متحرک (Aurora) — مشترک با صفحه اصلی */
+    .bg-aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .aurora-orb { position: absolute; border-radius: 50%; filter: blur(110px); will-change: transform, opacity; }
+    .aurora-orb-cyan { width: 560px; height: 560px; top: -12%; right: -8%; background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 65%); animation: auroraDrift1 26s ease-in-out infinite alternate; }
+    .aurora-orb-coral { width: 620px; height: 620px; bottom: -16%; left: -10%; background: radial-gradient(circle, rgba(251, 146, 60, 0.14) 0%, transparent 65%); animation: auroraDrift2 34s ease-in-out infinite alternate; }
+    .aurora-orb-violet { width: 480px; height: 480px; top: 38%; left: 42%; background: radial-gradient(circle, rgba(167, 139, 250, 0.11) 0%, transparent 65%); animation: auroraDrift3 42s ease-in-out infinite alternate-reverse; }
+    @keyframes auroraDrift1 { 0% { transform: translate(0,0) scale(1); opacity: .9; } 50% { transform: translate(-120px, 90px) scale(1.15); opacity: .7; } 100% { transform: translate(60px, 160px) scale(.92); opacity: 1; } }
+    @keyframes auroraDrift2 { 0% { transform: translate(0,0) scale(1); opacity: .85; } 50% { transform: translate(140px, -110px) scale(1.12); opacity: .65; } 100% { transform: translate(-70px, -170px) scale(.95); opacity: 1; } }
+    @keyframes auroraDrift3 { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(-90px, -80px) scale(1.2); } 100% { transform: translate(110px, 60px) scale(.9); } }
+    @media (prefers-reduced-motion: reduce) { .aurora-orb { animation: none; } }
   </style>
 </head>
 <body>
+
+  <!-- پس‌زمینه نوری متحرک — لایه سراسری Aurora -->
+  <div class="bg-aurora" aria-hidden="true">
+    <div class="aurora-orb aurora-orb-cyan"></div>
+    <div class="aurora-orb aurora-orb-coral"></div>
+    <div class="aurora-orb aurora-orb-violet"></div>
+  </div>
   <!-- لاگین ادمین امن با SHA-256 -->
   <div id="admin-login" class="login-screen">
     <div class="login-box">
@@ -810,13 +828,40 @@
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const val = document.getElementById('admin-pass').value.trim();
+      const errEl = document.getElementById('login-err');
+
+      // ۱) تلاش برای لاگین واقعی سمت سرور (Vercel + Supabase)
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: val })
+        });
+        const payload = await res.json().catch(() => null);
+        if (res.ok && payload && payload.ok && payload.token) {
+          sessionStorage.setItem('tc_auth', 'true');
+          sessionStorage.setItem('trendcargo_admin_token', payload.token);
+          checkAuth();
+          return;
+        }
+        if (res.status === 401 || res.status === 429) {
+          errEl.textContent = (payload && payload.error) || 'رمز عبور نادرست است!';
+          errEl.style.display = 'block';
+          return;
+        }
+      } catch (error) {
+        console.warn('Server auth unavailable, falling back to local check:', error.message);
+      }
+
+      // ۲) حالت جایگزین محلی (زمانی که بکند در دسترس نیست)
       const h = await hash(val);
       if (h === DEFAULT_HASH) {
         sessionStorage.setItem('tc_auth', 'true');
-        sessionStorage.setItem('trendcargo_admin_token', val); // توکن ذخیره‌سازی در بکند
+        sessionStorage.setItem('trendcargo_admin_token', val); // رمز اصلی — توسط سرور به صورت timing-safe پذیرفته می‌شود
         checkAuth();
       } else {
-        document.getElementById('login-err').style.display = 'block';
+        errEl.textContent = 'رمز عبور نادرست است!';
+        errEl.style.display = 'block';
       }
     });
 
@@ -850,19 +895,19 @@
           <div class="img-slots">
             <div class="img-slot">
               <span>عکس ۱ (اصلی)</span>
-              <img src="${g1}" id="prev-${idx}-0" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <img src="${g1}" id="prev-${idx}-0" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
               <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, ${idx}, 0)">
               <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-0" value="${g1}" oninput="document.getElementById('prev-${idx}-0').src=this.value">
             </div>
             <div class="img-slot">
               <span>عکس ۲</span>
-              <img src="${g2}" id="prev-${idx}-1" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <img src="${g2}" id="prev-${idx}-1" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
               <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, ${idx}, 1)">
               <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-1" value="${g2}" oninput="document.getElementById('prev-${idx}-1').src=this.value">
             </div>
             <div class="img-slot">
               <span>عکس ۳</span>
-              <img src="${g3}" id="prev-${idx}-2" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=150&auto=format&fit=crop&q=80'">
+              <img src="${g3}" id="prev-${idx}-2" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
               <input type="file" class="file-input" accept="image/*" onchange="compressImg(event, ${idx}, 2)">
               <input type="text" class="form-control" style="font-size:0.7rem;margin-top:4px;" id="url-${idx}-2" value="${g3}" oninput="document.getElementById('prev-${idx}-2').src=this.value">
             </div>
@@ -925,11 +970,11 @@
         price: '۱,۲۰۰,۰۰۰',
         rawPrice: 1200000,
         tag: 'محصول جدید',
-        mainImg: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
+        mainImg: 'assets/img/unsplash-1526738549149-8e07eca6c147.webp',
         gallery: [
-          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80',
-          'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80'
+          'assets/img/unsplash-1526738549149-8e07eca6c147.webp',
+          'assets/img/unsplash-1526738549149-8e07eca6c147.webp',
+          'assets/img/unsplash-1526738549149-8e07eca6c147.webp'
         ],
         desc: 'توضیح کوتاه محصول جدید و قابل ویرایش از پنل ادمین.',
         specs: ['ویژگی ۱', 'ویژگی ۲', 'ویژگی ۳']

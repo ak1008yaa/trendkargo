@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ترندز کارگو | خرید مستقیم از تمو، شین و آمازون با خط ارمنستان-تبریز</title>
-  
+
   <!-- PWA & Favicons -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/x-icon" href="assets/favicon_io/favicon.ico">
@@ -15,7 +14,7 @@
   <!-- ===== عنوان و توضیحات (بهینه‌شده برای گوگل) ===== -->
   <title>خرید مستقیم از تمو، شین و آمازون در ایران | ترندز کارگو تبریز</title>
   <meta name="description" content="خرید مستقیم از Temu، Shein، Amazon و Wildberries با بازرسی و مرجوعی در دفتر ایروان، ارسال پلمپ از تبریز به سراسر ایران و تحویل ۱۵ تا ۲۱ روز کاری.">
-  <meta name="keywords" content="خرید از تمو, خرید از شین در ایران, خرید از آمازون, خرید از وایلدبریز, ترندز کارگو, Trend Cargo, کارگو ارمنستان به تبریز, واردات گجت تمو, پوشاک شین, خرید بدون واسطه, Temu Iran, Shein Iran, خرید ارزان خارجی, مرجوعی ارمنستان">
+  <meta name="keywords" content="خرید از تمو در ایران, خرید از تمو بدون گمرک, واسطه خرید از تمو, خرید از شین در ایران, خرید لباس از شین, خرید از آمازون در ایران, خرید از وایلدبریز, واردات کالا از چین به ایران, قیمت تمام‌شده خرید خارجی, خرید آنلاین از سایت‌های خارجی, پرداخت ارزی خرید اینترنتی, کارگو ارمنستان به تبریز, ارسال از ارمنستان به ایران, مرجوعی کالا در ایروان, خرید گجت از تمو, خرید ارزان از چین, واسطه خرید خارجی تبریز, خرید بدون واسطه با بازرسی, ترندز کارگو, Trend Cargo, TrendKargo, Temu Iran, Shein Iran">
   <meta name="author" content="ترندز کارگو | Trend Cargo">
   <meta name="publisher" content="ترندز کارگو | Trend Cargo">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -55,10 +54,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Critical CSS — رنگ‌بندی و پرلودر بدون وقفه (قبل از استایل کامل) -->
+  <style>
+    body{margin:0;background:#05070a;color:#f8fafc;font-family:'Vazirmatn',sans-serif;line-height:1.8;overflow-x:hidden}
+    .preloader{position:fixed;inset:0;z-index:99999;background:#05070a;display:flex;align-items:center;justify-content:center;text-align:center}
+    .bg-aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+    .aurora-orb{position:absolute;border-radius:50%;filter:blur(110px)}
+  </style>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="dns-prefetch" href="https://images.unsplash.com">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <link rel="llms" type="text/plain" href="/llms.txt">
+
+  <!-- Vercel Analytics + Speed Insights (رایگان، بدون کوکی) -->
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
 
   <!-- ===== داده ساختاریافته (Schema.org) برای گوگل و موتورهای هوش مصنوعی ===== -->
   <script type="application/ld+json">
@@ -92,6 +102,7 @@
         "url": "https://trendkargo.ir/",
         "name": "ترندز کارگو | Trend Cargo",
         "inLanguage": "fa-IR",
+        "keywords": "خرید از تمو در ایران, خرید از شین در ایران, خرید از آمازون, خرید از وایلدبریز, واردات کالا از چین, کارگو ارمنستان تبریز, قیمت تمام‌شده خرید خارجی, مرجوعی ایروان",
         "publisher": { "@id": "https://trendkargo.ir/#organization" }
       },
       {
@@ -208,7 +219,7 @@
   <div class="preloader" id="preloader">
     <div class="preloader-content">
       <div class="logo-3d-spinner">
-        <img src="assets/logo.png" alt="لوگوی ترندز کارگو" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=200&auto=format&fit=crop&q=80'">
+        <img src="assets/logo.png" alt="لوگوی ترندز کارگو" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
       </div>
       <div class="preloader-brand">TREND <span>CARGO</span></div>
       <div class="preloader-sub">در حال آماده‌سازی فروشگاه و نرخ لحظه‌ای...</div>
@@ -253,7 +264,7 @@
   <!-- نویگیشن بار اصلی سایت -->
   <nav class="navbar" id="navbar">
     <div class="logo-container">
-      <img src="assets/logo.png" alt="Trend Cargo Logo" class="logo-img" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=100&auto=format&fit=crop&q=80'">
+      <img src="assets/logo.png" alt="Trend Cargo Logo" class="logo-img" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
       <a href="#" class="logo-text">TREND <span>CARGO</span></a>
     </div>
 
@@ -463,7 +474,7 @@
         <div class="insta-badge" id="insta-style-badge">👕 مد، فشن و استایل</div>
         <div class="insta-header">
           <div class="insta-avatar-box">
-            <img id="insta-style-avatar" src="assets/logo.png" alt="Trend Cargo Style" class="insta-avatar-img" onerror="this.src='https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=100&auto=format&fit=crop&q=80'">
+            <img id="insta-style-avatar" src="assets/logo.png" alt="Trend Cargo Style" class="insta-avatar-img" onerror="this.src='assets/img/unsplash-1556905055-8f358a7a47b2.webp'">
             <span class="insta-live-ring"></span>
           </div>
           <div class="insta-user-meta">
@@ -491,7 +502,7 @@
         <div class="insta-badge insta-badge-gadget" id="insta-gadget-badge">⚡ گجت و دنیای تکنولوژی</div>
         <div class="insta-header">
           <div class="insta-avatar-box">
-            <img id="insta-gadget-avatar" src="assets/logo.png" alt="Trend Cargo Gadget" class="insta-avatar-img" onerror="this.src='https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=100&auto=format&fit=crop&q=80'">
+            <img id="insta-gadget-avatar" src="assets/logo.png" alt="Trend Cargo Gadget" class="insta-avatar-img" onerror="this.src='assets/img/unsplash-1588872657578-7efd1f1555ed.webp'">
             <span class="insta-live-ring insta-live-ring-gadget"></span>
           </div>
           <div class="insta-user-meta">
@@ -629,7 +640,7 @@
       </div>
       <div class="about-image-wrapper">
         <div class="about-logo-backdrop">
-          <img src="assets/logo.png" alt="لوگوی ترندز کارگو" class="about-brand-logo" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&auto=format&fit=crop&q=80'">
+          <img src="assets/logo.png" alt="لوگوی ترندز کارگو" class="about-brand-logo" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
         </div>
         <div class="about-floating-card">
           <div class="f-flag">🇦🇲 ➔ 🇮🇷</div>
@@ -648,6 +659,8 @@
       <p>کافیست لینک هر کالایی را در کادر زیر وارد کنید تا فاکتور رسمی قیمت تمام‌شده در واتساپ برای شما صادر شود.</p>
       
       <div class="link-input-group">
+        <input type="text" id="user-name" class="link-input" placeholder="نام شما (اختیاری)" style="max-width:220px;" />
+        <input type="tel" id="user-phone" class="link-input" placeholder="شماره تماس (اختیاری)" style="max-width:220px;" />
         <input type="url" id="user-product-link" class="link-input" placeholder="لینک محصول خارجی را اینجا Paste کنید..." />
         <button class="btn-submit-link" id="btn-submit-link" onclick="submitCustomLink()">
           <span>استعلام قیمت در واتساپ</span>

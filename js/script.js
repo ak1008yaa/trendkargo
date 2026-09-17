@@ -36,104 +36,104 @@ const CURRENCY_CONFIG = {
 const top20Products = [
   {
     id: 1, category: "gadget", catName: "گجت و دیجیتال", title: "مینی پرینتر حرارتی جیبی فوممو بدون جوهر",
-    price: "۱,۹۸۰,۰۰۰", rawPrice: 1980000, tag: "پرفروش‌ترین تمو", mainImg: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&auto=format&fit=crop&q=80",
+    price: "۱,۹۸۰,۰۰۰", rawPrice: 1980000, tag: "پرفروش‌ترین تمو", mainImg: "assets/img/unsplash-1612815154858-60aa4c59eaa6.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1612815154858-60aa4c59eaa6.webp",
+      "assets/img/unsplash-1588872657578-7efd1f1555ed.webp",
+      "assets/img/unsplash-1526738549149-8e07eca6c147.webp"
     ],
     desc: "چاپگر فوری بدون نیاز به تعویض جوهر و ریبون؛ چاپ مستقیم عکس، یادداشت روزانه، استیکر و بارکد از گوشی با بلوتوث.",
     specs: ["فناوری: چاپ حرارتی مستقیم ۲۰۰DPI", "باتری: ۱۰۰۰mAh شارژی با Type-C", "همراه با ۱ رول کاغذ حرارتی برچسب‌دار"]
   },
   {
     id: 2, category: "gadget", catName: "گجت و دیجیتال", title: "شارژر وایرلس ۳ کاره مگنتی تاشو مسافرتی ۱۵W",
-    price: "۲,۲۵۰,۰۰۰", rawPrice: 2250000, tag: "ترند تیک‌تاک", mainImg: "https://images.unsplash.com/photo-1622445262464-84b1456045b6?w=600&auto=format&fit=crop&q=80",
+    price: "۲,۲۵۰,۰۰۰", rawPrice: 2250000, tag: "ترند تیک‌تاک", mainImg: "assets/img/unsplash-1526738549149-8e07eca6c147.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1622445262464-84b1456045b6?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1526738549149-8e07eca6c147.webp",
+      "assets/img/unsplash-1586953208448-b95a79798f07.webp"
     ],
     desc: "شارژ همزمان گوشی آیفون/سامسونگ، ساعت هوشمند و ایرپاد در ابعاد یک کیف جیبی کوچک با چیپست هوشمند محافظت باتری.",
     specs: ["توان شارژ: ۱۵W + ۵W + ۳W مگ‌سیف فست", "بدنه آلومینیومی تاشو با روکش سیلیکونی لطیف", "سازگار با سری آیفون ۱۲ تا ۱۶ و سامسونگ"]
   },
   {
     id: 3, category: "gadget", catName: "گجت و دیجیتال", title: "پروژکتور فضانورد کهکشانی با چرخش مگنتی ۳۶۰",
-    price: "۱,۸۹۰,۰۰۰", rawPrice: 1890000, tag: "وایرال دکوراسیون", mainImg: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80",
+    price: "۱,۸۹۰,۰۰۰", rawPrice: 1890000, tag: "وایرال دکوراسیون", mainImg: "assets/img/unsplash-1534447677768-be436bb09401.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1534447677768-be436bb09401.webp"
     ],
     desc: "چراغ خواب پرطرفدار با طرح فضانورد که سقف و دیوارها را به کهکشان پرستاره متحرک با افکت سحابی تبدیل می‌کند.",
     specs: ["سر با چرخش آهنربایی ۳۶۰ درجه آزاد", "۸ افکت نوری سحابی + لیزر سبز ستاره‌ای", "دارای ریموت کنترل بی‌سیم و تایمر خاموشی"]
   },
   {
     id: 4, category: "gadget", catName: "گجت و دیجیتال", title: "جاروشارژی تفنگی توربو و دمنده ۲ کاره ۶۰۰۰Pa",
-    price: "۱,۶۵۰,۰۰۰", rawPrice: 1650000, tag: "فوق کاربردی", mainImg: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&auto=format&fit=crop&q=80",
+    price: "۱,۶۵۰,۰۰۰", rawPrice: 1650000, tag: "فوق کاربردی", mainImg: "assets/img/unsplash-1558317374-067fb5f30001.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1558317374-067fb5f30001.webp"
     ],
     desc: "جارو برقی پرتابل بی‌سیم با مکش قدرتمند و سری دمنده باد برای تمیز کردن شیار صندلی خودرو و کیبورد.",
     specs: ["قدرت مکش: ۶۰۰۰ پاسکال توربو", "فیلتر قابل شستشو چندبار مصرف HEPA", "باتری ۲۰۰۰mAh با پورت شارژ سریع"]
   },
   {
     id: 5, category: "gadget", catName: "گجت و دیجیتال", title: "چراغ خطی مگنتی سنسوردار هوشمند زیر کابینت",
-    price: "۶۸۰,۰۰۰", rawPrice: 680000, tag: "ترند خانه هوشمند", mainImg: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80",
+    price: "۶۸۰,۰۰۰", rawPrice: 680000, tag: "ترند خانه هوشمند", mainImg: "assets/img/unsplash-1507473885765-e6ed057f782c.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1507473885765-e6ed057f782c.webp"
     ],
     desc: "نورپردازی خطی بی‌سیم با سنسور تشخیص حرکت انسان (PIR) و حسگر تاریکی؛ روشن شدن خودکار با نزدیک شدن.",
     specs: ["طول چراغ: ۴۰ سانتی‌متر", "نصب آسان بدون سیم‌کشی با پد مگنتی چسبی", "باتری شارژی با ماندگاری تا ۳۰ روز"]
   },
   {
     id: 6, category: "lifestyle", catName: "خانه و لایف‌استایل", title: "دستگاه بخور سرد اولتراسونیک با شبیه‌ساز شعله آتش",
-    price: "۱,۱۸۰,۰۰۰", rawPrice: 1180000, tag: "آرامش‌بخش و معطر", mainImg: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80",
+    price: "۱,۱۸۰,۰۰۰", rawPrice: 1180000, tag: "آرامش‌بخش و معطر", mainImg: "assets/img/unsplash-1608571423902-eed4a5ad8108.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1608571423902-eed4a5ad8108.webp"
     ],
     desc: "رطوبت‌ساز اولتراسونیک که با ترکیب بخار سرد و نورپردازی LED هوشمند، شعله‌های آتشین واقعی خلق می‌کند.",
     specs: ["موتور بی‌صدا کمتر از ۲۸ دسی‌بل", "حالت‌های نوری شعله طلایی و RGB", "خاموشی خودکار با اتمام آب مخزن"]
   },
   {
     id: 7, category: "fashion", catName: "استایل و پوشاک", title: "هودی اورسایز وینتیج سنگین ۱۰۰٪ پنبه اسیدواش",
-    price: "۲,۳۵۰,۰۰۰", rawPrice: 2350000, tag: "ترند پینترست", mainImg: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80",
+    price: "۲,۳۵۰,۰۰۰", rawPrice: 2350000, tag: "ترند پینترست", mainImg: "assets/img/unsplash-1556905055-8f358a7a47b2.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1556905055-8f358a7a47b2.webp"
     ],
     desc: "هودی کلاهدار با بافت ضخیم ۳ نخ و رنگ‌بندی ترند شسته‌شده پینترست، دوخت دولایه صنعتی و فیت آزاد شیک.",
     specs: ["پارچه: ۱۰۰٪ پنبه سوپر سنگین ۳۸۰ گرمی", "سایزبندی: M تا XXL اورسایز", "تضمین رنگ و عدم پرزدهی در شستشو"]
   },
   {
     id: 8, category: "fashion", catName: "استایل و پوشاک", title: "شلوار کارگو بگ استایل ۶ جیب تاکتیکال ضخیم",
-    price: "۲,۶۸۰,۰۰۰", rawPrice: 2680000, tag: "استریت ویر", mainImg: "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=600&auto=format&fit=crop&q=80",
+    price: "۲,۶۸۰,۰۰۰", rawPrice: 2680000, tag: "استریت ویر", mainImg: "assets/img/unsplash-1517445312882-bc9910d016b7.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1517445312882-bc9910d016b7?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1517445312882-bc9910d016b7.webp"
     ],
     desc: "شلوار استریت ویر با جیب‌های حجیم کارگو، بندهای تنظیم دم‌پا سبک تاکتیکال پرطرفدار در فشن ژاپن.",
     specs: ["جنس: کتان پنبه‌ای گرماژ بالا و سنگ‌شور شده", "سایزبندی: ۳۰ تا ۳۸", "دوخت سه‌سوزنه مقاوم"]
   },
   {
     id: 9, category: "gadget", catName: "گجت و دیجیتال", title: "پاوربانک مگ‌سیف شفاف سایبرپانک ۱۰۰۰۰mAh",
-    price: "۲,۴۵۰,۰۰۰", rawPrice: 2450000, tag: "طراحی سایبرپانک", mainImg: "https://images.unsplash.com/photo-1609592426508-cc0272464a7a?w=600&auto=format&fit=crop&q=80",
+    price: "۲,۴۵۰,۰۰۰", rawPrice: 2450000, tag: "طراحی سایبرپانک", mainImg: "assets/img/unsplash-1526738549149-8e07eca6c147.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1609592426508-cc0272464a7a?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1526738549149-8e07eca6c147.webp"
     ],
     desc: "پاوربانک شفاف با نمایشگر دیجیتال درصد شارژ و برد الکترونیکی نمایان با قابلیت شارژ بیسیم مغناطیسی.",
     specs: ["ظرفیت باتری: ۱۰۰۰۰ میلی‌آمپر لیتیوم پلیمری", "خروجی باسیم: ۲۲.۵W فست PD", "خروجی مگ‌سیف: ۱۵W"]
   },
   {
     id: 10, category: "lifestyle", catName: "خانه و لایف‌استایل", title: "تراول ماگ ضد نشت استنلس استیل ۴۰ اونسی دسته‌دار",
-    price: "۱,۱۵۰,۰۰۰", rawPrice: 1150000, tag: "وایرال استنلی استایل", mainImg: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&auto=format&fit=crop&q=80",
+    price: "۱,۱۵۰,۰۰۰", rawPrice: 1150000, tag: "وایرال استنلی استایل", mainImg: "assets/img/unsplash-1517256064527-09c73fc73e38.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1517256064527-09c73fc73e38.webp"
     ],
     desc: "ماگ دوجداره استیل ۱.۲ لیتری با دسته ارگونومیک، درب عایق ضد نشت و حفظ دمای یخ تا ۳۰ ساعت.",
     specs: ["گنجایش: ۴۰ اونس (۱۱۸۰ میلی‌لیتر)", "متریال: استیل ضد زنگ دوجداره ۳۰۴ غذایی", "پایه باریک مناسب جا لیوانی خودرو"]
   },
   {
     id: 11, category: "accessory", catName: "اکسسوری و کیف", title: "کمربند بوهو-شیک طرح گل کنده‌کاری با سگک وینتیج نقره‌ای",
-    price: "۳,۵۰۰,۰۰۰", rawPrice: 3500000, tag: "🆕 جدید · استایل وینتیج", mainImg: "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&auto=format&fit=crop&q=80",
+    price: "۳,۵۰۰,۰۰۰", rawPrice: 3500000, tag: "🆕 جدید · استایل وینتیج", mainImg: "assets/img/unsplash-1624222247344-550fb60583dc.webp",
     gallery: [
-      "https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1621784563330-caee0b138a00?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&auto=format&fit=crop&q=80"
+      "assets/img/unsplash-1624222247344-550fb60583dc.webp",
+      "assets/img/unsplash-1621784563330-caee0b138a00.webp",
+      "assets/img/unsplash-1548036328-c9fa89d128fa.webp"
     ],
     desc: "کمربند با طراحی بوهو-شیک و سگک بیضی توخالی وینتیج؛ اکسسوری خاص و همه‌کاره با ظاهر رترو-مدرن که به‌راحتی با جین، شلوار پارچه‌ای، دامن و پیراهن ست می‌شود. انتخابی شیک برای استایل روزمره، دانشگاه، سفر و مهمانی‌های غیررسمی.",
     specs: ["طراحی: بوهو-شیک رترو با کنده‌کاری طرح گل", "سگک: بیضی توخالی وینتیج با آبکاری نقره‌ای", "رنگ: کلاسیک همه‌کاره قابل ست با انواع لباس", "مناسب: جین، شلوار پارچه‌ای، دامن، پیراهن و استایل خیابانی", "هدیه: گزینه‌ای عالی برای علاقه‌مندان استایل بوهو و رترو"]
@@ -196,7 +196,7 @@ const defaultTechNewsList = [
     title: "رونمایی از نسل جدید حلقه‌های هوشمند سلامت با هوش مصنوعی و باتری ۱۰ روزه",
     date: "۲۵ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۳ دقیقه",
-    img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/unsplash-1605100804763-247f67b3557e.webp",
     badge: "تکنولوژی برتر ۲۰۲۶",
     shortDesc: "پایش پیوسته علائم حیاتی، پایش غیرتهاجمی نوسانات قند خون و سنجش دقیق کیفیت خواب با سنسورهای مینیاتوری تیتانیومی.",
     fullBody: `در سال ۲۰۲۶ حلقه‌های هوشمند به بلوغ کامل رسیده‌اند. سنسورهای نوری جدید قادرند بدون نیاز به سوزن و تنها با تحلیل بازتاب طیف نوری از مویرگ‌های انگشت، داده‌های بیومتریک بدن را به هوش مصنوعی منتقل کنند. فریم تیتانیومی سبک، ضدآب تا عمق ۱۰۰ متری و باتری ۱۰ روزه این گجت را بی‌رقیب ساخته است.`,
@@ -208,7 +208,7 @@ const defaultTechNewsList = [
     title: "عینک‌های واقعیت افزوده سبک با نمایشگر MicroLED و ترجمه همزمان ۴۰ زبان",
     date: "۲۰ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۴ دقیقه",
-    img: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/unsplash-1593508512255-86ab42a8e620.webp",
     badge: "ترند جهانی ۲۰۲۶",
     shortDesc: "ترجمه صوتی و متنی در لحظه روی شیشه شفاف عینک همراه با دستیار هوشمند بصری در وزن ۴۳ گرم.",
     fullBody: `عینک‌های هوشمند ۲۰۲۶ با ترکیب پروژکتورهای میکرولد فوق‌العاده درخشان و تراشه‌های هوش مصنوعی، متن مکالمات زبان‌های خارجی را به صورت زیرنویس زنده روبه‌روی چشمان شما نمایش می‌دهند.`,
@@ -220,7 +220,7 @@ const defaultTechNewsList = [
     title: "پرینترهای سه‌بعدی رومیزی ۲۰۲۶ با چاپ سرامیکی و فلزی به سرعت ۵ برابر نسل قبل",
     date: "۱۵ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۵ دقیقه",
-    img: "https://images.unsplash.com/photo-1615913289763-53ff838cd9c1?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/unsplash-1526738549149-8e07eca6c147.webp",
     badge: "انقلابی در ساخت",
     shortDesc: "چاپ چند-متری در یک روز با هد چاپ چهارگانه و خنک‌کاری فعال؛ از نمونه‌سازی تا تولید قطعات کاربردی در خانه.",
     fullBody: `پرینترهای سه‌بعدی نسل ۲۰۲۶ دیگر یک اسباب‌بازی فناورانه نیستند. هد چاپ چهارگانه جدید امکان کار همزمان با پلاستیک فنی، رزین سخت، کامپوزیت چوبی و حتی فیلامنت پرشده با ذرات فلز را می‌دهد.\nخنک‌کاری فعال نازل و ریل‌های خطی سرعت چاپ را تا ۵ برابر نسل قبل بالا برده و لایه‌ها آن‌قدر یکنواخت شده‌اند که برای بسیاری از قطعات داخلی، پس‌پردازش تقریباً حذف شده است.\nقیمت پایه این دستگاه‌ها در پلتفرم‌هایی مثل تمو و آمازون امسال زیر سقف روان‌کننده بازار رفته و برای کسب‌وکارهای کوچک ایرانی، از مسیر ترندز کارگو کاملاً اقتصادی شده است.`,
@@ -232,7 +232,7 @@ const defaultTechNewsList = [
     title: "هدفون‌های ترجمه همزمان با تراشه اختصاصی AI؛ دنیا بدون مرز زبان در ۲۰۲۶",
     date: "۱۰ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۴ دقیقه",
-    img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/unsplash-1590658268037-6bf12165a8df.webp",
     badge: "پرفروش جهانی",
     shortDesc: "ترجمه دوطرفه ۶۰ زبان با تأخیر کمتر از نیم‌ثانیه، حذف نویز جاده و ۴۰ ساعت پخش با کیس شارژ.",
     fullBody: `نسل جدید هدفون‌های ترجمه، با تراشه اختصاصی هوش مصنوعی، گفت‌وگوی دوطرفه را بدون نیاز به توقف انجام می‌دهند: شما فارسی حرف می‌زنید و طرف مقابل در گوشی خود انگلیسی یا ترکی می‌شنود؛ تأخیر پردازش زیر نیم ثانیه است.\nحذف نویز تطبیقی نسل جدید صدای جاده و فروشگاه را تا ۴۵ دسی‌بل کم می‌کند و حالت «شفافیت گفتار» اجازه می‌دهد صدای محیط برای رانندگی و ورزش از دست نرود.\nکیس شارژ با پشتیبانی از شارژ بی‌سیم، مجموع پخش ۴۰ ساعته می‌دهد و نسخه‌های اصلی این محصولات با تست سلامت در هاب ایروان، بدون دردسر مرجوعی به دستتان می‌رسد.`,
@@ -244,7 +244,7 @@ const defaultTechNewsList = [
     title: "استودیوی خانگی ۲۰۲۶: پایه‌های تعقیب سوژه، نور تشخیص چهره و میکروفون‌های هوشمند",
     date: "۵ آگوست ۲۰۲۶",
     readTime: "زمان مطالعه: ۴ دقیقه",
-    img: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=800&auto=format&fit=crop&q=80",
+    img: "assets/img/unsplash-1598550476439-6847785fcea6.webp",
     badge: "محبوب کریتورها",
     shortDesc: "ست‌آپ حرفه‌ای ویدئو با پایه هوشمند تعقیب حرکت، نور RGB تشخیصی و میکروفون ضد-روم اتاق؛ همه از آمازون و تمو.",
     fullBody: `تقاضای جهانی برای تجهیزات تولید محتوا در ۲۰۲۶ به اوج رسیده و پلتفرم‌های تمو و آمازون پر از گجت‌های مقرون‌به‌صرفه‌ای هستند که قبلاً فقط در استودیوهای حرفه‌ای دیده می‌شد.\nپایه‌های تعقیب سوژه با دوربین هوشمند، شما را تا ۳۶۰ درجه دنبال می‌کنند؛ نورپردازی‌های RGB جدید با حسگر تشخیص چهره، پوست را در تاریکی مطلق هم نور حرفه‌ای می‌دهند و میکروفون‌های ضبط با هوش مصنوعی، پژواک اتاق را واقعاً حذف می‌کنند.\nدر این گزارش، ترکیب اقتصادی یک ست‌آپ کامل زیر ۸ میلیون تومان را با لینک‌های مستقیم معرفی کرده‌ایم که می‌توانید همین امروز از طریق فرم استعلام ترندز کارگو سفارش دهید.`,
@@ -730,7 +730,7 @@ function renderProducts(items) {
     card.innerHTML = `
       <div class="product-tag">${escapeHTML(p.tag)}</div>
       <div class="product-img-box">
-        <img src="${displayImg}" alt="${escapeHTML(p.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=300&auto=format&fit=crop&q=80'">
+        <img src="${displayImg}" alt="${escapeHTML(p.title)}" loading="lazy" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
       </div>
       <div class="product-category">${escapeHTML(p.catName)}</div>
       <h3 class="product-title">${escapeHTML(p.title)}</h3>
@@ -969,7 +969,7 @@ function openProductModal(productId) {
   const images = product.gallery && product.gallery.length > 0 ? product.gallery : [product.mainImg];
   const mainImgElem = document.getElementById('modal-main-image');
   mainImgElem.src = images[0];
-  mainImgElem.onerror = () => { mainImgElem.src = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'; };
+  mainImgElem.onerror = () => { mainImgElem.src = 'assets/img/unsplash-1526738549149-8e07eca6c147.webp'; };
 
   document.getElementById('modal-badge-tag').innerText = product.tag;
   document.getElementById('modal-cat-name').innerText = product.catName;
@@ -983,7 +983,7 @@ function openProductModal(productId) {
   images.forEach((imgUrl, index) => {
     const thumb = document.createElement('div');
     thumb.className = `modal-thumb ${index === 0 ? 'active' : ''}`;
-    thumb.innerHTML = `<img src="${imgUrl}" alt="${product.title}" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=100&auto=format&fit=crop&q=80'">`;
+    thumb.innerHTML = `<img src="${imgUrl}" alt="${product.title}" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">`;
     thumb.onclick = (e) => {
       e.stopPropagation();
       mainImgElem.src = imgUrl;
@@ -1056,13 +1056,15 @@ function submitCustomLink() {
     alert('لطفاً ابتدا لینک محصول خارجی را وارد کنید.');
     return;
   }
+  const userName = document.getElementById('user-name')?.value.trim() || '';
+  const userPhone = document.getElementById('user-phone')?.value.trim() || '';
 
   // ثبت درخواست در بکند (اگر در دسترس بود) — جریان واتساپ متوقف نمی‌شود
   try {
     fetch('/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ link: val })
+      body: JSON.stringify({ link: val, name: userName, phone: userPhone })
     })
       .then((response) => {
         if (response.ok) console.info('✅ استعلام شما در سامانه ثبت شد.');
@@ -1070,7 +1072,9 @@ function submitCustomLink() {
       .catch(() => {});
   } catch (error) { /* در حالت آفلاین فقط واتساپ باز می‌شود */ }
 
-  const msg = encodeURIComponent(`سلام ترندز کارگو، لطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}`);
+  const who = userName ? ` (از طرف ${userName})` : '';
+  const contact = userPhone ? `\nشماره تماس: ${userPhone}` : '';
+  const msg = encodeURIComponent(`سلام ترندز کارگو، لطفاً قیمت تمام‌شده و زمان تحویل این لینک را استعلام بگیرید:\n${val}${who}${contact}`);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 }
 
@@ -1112,7 +1116,7 @@ function renderTechNews() {
   newsContainer.innerHTML = list.map(news => `
     <article class="tech-card" data-news-id="${escapeHTML(String(news.id))}">
       <div class="tech-card-img">
-        <img src="${escapeHTML(news.img || '')}" alt="${escapeHTML(news.title || '')}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80'">
+        <img src="${escapeHTML(news.img || '')}" alt="${escapeHTML(news.title || '')}" loading="lazy" onerror="this.src='assets/img/unsplash-1526738549149-8e07eca6c147.webp'">
         <span class="tech-badge">${escapeHTML(news.badge || '')}</span>
       </div>
       <div class="tech-card-body">
@@ -1143,7 +1147,7 @@ function openNewsModal(newsId) {
   const img = document.getElementById('news-modal-img');
   if (img) {
     img.src = news.img || '';
-    img.onerror = () => { img.src = 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=800&auto=format&fit=crop&q=80'; };
+    img.onerror = () => { img.src = 'assets/img/unsplash-1526738549149-8e07eca6c147.webp'; };
   }
   setText('news-modal-cat', news.category);
   setText('news-modal-date', news.date);
@@ -1515,7 +1519,7 @@ function addNewsItem(payload){
     title: payload?.title || 'عنوان خبر جدید',
     date: payload?.date || new Date().toLocaleDateString('fa-IR'),
     readTime: payload?.readTime || 'زمان مطالعه: ۳ دقیقه',
-    img: payload?.img || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
+    img: payload?.img || 'assets/img/unsplash-1526374965328-7f61d4dc18c5.webp',
     badge: payload?.badge || 'جدید',
     shortDesc: payload?.shortDesc || 'توضیح کوتاه خبر...',
     fullBody: payload?.fullBody || 'متن کامل خبر قابل ویرایش از پنل ادمین.',
