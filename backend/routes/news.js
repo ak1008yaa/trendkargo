@@ -43,6 +43,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'News must be an array.' });
     }
     if (writeData('news.json', news)) {
+      req.app.locals.broadcastStoreUpdate?.('news');
       return res.json({ success: true, message: 'News saved successfully.' });
     }
     return res.status(500).json({ error: 'Failed to save news.' });

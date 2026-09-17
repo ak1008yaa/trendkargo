@@ -803,13 +803,15 @@
 
     async function syncRemoteData(path, payload) {
       try {
-        await apiRequest(path, {
+        const result = await apiRequest(path, {
           method: 'POST',
           credentials: 'include',
           body: JSON.stringify(payload)
         });
+        return result;
       } catch (error) {
         console.warn(`[admin-sync] ${path} failed:`, error.message || error);
+        return null;
       }
     }
 
@@ -1013,7 +1015,7 @@
       `;
     }
 
-    function saveSpecialOfferFromAdmin() {
+    async function saveSpecialOfferFromAdmin() {
       if (!TrendStore.specialOffer) TrendStore.specialOffer = {};
       const sp = TrendStore.specialOffer;
       sp.title = document.getElementById('sp-title').value;
@@ -1030,7 +1032,8 @@
       sp.gallery = [img1, img2, img3].filter(Boolean);
 
       TrendStore.saveSpecialOffer(sp);
-      syncRemoteData('/api/special-offer', { offer: sp });
+      const remote = await syncRemoteData('/api/special-offer', { offer: sp });
+      showRemoteStatus(remote, 'تخفیف ویژه');
       const t = document.getElementById('toast');
       t.textContent = '🔥 تخفیف ویژه ذخیره شد!';
       t.classList.add('show');
@@ -1089,7 +1092,7 @@
       reader.readAsDataURL(file);
     }
 
-    function saveProducts() {
+    async function saveProducts() {
       TrendStore.products.forEach((p, idx) => {
         p.title = document.getElementById(`p-title-${idx}`).value;
         p.tag = document.getElementById(`p-tag-${idx}`).value;
@@ -1105,7 +1108,8 @@
       });
 
       TrendStore.saveProducts(TrendStore.products);
-      syncRemoteData('/api/products', { products: TrendStore.products });
+      const remote = await syncRemoteData('/api/products', { products: TrendStore.products });
+      showRemoteStatus(remote, 'محصولات');
       const t = document.getElementById('toast');
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
@@ -1371,6 +1375,11 @@
       updateDashboardMetrics();
       const t = document.getElementById('toast');
       t.textContent = '✅ نرخ ارز‌ها به‌روزرسانی شد';
+      syncRemoteData('/api/rates', { rates: nextRates }).then((remote) => {
+        if (t) t.textContent = remote
+          ? '✅ نرخ‌ها ذخیره و روی سایت منتشر شدند!'
+          : '⚠️ نرخ‌ها محلی ذخیره شد — سرور در دسترس نیست.';
+      });
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2500);
     }
@@ -1411,6 +1420,12 @@
 
     function saveTestimonials(list) {
       localStorage.setItem('trendcargo_testimonials', JSON.stringify(list));
+      syncRemoteData('/api/testimonials', { testimonials: list });
+    }
+
+    function showRemoteStatus(remote, label) {
+      if (remote) return;
+      console.warn(`[admin-sync] سرور برای «${label}» در دسترس نیست؛ فقط local ذخیره شد.`);
     }
 
     function renderTestimonialsAdmin() {
@@ -1571,7 +1586,7 @@
       renderNewsAdmin();
     }
 
-    function saveNews() {
+    async function saveNews() {
       const cards = document.querySelectorAll('#news-list .news-admin-card');
       const oldList = getNews();
       const list = [];
@@ -1601,9 +1616,13 @@
         });
       });
       saveNewsList(list);
+      const remote = await syncRemoteData('/api/news', { news: list });
+      showRemoteStatus(remote, 'اخبار');
       const toast = document.getElementById('toast');
       if (toast) {
-        toast.textContent = '✅ اخبار با موفقیت ذخیره شدند!';
+        toast.textContent = remote
+          ? '✅ اخبار ذخیره و روی سایت منتشر شدند!'
+          : '⚠️ اخبار محلی ذخیره شد ولی سرور در دسترس نیست — روی سایت منتشر نمی‌شود.';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
       }
@@ -1617,6 +1636,7 @@
       let list = getNews();
       list = list.filter(item => String(item.id) !== String(id));
       saveNewsList(list);
+      syncRemoteData('/api/news', { news: list });
       renderNewsAdmin();
     }
 

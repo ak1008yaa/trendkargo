@@ -63,6 +63,7 @@ state مرورگر در localStorage نگهداری می‌شود. بک‌اند
 - Vercel برای css/js/assets کش یک‌ساله immutable دارد؛ هنگام انتشار، کش مرورگر و سرویس‌ورکر را بررسی کنید. `sw.js` باید revalidate شود.
 
 ## اجرا و اعتبارسنجی
+### سایت استاتیک (Vercel / فایل)
 دستورها را از ریشه پروژه اجرا کنید:
 ```text
 python -m http.server 8000
@@ -71,7 +72,19 @@ node tools/localize-images.cjs --dry-run
 node tools/localize-images.cjs
 ```
 سرور: http://localhost:8000 ؛ بسته: `trendcargo-final.zip`، بدون backend/tools/data.
-تست خودکار کامل frontend پیکربندی نشده است. وجود ابزار smoke به معنای پاس‌شدن تست‌ها نیست. برای تغییر اجرایی، جریان مرتبط و کنسول مرورگر را بررسی کنید؛ هیچ اجرای مرورگری یا تست عملکرد سایت در این جلسه انجام نشده است.
+تست خودکار کامل frontend پیکربندی نشده است. وجود ابزار smoke به معنای پاس‌شدن تست‌ها نیست. برای تغییر اجرایی، جریان مرتبط و کنسول مرورگر را بررسی کنید.
+
+### سایت داینامیک با همگام‌سازی لحظه‌ای (Node + SSE)
+وقتی بک‌اند اجرا باشد، ادمین روی سرور ذخیره می‌کند و همهٔ دستگاه‌ها بلافاصله به‌روز می‌شوند:
+```text
+cd backend
+npm install
+npm start            # http://localhost:3000 — هم سایت و هم API
+```
+- لود سایت: `GET /api/store` (در `RemoteSync` داخل `js/script.js`).
+- اعلان تغییر: `GET /api/events` (EventSource) — هر `POST` موفق در `backend/routes/*` رویداد `store-update` می‌فرستد.
+- بدون سرور: رفتار فعلی localStorage حفظ می‌شود؛ پیام‌های toast ادمین وضعیت انتشار را اعلام می‌کنند.
+- استقرار پیشنهادی: یک سرویس Node (Render/Railway/VPS). `backend/` روی Vercel استاتیک اجرا نمی‌شود.
 
 ## گام‌های بعدی و نگهداری حافظه
 1. پیش از کار جدید `git status --short` و `git --no-pager log -5 --oneline` را ببینید؛ تغییرات پس از مبنای این سند را هدفمند بررسی کنید.
@@ -85,5 +98,15 @@ node tools/localize-images.cjs
 - `css/style.css`: اصلاح `overflow` دیالوگ مودال اخبار تا محتوا اسکرول شود + استایل دکمه بیشتر.
 - `js/script.js`: نمایش پیش‌فرض ۳ خبر (`NEWS_DEFAULT_LIMIT`) با دکمه بیشتر؛ سازگاری `normalizeNewsItem` با شکل داده ادمین (`tag`→`category`/`badge`، پیش‌فرض زمان مطالعه).
 - `admin.html`: کارت اخبار با «متن کامل» و «زمان مطالعه»؛ ذخیره هم‌شکل با فرانت؛ id پایدار از دیتا؛ حذف با مقایسه رشته‌ای id.
-- `sw.js`: کش `trendcargo-v5.1.1`.
-- اعتبارسنجی: `node --check js/script.js` و بررسی نحوی اسکریپت داخلی ادمین. تست مرورگری انجام نشده؛ سلامت کلی سایت و استقرار زنده بررسی نشده است.
+- `sw.js`: کش `trendcargo-v5.2.0`.
+- اعتبارسنجی اخبار: `node --check js/script.js` و بررسی نحوی اسکریپت داخلی ادمین. تست مرورگری انجام نشده.
+
+### سایت داینامیک + همگام‌سازی لحظه‌ای ادمین↔سایت (Node + SSE)
+- `backend/routes/store.js` (جدید): `GET /api/store` تجمیعی + `GET /api/events` استریم SSE با heartbeat و شمارنده نسخه.
+- `backend/server.js`: غیرفعال‌شدن compression برای `/api/events`؛ ثبت route جدید؛ `app.locals.broadcastStoreUpdate`.
+- `backend/routes/{products,news,rates,special-offer,testimonials,discounts}.js`: اعلان `store-update` پس از هر ذخیره موفق.
+- `js/script.js`: `RemoteSync` — لود از `/api/store`، رندر مجدد همه بخش‌ها، اشتراک SSE با debounce؛ بدون سرور = رفتار قبلی localStorage.
+- `admin.html`: ذخیره محصولات/پیشنهاد/اخبار/نرخ/نظرات علاوه بر local روی `/api/*`؛ toast وضعیت انتشار (منتشر شد / سرور در دسترس نیست).
+- `tools/sse-check.cjs`: اسکریپت کمکی تست دستی SSE.
+- اعتبارسنجی: `node --check` همه فایل‌ها؛ سرور واقعی بالا آمد؛ `/api/health`، `/api/store`، `POST /api/news` و دریافت رویداد `store-update` در استریم SSE همگی پاس شدند.
+- نکته: رمز ادمین هنوز از هش ثابت `ADMIN_PASSWORD_HASH` است؛ برای production باید به متغیر محیطی منتقل شود.

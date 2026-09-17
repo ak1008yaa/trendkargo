@@ -16,7 +16,13 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 // Middleware
-app.use(compression());
+// نکته: فشرده‌سازی برای استریم SSE غیرفعال است تا رویدادها لحظه‌ای برسند.
+app.use(compression({
+  filter: (req, res) => {
+    if (req.originalUrl && req.originalUrl.includes('/api/events')) return false;
+    return compression.filter(req, res);
+  }
+}));
 app.use(cors({
   origin: true,
   credentials: true
@@ -75,6 +81,10 @@ const ratesRoutes = require('./routes/rates');
 const newsRoutes = require('./routes/news');
 const offerRoutes = require('./routes/special-offer');
 const testimonialsRoutes = require('./routes/testimonials');
+const { router: storeRoutes, broadcastStoreUpdate } = require('./routes/store');
+
+// اعلان لحظه‌ای به کلاینت‌ها (SSE) برای همهٔ routeها در دسترس است
+app.locals.broadcastStoreUpdate = broadcastStoreUpdate;
 
 // Serve static files (frontend) in production
 app.use(express.static(path.join(__dirname, '..'), {
@@ -93,6 +103,7 @@ app.use('/api/rates', ratesRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/special-offer', offerRoutes);
 app.use('/api/testimonials', testimonialsRoutes);
+app.use('/api', storeRoutes);
 
 // ============================================
 // AUTH ENDPOINTS

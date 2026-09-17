@@ -53,6 +53,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Testimonials must be an array.' });
     }
     if (writeData('testimonials.json', testimonials)) {
+      req.app.locals.broadcastStoreUpdate?.('testimonials');
       return res.json({ success: true, message: 'Testimonials saved successfully.' });
     }
     return res.status(500).json({ error: 'Failed to save testimonials.' });

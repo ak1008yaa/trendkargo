@@ -93,6 +93,120 @@ function debounce(fn, wait = 200) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  REMOTE SYNC — اتصال لحظه‌ای به بک‌اند (در صورت اجرا بودن سرور)           */
+/*  سایت اصلی هنگام لود از /api/store می‌خواند و با SSE (EventSource)        */
+/*  هر ذخیرهٔ ادمین را همان لحظه — بدون رفرش — روی همهٔ دستگاه‌ها می‌گیرد.   */
+/*  اگر سرور در دسترس نبود، رفتار فعلی localStorage حفظ می‌شود.              */
+/* -------------------------------------------------------------------------- */
+
+const RemoteSync = {
+  enabled: false,
+  ready: false,
+  source: null,
+  seenVersion: -1,
+  debounceMs: 800,
+  _t: null,
+
+  sameOrigin() {
+    // سرور Node خودش سایت را سرو می‌کند؛ پس API هم‌مبدا است.
+    return ['http:', 'https:'].includes(window.location.protocol);
+  },
+
+  async pullAll() {
+    try {
+      const res = await fetch('api/store', { cache: 'no-store' });
+      if (!res.ok) return false;
+      const payload = await res.json();
+      const data = payload && payload.data;
+      if (!data) return false;
+
+      if (Array.isArray(data.products) && data.products.length) {
+        Storage.set(STORAGE_KEYS.products, data.products);
+      }
+      if (data.specialOffer && typeof data.specialOffer === 'object' && !Array.isArray(data.specialOffer)) {
+        Storage.set(STORAGE_KEYS.specialOffer, data.specialOffer);
+      }
+      if (Array.isArray(data.news)) {
+        Storage.set(STORAGE_KEYS.news, data.news);
+      }
+      if (Array.isArray(data.testimonials) && data.testimonials.length) {
+        Storage.set(STORAGE_KEYS.testimonials, data.testimonials);
+      }
+      if (data.rates && typeof data.rates === 'object') {
+        Storage.set(STORAGE_KEYS.rates, data.rates);
+        Storage.set(STORAGE_KEYS.lastRates, data.rates);
+      }
+      if (Array.isArray(data.discounts)) {
+        try { localStorage.setItem('trendcargo_discounts', JSON.stringify(data.discounts)); } catch {}
+      }
+      if (typeof payload.version === 'number') this.seenVersion = payload.version;
+      this.enabled = true;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  rerenderAll() {
+    try {
+      TrendStore.init();
+      newsExpanded = false;
+      if (typeof renderProducts === 'function') renderProducts();
+      if (typeof renderSpecialOffer === 'function') renderSpecialOffer();
+      if (typeof renderTechNews === 'function') renderTechNews();
+      if (typeof renderTestimonials === 'function') renderTestimonials();
+      if (typeof initTestimonialsSlider === 'function') initTestimonialsSlider();
+      if (typeof observeReveals === 'function') observeReveals();
+    } catch (e) {
+      console.warn('[RemoteSync] rerender failed:', e);
+    }
+  },
+
+  scheduleRerender() {
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      this.pullAll().then(() => this.rerenderAll());
+    }, this.debounceMs);
+  },
+
+  subscribe() {
+    if (!this.enabled || this.source || typeof EventSource === 'undefined') return;
+    try {
+      const src = new EventSource('api/events');
+      src.addEventListener('store-update', (event) => {
+        try {
+          const msg = JSON.parse(event.data || '{}');
+          if (typeof msg.version === 'number' && msg.version <= this.seenVersion) return;
+          this.scheduleRerender();
+        } catch (e) {
+          this.scheduleRerender();
+        }
+      });
+      src.onerror = () => {
+        // اتصال مجدد: EventSource خودش تلاش می‌کند؛ اگر قطع شد، سبک نگهش می‌داریم.
+        if (src.readyState === EventSource.CLOSED) {
+          this.source = null;
+        }
+      };
+      this.source = src;
+    } catch (e) {
+      console.warn('[RemoteSync] SSE unavailable:', e);
+    }
+  },
+
+  async boot() {
+    if (!this.sameOrigin()) return;
+    try {
+      const ok = await this.pullAll();
+      if (ok) this.rerenderAll();
+      if (this.enabled) this.subscribe();
+    } catch (e) {
+      console.warn('[RemoteSync] boot failed:', e);
+    }
+  }
+};
+
+/* -------------------------------------------------------------------------- */
 /*  PRODUCT DATA — copied verbatim from the original file                     */
 /* -------------------------------------------------------------------------- */
 
@@ -1521,6 +1635,7 @@ document.addEventListener('DOMContentLoaded', () => {
   startFlashCountdown();
   startLiveToasts();
   registerServiceWorker();
+  RemoteSync.boot();
 
 
 

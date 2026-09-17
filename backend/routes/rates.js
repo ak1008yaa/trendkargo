@@ -43,6 +43,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Valid rates object is required.' });
     }
     if (writeData('rates.json', rates)) {
+      req.app.locals.broadcastStoreUpdate?.('rates');
       return res.json({ success: true, message: 'Rates saved successfully.' });
     }
     return res.status(500).json({ error: 'Failed to save rates.' });

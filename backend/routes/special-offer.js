@@ -43,6 +43,7 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Valid offer object is required.' });
     }
     if (writeData('special-offer.json', offer)) {
+      req.app.locals.broadcastStoreUpdate?.('special-offer');
       return res.json({ success: true, message: 'Special offer saved successfully.' });
     }
     return res.status(500).json({ error: 'Failed to save special offer.' });
