@@ -927,7 +927,7 @@
         const r = await fetch('https://zepoeywugldczcnvnlyn.supabase.co/rest/v1/rpc/set_site_data', {
           method: 'POST',
           headers: {
-            apikey: SUPABASE_ANON_KEY,
+            apikey: ADMIN_SUPABASE_ANON_KEY,
             Authorization: 'Bearer ' + window.SUPABASE_SERVICE_KEY,
             'Content-Type': 'application/json',
           },
@@ -1716,8 +1716,8 @@
     }
 
     // ---- Visit Stats (Supabase — بازدید روزانه) ----
-    const SUPABASE_URL = 'https://zepoeywugldczcnvnlyn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplcG9leXd1Z2xkY3pjbnZubHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0MjAyNTYsImV4cCI6MjEwNDk5NjI1Nn0.Y4qNjZQJs7x0Z-4RwfE7YgxX49rDlJ8YbMgiyEFgdIQ';
+    const ADMIN_SUPABASE_URL = 'https://zepoeywugldczcnvnlyn.supabase.co';
+    const ADMIN_SUPABASE_ANON_KEY = '';
 
     function faDigits(n) {
       return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
@@ -1731,25 +1731,25 @@
     function loadVisitStats() {
       const chart = document.getElementById('visits-chart');
       if (!hasRealSupabaseCredentials()) {
-        if (chart) chart.innerHTML = '<div class="visits-empty">???? ?????? ?? ????? ???? ? ??????? Supabase ???? ??????.</div>'
+        if (chart) chart.innerHTML = '<div class="visits-empty">برای نمایش آمار، اتصال Supabase را در تنظیمات سرور فعال کنید.</div>';
         return;
       }
-      fetch(`${SUPABASE_URL}/rest/v1/rpc/visit_stats`, {
+      fetch(`${ADMIN_SUPABASE_URL}/rest/v1/rpc/visit_stats`, {
         method: 'POST',
         headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          apikey: ADMIN_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${ADMIN_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ p_days: 30 }),
       })
-        .then(r => r.json())
-        .then(rows => {
-          if (!Array.isArray(rows)) throw new Error('bad response');
+        .then((response) => response.json())
+        .then((rows) => {
+          if (!Array.isArray(rows)) throw new Error('Invalid visit stats response');
           renderVisitStats(rows);
         })
         .catch(() => {
-          if (chart) chart.innerHTML = '<div class="visits-empty">???? ?????? ?? ????? ???? ? ????? Supabase ?? ????? ????.</div>';
+          if (chart) chart.innerHTML = '<div class="visits-empty">دریافت آمار بازدید انجام نشد؛ اتصال Supabase را بررسی کنید.</div>';
         });
     }
 
@@ -1962,5 +1962,4 @@
   </script>
 </body>
 </html>
-
 
