@@ -208,6 +208,21 @@ const RemoteSync = {
       }
     }
     try {
+      const liveStore = await fetch('/api/store', { cache: 'no-store' });
+      if (liveStore.ok) {
+        const payload = await liveStore.json();
+        const data = payload && payload.data;
+        if (data) {
+          if (Array.isArray(data.products) && data.products.length) Storage.set(STORAGE_KEYS.products, data.products);
+          if (data.specialOffer && typeof data.specialOffer === 'object') Storage.set(STORAGE_KEYS.specialOffer, data.specialOffer);
+          if (Array.isArray(data.news)) Storage.set(STORAGE_KEYS.news, data.news);
+          if (Array.isArray(data.testimonials)) Storage.set(STORAGE_KEYS.testimonials, data.testimonials);
+          if (data.rates && typeof data.rates === 'object') Storage.set(STORAGE_KEYS.rates, data.rates);
+          if (Array.isArray(data.discounts)) localStorage.setItem('trendcargo_discounts', JSON.stringify(data.discounts));
+          this.enabled = true;
+          return true;
+        }
+      }
       const res = await fetch('api/store', { cache: 'no-store' });
       if (!res.ok) return false;
       const payload = await res.json();
