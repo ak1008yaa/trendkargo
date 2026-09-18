@@ -28,3 +28,10 @@ Rules:
 - Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n²) scan, naive heuristic) with a `ponytail:` comment naming the ceiling and upgrade path.
 
 Not lazy about: understanding the problem (read it fully and trace the real flow before picking a rung, a small diff you don't understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs (the platform is never the spec ideal, a clock drifts, a sensor reads off), anything explicitly requested. Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind, the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
+
+## Fast execution addendum
+
+- Use one focused inspection pass, then edit; do not keep planning after the target files and acceptance check are known.
+- Prefer the smallest existing command that validates the change. Do not run a full suite when a targeted check covers it.
+- Ask the user only when proceeding could delete data, expose a secret, publish unexpectedly, or produce an irreversible wrong result.
+- End with `DONE` plus changed files and validation, or `BLOCKED` plus the exact missing input. Never end with a plan when execution is possible.

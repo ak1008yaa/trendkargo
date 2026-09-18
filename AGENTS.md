@@ -19,6 +19,8 @@ Primary entry points:
 
 ## Working conventions for this project
 
+* **Fast execution protocol:** read `agents/EXECUTION-PROTOCOL.md` before delegating. Prefer one capable agent, direct edits, and targeted validation over multi-agent planning.
+
 * Keep the project static-site friendly. Prefer lightweight vanilla JavaScript and CSS instead of introducing frameworks or build tools unless a task explicitly requires them.
 * Preserve the existing Persian RTL design, visual language, and conversion-focused UX. Most of the site content and UI labels are in Persian.
 * Respect the current DOM structure and IDs/classes used by the UI scripts. Many actions are wired to specific elements in index.html and admin.html.
@@ -73,5 +75,3 @@ photo is automatically redirected to `assets/img/placeholder.svg` so broken imag
 * The user is likely working on a static marketing + storefront website, not a backend service.
 * Any change should be safe for direct static hosting and safe for local browser use without a package install step.
 * If a request would require framework setup, bundling, or server-side code, confirm that requirement before proceeding.
-
-
