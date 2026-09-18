@@ -8,6 +8,7 @@ function loadBlogPosts() {
 function openArticle(id) {
   var p = loadBlogPosts().find(function(x) { return x.id === id; });
   if (!p) return;
+  updateArticleStructuredData(p);
   document.getElementById("blog-list").style.display = "none";
   document.getElementById("article-viewer").style.display = "block";
   var html = "";
@@ -21,9 +22,38 @@ function openArticle(id) {
   document.getElementById("article-content").innerHTML = html;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+function updateArticleStructuredData(post) {
+  var existing = document.getElementById("article-jsonld");
+  if (!existing) {
+    existing = document.createElement("script");
+    existing.id = "article-jsonld";
+    existing.type = "application/ld+json";
+    document.head.appendChild(existing);
+  }
+  existing.textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": "https://trendkargo.ir/blog.html#" + post.slug,
+    "headline": post.title,
+    "description": post.excerpt,
+    "image": "https://trendkargo.ir/" + post.img,
+    "inLanguage": "fa-IR",
+    "author": {"@type": "Organization", "name": "ترندز کارگو", "url": "https://trendkargo.ir/"},
+    "publisher": {
+      "@type": "Organization",
+      "name": "ترندز کارگو",
+      "url": "https://trendkargo.ir/",
+      "logo": {"@type": "ImageObject", "url": "https://trendkargo.ir/assets/logo.png"}
+    },
+    "articleSection": post.category,
+    "keywords": [post.category, "خرید از تمو", "خرید از شین", "کارگو ایران"]
+  });
+}
 function closeArticle() {
   document.getElementById("article-viewer").style.display = "none";
   document.getElementById("blog-list").style.display = "grid";
+  var structuredData = document.getElementById("article-jsonld");
+  if (structuredData) structuredData.remove();
 }
 function renderBlogList() {
   blogPosts = loadBlogPosts();

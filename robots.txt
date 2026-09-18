@@ -1,22 +1,56 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-inline.js
+Disallow: /js/blog-admin.js
+Disallow: /data/
 Disallow: /assets/private/
 Disallow: /.backup/
 
 # AI Crawlers for GEO Search
 User-agent: GPTBot
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-inline.js
+Disallow: /js/blog-admin.js
+Disallow: /data/
+Disallow: /assets/private/
+Disallow: /.backup/
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-inline.js
+Disallow: /js/blog-admin.js
+Disallow: /data/
+Disallow: /assets/private/
+Disallow: /.backup/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-inline.js
+Disallow: /js/blog-admin.js
+Disallow: /data/
+Disallow: /assets/private/
+Disallow: /.backup/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-inline.js
+Disallow: /js/blog-admin.js
+Disallow: /data/
+Disallow: /assets/private/
+Disallow: /.backup/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin.html
+Disallow: /admin-inline.js
+Disallow: /js/blog-admin.js
+Disallow: /data/
+Disallow: /assets/private/
+Disallow: /.backup/
 
 Sitemap: https://trendkargo.ir/sitemap.xml

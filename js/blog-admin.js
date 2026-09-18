@@ -14,6 +14,13 @@ function escBlog(s) {
   out = out.split(String.fromCharCode(39)).join("&#39;");
   return out;
 }
+function getBlogBodyText(post) {
+  if (Array.isArray(post && post.body)) return post.body.join(" | ");
+  if (typeof post && post.body === 'string') return post.body;
+  if (typeof post && post.excerpt === 'string') return post.excerpt;
+  return '';
+}
+
 function renderBlogAdmin() {
   var host = document.getElementById("blog-admin-list");
   if (!host) return;
@@ -24,6 +31,7 @@ function renderBlogAdmin() {
   }
   var html = "";
   list.forEach(function(p, i) {
+    var bodyText = getBlogBodyText(p);
     html += "<div class='news-admin-card'>";
     html += "<div class='news-admin-header'><span class='news-id'>مقاله " + (i + 1) + "</span>";
     html += "<div class='news-admin-actions'><button class='btn-reject' onclick='deleteBlogRow(" + i + ")'>حذف</button></div></div>";
@@ -32,7 +40,7 @@ function renderBlogAdmin() {
     html += "<div class='form-group'><label>دسته‌بندی:</label><input type='text' class='form-control blog-f-cat' value='" + escBlog(p.category) + "'></div>";
     html += "<div class='form-group'><label>تصویر URL:</label><input type='text' class='form-control blog-f-img' value='" + escBlog(p.img) + "'></div>";
     html += "<div class='form-group'><label>خلاصه:</label><textarea class='form-control blog-f-excerpt' rows='2'>" + escBlog(p.excerpt) + "</textarea></div>";
-    html += "<div class='form-group'><label>متن:</label><textarea class='form-control blog-f-body' rows='4'>" + escBlog(p.body.join(" | ")) + "</textarea></div>";
+    html += "<div class='form-group'><label>متن:</label><textarea class='form-control blog-f-body' rows='4'>" + escBlog(bodyText) + "</textarea></div>";
     html += "</div></div>";
   });
   host.innerHTML = html;
@@ -55,16 +63,20 @@ function saveBlogAdmin() {
   var out = [];
   cards.forEach(function(card, i) {
     var old = list[i] || {};
+    var bodyText = (card.querySelector(".blog-f-body") || {}).value || '';
+    var bodyItems = bodyText.split("|").map(function(part) {
+      return part.trim();
+    }).filter(Boolean);
     out.push({
       id: old.id || (Date.now() + i),
       slug: old.slug || ("post-" + Date.now() + i),
-      category: card.querySelector(".blog-f-cat").value,
-      title: card.querySelector(".blog-f-title").value,
+      category: (card.querySelector(".blog-f-cat") || {}).value || old.category || 'عمومی',
+      title: (card.querySelector(".blog-f-title") || {}).value || old.title || 'مقاله جدید',
       readTime: old.readTime || "4 dagighe",
       date: old.date || "1405/06/22",
-      img: card.querySelector(".blog-f-img").value,
-      excerpt: card.querySelector(".blog-f-excerpt").value,
-      body: card.querySelector(".blog-f-body").value.split(" | ")
+      img: (card.querySelector(".blog-f-img") || {}).value || old.img || '',
+      excerpt: (card.querySelector(".blog-f-excerpt") || {}).value || old.excerpt || '',
+      body: bodyItems.length ? bodyItems : [(old.excerpt || (card.querySelector(".blog-f-excerpt") || {}).value || '')]
     });
   });
   localStorage.setItem("trendcargo_blog_posts", JSON.stringify(out));

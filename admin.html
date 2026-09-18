@@ -889,17 +889,18 @@
     }
 
     async function syncRemoteData(path, payload) {
+      const map = {
+        '/api/products': ['products', payload.products],
+        '/api/special-offer': ['special_offer', payload.offer],
+        '/api/discounts': ['discounts', payload.discounts],
+        '/api/rates': ['rates', payload.rates],
+        '/api/testimonials': ['testimonials', payload.testimonials],
+        '/api/news': ['news', payload.news],
+      };
+
       // 1) Supabase (منبع حقیقت جدید — بدون نیاز به بک‌اند)
       try {
-        const map = {
-          '/api/products': ['products', payload.products],
-          '/api/special-offer': ['special_offer', payload.offer],
-          '/api/discounts': ['discounts', payload.discounts],
-          '/api/rates': ['rates', payload.rates],
-          '/api/testimonials': ['testimonials', payload.testimonials],
-          '/api/news': ['news', payload.news],
-        };
-        if (map[path]) {
+        if (map[path] && hasRealSupabaseCredentials()) {
           const [key, val] = map[path];
           const r = await supabaseWrite(key, val);
           if (r && r.ok) return { ok: true };
@@ -965,6 +966,31 @@
       list.unshift(normalized);
       localStorage.setItem('trendcargo_accounting_invoices', JSON.stringify(list));
       return normalized;
+    }
+
+    function hasRealSupabaseCredentials() {
+      const anon = typeof SUPABASE_ANON_KEY === 'string' ? SUPABASE_ANON_KEY.trim() : '';
+      const service = typeof window.SUPABASE_SERVICE_KEY === 'string' ? window.SUPABASE_SERVICE_KEY.trim() : '';
+      return Boolean(anon && anon !== '******' && service && service !== '******');
+    }
+
+    function ensureDefaultAdminData() {
+      try {
+        if (!localStorage.getItem('trendcargo_custom_products')) {
+          localStorage.setItem('trendcargo_custom_products', JSON.stringify(top20Products || []));
+        }
+        if (!localStorage.getItem('trendcargo_special_offer')) {
+          localStorage.setItem('trendcargo_special_offer', JSON.stringify(specialOfferProduct || {}));
+        }
+        if (!localStorage.getItem('trendcargo_custom_news')) {
+          localStorage.setItem('trendcargo_custom_news', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('trendcargo_testimonials')) {
+          localStorage.setItem('trendcargo_testimonials', JSON.stringify([]));
+        }
+      } catch (error) {
+        console.warn('[admin] seed defaults failed:', error);
+      }
     }
 
     function checkAuth() {
@@ -1703,6 +1729,11 @@
     }
 
     function loadVisitStats() {
+      const chart = document.getElementById('visits-chart');
+      if (!hasRealSupabaseCredentials()) {
+        if (chart) chart.innerHTML = '<div class="visits-empty">???? ?????? ?? ????? ???? ? ??????? Supabase ???? ??????.</div>'
+        return;
+      }
       fetch(`${SUPABASE_URL}/rest/v1/rpc/visit_stats`, {
         method: 'POST',
         headers: {
@@ -1718,8 +1749,7 @@
           renderVisitStats(rows);
         })
         .catch(() => {
-          const chart = document.getElementById('visits-chart');
-          if (chart) chart.innerHTML = '<div class="visits-empty">آمار بازدید در دسترس نیست — اتصال Supabase را بررسی کنید.</div>';
+          if (chart) chart.innerHTML = '<div class="visits-empty">???? ?????? ?? ????? ???? ? ????? Supabase ?? ????? ????.</div>';
         });
     }
 

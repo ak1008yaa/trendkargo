@@ -16,8 +16,8 @@
   <meta name="description" content="ترندز کارگو — خرید مستقیم و مطمئن از Temu, Shein, Amazon و Wildberries با منصفانه‌ترین قیمت، بازرسی و ضمانت مرجوعی در دفتر ارمنستان و ارسال سریع با تیپاکس از تبریز به سراسر ایران.">
   <meta name="keywords" content="خرید از تمو, خرید از شین در ایران, خرید از آمازون, ترندز کارگو, کارگو ارمنستان به تبریز, واردات گجت تمو, پوشاک شین, Temu Iran, Shein Iran, TrendKargo, TRENDKARGO.IR">
   <meta name="author" content="ترندز کارگو | Trend Cargo">
-  <meta name="robots" content="index, follow, max-image-preview:large, nosnippet">
-  <meta name="googlebot" content="index, follow, max-image-preview:large">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="geo.region" content="IR-03">
   <meta name="geo.placename" content="Tabriz, East Azerbaijan, Iran">
   <meta name="geo.position" content="38.0760;46.2889">
@@ -36,6 +36,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Estedad:wght@100..900&family=Vazirmatn:wght@300..900&display=swap" rel="stylesheet">
   <meta property="og:type" content="website">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:locale:alternate" content="en_US">
   <meta property="og:site_name" content="Trend Cargo">
   <meta property="og:title" content="TrendKargo | خرید مستقیم از تمو، شین و آمازون">
   <meta property="og:description" content="خرید مستقیم و مطمئن با بازرسی در ایروان و ارسال سریع از تبریز">
@@ -49,42 +51,89 @@
   <meta name="twitter:image" content="https://trendkargo.ir/assets/logo.png">
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- JSON-LD Structured Data Schema -->
+  <!-- JSON-LD: organization, local business, website and answer-focused service context -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "ترندز کارگو | Trend Cargo",
-    "url": "https://trendkargo.ir/",
-    "logo": "https://trendkargo.ir/assets/logo.png",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+989374443386",
-      "contactType": "customer service",
-      "areaServed": "IR"
-    }
-  }
-  </script>
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
+    "@graph": [
       {
-        "@type": "Question",
-        "name": "هزینه ارسال چقدر است؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "هزینه ارسال بسته به وزن و مقصد متفاوت است و از تبریز با تیپاکس ارسال می‌شود." }
+        "@type": "Organization",
+        "@id": "https://trendkargo.ir/#organization",
+        "name": "ترندز کارگو | Trend Cargo",
+        "url": "https://trendkargo.ir/",
+        "logo": "https://trendkargo.ir/assets/logo.png",
+        "sameAs": ["https://www.instagram.com/trendkargo_style"],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+989374443386",
+          "contactType": "customer service",
+          "areaServed": "IR",
+          "availableLanguage": ["fa", "en"]
+        }
       },
       {
-        "@type": "Question",
-        "name": "چقدر طول می‌کشد سفارش به دستم برسد؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "تحویل بین ۱۵ الی ۲۱ روز کاری با بسته‌بندی پلمپ و بیمه کامل انجام می‌شود." }
+        "@type": "LocalBusiness",
+        "@id": "https://trendkargo.ir/#local-business",
+        "name": "ترندز کارگو",
+        "url": "https://trendkargo.ir/",
+        "image": "https://trendkargo.ir/assets/logo.png",
+        "telephone": "+989374443386",
+        "priceRange": "$$",
+        "areaServed": {"@type": "Country", "name": "Iran"},
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "تبریز",
+          "addressRegion": "آذربایجان شرقی",
+          "addressCountry": "IR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 38.076,
+          "longitude": 46.2889
+        },
+        "parentOrganization": {"@id": "https://trendkargo.ir/#organization"}
       },
       {
-        "@type": "Question",
-        "name": "آیا امکان مرجوعی وجود دارد؟",
-        "acceptedAnswer": { "@type": "Answer", "text": "بله، در دفتر ایروان تست سلامت انجام شده و در صورت نقص فوراً تعویض می‌گردد." }
+        "@type": "WebSite",
+        "@id": "https://trendkargo.ir/#website",
+        "url": "https://trendkargo.ir/",
+        "name": "ترندز کارگو",
+        "inLanguage": "fa-IR",
+        "publisher": {"@id": "https://trendkargo.ir/#organization"},
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://trendkargo.ir/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Service",
+        "@id": "https://trendkargo.ir/#cargo-service",
+        "name": "خرید و واردات مستقیم از تمو، شین و آمازون",
+        "serviceType": "خدمات خرید بین‌المللی و کارگو",
+        "provider": {"@id": "https://trendkargo.ir/#organization"},
+        "areaServed": {"@type": "Country", "name": "Iran"},
+        "description": "خرید مستقیم، بازرسی در هاب ایروان و ارسال از تبریز به سراسر ایران."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "هزینه ارسال چقدر است؟",
+            "acceptedAnswer": {"@type": "Answer", "text": "هزینه ارسال بسته به وزن و مقصد متفاوت است و از تبریز با تیپاکس ارسال می‌شود."}
+          },
+          {
+            "@type": "Question",
+            "name": "چقدر طول می‌کشد سفارش به دستم برسد؟",
+            "acceptedAnswer": {"@type": "Answer", "text": "تحویل بین ۱۵ الی ۲۱ روز کاری با بسته‌بندی پلمپ و بیمه کامل انجام می‌شود."}
+          },
+          {
+            "@type": "Question",
+            "name": "آیا امکان مرجوعی وجود دارد؟",
+            "acceptedAnswer": {"@type": "Answer", "text": "بله، در دفتر ایروان تست سلامت انجام شده و در صورت نقص فوراً تعویض می‌گردد."}
+          }
+        ]
       }
     ]
   }
@@ -661,7 +710,7 @@
           <div class="stat-value">۴.۸</div>
           <div class="stat-stars">⭐⭐⭐⭐⭐</div>
           <div class="stat-label">میانگین امتیاز</div>
-          <div class="stat-count">از ۳۴۷ نظر</div>
+          <div class="stat-count">از ۱۰ نظر</div>
         </div>
         <div class="stat-item">
           <div class="stat-value">۹۷٪</div>
@@ -754,11 +803,6 @@
           <p class="footer-about-text">
             خرید مستقیم و بدون واسطه از پلتفرم‌های Temu, Shein, Amazon با تضمین بازرسی فیزیکی در هاب ایروان و ارسال مطمئن از تبریز.
           </p>
-          <div class="footer-trust-tags">
-            <span>🇦🇲 هاب بازرسی ایروان</span>
-            <span>🇮🇷 هاب توزیع تبریز</span>
-            <span>📦 ارسال با تیپاکس و پست</span>
-          </div>
         </div>
 
         <div class="footer-col">
@@ -823,4 +867,3 @@
   <script src="js/script.js"></script>
 </body>
 </html>
-

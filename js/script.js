@@ -544,6 +544,90 @@ const top20Products = [
     ],
     desc: "رینگ لایت ۱۲ اینچی با ۳ حالت رنگ و ۱۰ سطح شدت نور، پایه تلسکوپی تا ۲ متر و ریموت شاتر بلوتوثی.",
     specs: ["نور: ۳ حالت سفید، گرم و مخلوط با دیمر ۱۰ مرحله", "پایه: تلسکوپی تا ۲ متر با سر چرخان ۳۶۰", "ریموت: بلوتوث شاتر سازگار با iOS و اندروید"]
+  },
+  {
+    id: 21, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "اسپیکر بلوتوثی قابل حمل با نورپردازی RGB",
+    price: "۱,۳۹۰,۰۰۰", rawPrice: 1390000, tag: "موجود در ایران", mainImg: "assets/img/products/photo-1608043152269-423dbba4e7e1-w600.jpg",
+    gallery: ["assets/img/products/photo-1608043152269-423dbba4e7e1-w600.jpg"],
+    desc: "اسپیکر جمع‌وجور با صدای شفاف، نورپردازی هماهنگ با موسیقی و باتری مناسب استفاده روزمره.",
+    specs: ["اتصال: بلوتوث ۵.۳", "باتری: تا ۱۲ ساعت پخش", "مقاومت: IPX5 در برابر پاشش آب"]
+  },
+  {
+    id: 22, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "پایه نگهدارنده تاشو موبایل و تبلت آلومینیومی",
+    price: "۵۹۰,۰۰۰", rawPrice: 590000, tag: "ارسال فوری", mainImg: "assets/img/products/photo-1526738549149-8e07eca6c147-w600.jpg",
+    gallery: ["assets/img/products/photo-1526738549149-8e07eca6c147-w600.jpg"],
+    desc: "پایه رومیزی مقاوم برای تماس تصویری، مطالعه و تماشای فیلم با زاویه قابل تنظیم.",
+    specs: ["بدنه: آلومینیوم ضدلغزش", "سازگار با موبایل و تبلت تا ۱۲.۹ اینچ", "قابلیت جمع شدن برای حمل آسان"]
+  },
+  {
+    id: 23, stock: "iran", category: "accessory", catName: "اکسسوری و کیف", title: "کیف کمری ضدآب شهری با محفظه مخفی",
+    price: "۷۸۰,۰۰۰", rawPrice: 780000, tag: "پرفروش روزمره", mainImg: "assets/img/products/photo-1553062407-98eeb64c6a62-w600.jpg",
+    gallery: ["assets/img/products/photo-1553062407-98eeb64c6a62-w600.jpg"],
+    desc: "کیف سبک و کاربردی برای موبایل، کارت و وسایل ضروری با بند قابل تنظیم.",
+    specs: ["جنس: پارچه ضدآب", "دارای ۳ محفظه زیپ‌دار", "بند قابل تنظیم تا ۱۲۰ سانتی‌متر"]
+  },
+  {
+    id: 24, stock: "iran", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "ترازو دیجیتال هوشمند شیشه‌ای",
+    price: "۹۹۰,۰۰۰", rawPrice: 990000, tag: "سلامت و خانه", mainImg: "assets/img/products/photo-1546868871-7041f2a55e12-w600.jpg",
+    gallery: ["assets/img/products/photo-1546868871-7041f2a55e12-w600.jpg"],
+    desc: "ترازوی دقیق با نمایشگر خوانا و اتصال به اپلیکیشن برای ثبت روند وزن.",
+    specs: ["تحمل وزن: تا ۱۸۰ کیلوگرم", "اتصال: بلوتوث", "سطح: شیشه حرارت‌دیده ضدلغزش"]
+  },
+  {
+    id: 25, stock: "iran", category: "gadget", catName: "گجت و دیجیتال", title: "لامپ مطالعه LED گیره‌ای با سه دمای نور",
+    price: "۶۴۰,۰۰۰", rawPrice: 640000, tag: "موجود در ایران", mainImg: "assets/img/products/photo-1507473885765-e6ed057f782c-w600.jpg",
+    gallery: ["assets/img/products/photo-1507473885765-e6ed057f782c-w600.jpg"],
+    desc: "چراغ مطالعه کم‌مصرف با گیره محکم و تنظیم شدت نور برای میز کار و مطالعه.",
+    specs: ["۳ دمای رنگ نور", "تنظیم شدت نور لمسی", "بازوی انعطاف‌پذیر با گیره رومیزی"]
+  },
+  {
+    id: 26, stock: "iran", category: "accessory", catName: "اکسسوری و کیف", title: "کیف نظم‌دهنده کابل و لوازم دیجیتال",
+    price: "۴۸۰,۰۰۰", rawPrice: 480000, tag: "ارسال فوری", mainImg: "assets/img/products/photo-1590874103328-eac38a683ce7-w600.jpg",
+    gallery: ["assets/img/products/photo-1590874103328-eac38a683ce7-w600.jpg"],
+    desc: "کیف کوچک و مرتب برای شارژر، کابل، فلش و لوازم ضروری سفر.",
+    specs: ["دارای کش و جیب‌های چندگانه", "جنس مقاوم در برابر خط‌وخش", "ابعاد مناسب کیف و کوله روزمره"]
+  },
+  {
+    id: 27, stock: "order", category: "fashion", catName: "استایل و پوشاک", title: "ست تی‌شرت و شلوارک نخی تابستانی",
+    price: "۱,۴۸۰,۰۰۰", rawPrice: 1480000, tag: "پیشنهاد خرید", mainImg: "assets/img/products/photo-1556905055-8f358a7a47b2-w600.jpg",
+    gallery: ["assets/img/products/photo-1556905055-8f358a7a47b2-w600.jpg"],
+    desc: "ست راحتی سبک با پارچه نخی و فرم آزاد برای استفاده روزمره و سفر.",
+    specs: ["جنس: نخ و پنبه نرم", "سایزبندی: M تا XXL", "قابل شستشو با ماشین لباسشویی"]
+  },
+  {
+    id: 28, stock: "order", category: "fashion", catName: "استایل و پوشاک", title: "کتانی روزمره سبک با کفی طبی",
+    price: "۲,۱۰۰,۰۰۰", rawPrice: 2100000, tag: "پیشنهاد خرید", mainImg: "assets/img/products/photo-1542291026-7eec264c27ff-w600.jpg",
+    gallery: ["assets/img/products/photo-1542291026-7eec264c27ff-w600.jpg"],
+    desc: "کتانی سبک با رویه تنفسی و کفی نرم برای پیاده‌روی و استفاده روزانه.",
+    specs: ["رویه: مش تنفسی", "کفی: مموری فوم", "سایزبندی: ۳۹ تا ۴۴"]
+  },
+  {
+    id: 29, stock: "order", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "ست ارگانایزر کشویی برای میز و آشپزخانه",
+    price: "۱,۰۵۰,۰۰۰", rawPrice: 1050000, tag: "خانه مرتب", mainImg: "assets/img/products/photo-1602143407151-7111542de6e8-w600.jpg",
+    gallery: ["assets/img/products/photo-1602143407151-7111542de6e8-w600.jpg"],
+    desc: "محفظه‌های چندتکه برای مرتب‌سازی لوازم آرایش، میز کار و کشوهای آشپزخانه.",
+    specs: ["جنس: پلاستیک مقاوم", "قابل شستشو", "دارای چند محفظه قابل جابه‌جایی"]
+  },
+  {
+    id: 30, stock: "order", category: "gadget", catName: "گجت و دیجیتال", title: "دوربین وب‌کم Full HD با میکروفون دوگانه",
+    price: "۱,۷۹۰,۰۰۰", rawPrice: 1790000, tag: "پیشنهاد خرید", mainImg: "assets/img/products/photo-1587829741301-dc798b83add3-w600.jpg",
+    gallery: ["assets/img/products/photo-1587829741301-dc798b83add3-w600.jpg"],
+    desc: "وب‌کم مناسب کلاس آنلاین و تماس کاری با تصویر شفاف و نصب آسان روی مانیتور.",
+    specs: ["وضوح تصویر: Full HD 1080p", "میکروفون دوگانه حذف نویز", "اتصال USB بدون نیاز به درایور"]
+  },
+  {
+    id: 31, stock: "order", category: "accessory", catName: "اکسسوری و کیف", title: "ساعت کلاسیک مینیمال با بند چرمی",
+    price: "۱,۳۲۰,۰۰۰", rawPrice: 1320000, tag: "استایل مینیمال", mainImg: "assets/img/products/photo-1523275335684-37898b6baf30-w600.jpg",
+    gallery: ["assets/img/products/photo-1523275335684-37898b6baf30-w600.jpg"],
+    desc: "ساعت سبک با صفحه ساده و بند چرمی؛ مناسب استایل روزانه و هدیه.",
+    specs: ["موتور: کوارتز دقیق", "بند: چرم مصنوعی نرم", "مقاومت: پاشش آب روزمره"]
+  },
+  {
+    id: 32, stock: "order", category: "lifestyle", catName: "خانه و لایف‌استایل", title: "ماساژور گردن بی‌سیم با گرمای ملایم",
+    price: "۱,۸۹۰,۰۰۰", rawPrice: 1890000, tag: "پیشنهاد خرید", mainImg: "assets/img/products/photo-1608571423902-eed4a5ad8108-w600.jpg",
+    gallery: ["assets/img/products/photo-1608571423902-eed4a5ad8108-w600.jpg"],
+    desc: "ماساژور قابل حمل برای رفع خستگی گردن و شانه با چند حالت لرزش.",
+    specs: ["۴ حالت ماساژ", "گرمای ملایم قابل تنظیم", "باتری شارژی با Type-C"]
   }
 ];
 
@@ -775,15 +859,19 @@ const TrendStore = {
     const defaults = (typeof structuredClone === 'function'
       ? structuredClone(top20Products)
       : JSON.parse(JSON.stringify(top20Products)));
-    this.products = Array.isArray(savedProducts) && savedProducts.length
-      ? savedProducts.map((p) => {
+    if (Array.isArray(savedProducts) && savedProducts.length) {
+      const savedIds = new Set(savedProducts.map((p) => String(p.id)));
+      const missingNewDefaults = defaults.filter((p) => p.id >= 21 && !savedIds.has(String(p.id)));
+      this.products = savedProducts.map((p) => {
           if (p && typeof p.stock === 'undefined') {
             const d = defaults.find((x) => String(x.id) === String(p.id));
             if (d) return { ...p, stock: d.stock };
           }
           return p;
-        })
-      : defaults;
+        }).concat(missingNewDefaults);
+    } else {
+      this.products = defaults;
+    }
 
     const savedOffer = Storage.get(STORAGE_KEYS.specialOffer, null);
     this.specialOffer = (savedOffer && !Array.isArray(savedOffer))
@@ -1338,17 +1426,28 @@ function startLiveToasts() {
 /* -------------------------------------------------------------------------- */
 
 const defaultTestimonials = [
-  { id: 1, name: 'سارا محمدی',  city: 'تبریز',  rating: 5, text: 'کیفیت هودی که گرفتم فوق‌العاده بود. دقیقاً همون سایز و رنگی که خواستم. بسته‌بندی هم خیلی حرفه‌ای انجام شده بود. حتماً دوباره خرید می‌کنم.', date: '۱۴۰۴/۰۵/۱۲', verified: true, approved: true },
-  { id: 2, name: 'علی رضایی',   city: 'تهران',  rating: 5, text: 'از تمو یه گجت سفارش دادم که توی ایران پیدا نمی‌شد. توی ایروان تستش کردن و بعد ارسال. واقعاً خدماتشون حرف نداره.', date: '۱۴۰۴/۰۴/۲۸', verified: true, approved: true },
-  { id: 3, name: 'مریم اکبری',  city: 'اصفهان', rating: 5, text: 'قیمت‌هایی که میدن واقعاً منصفانه‌ست. چند جا استعلام گرفتم و ترندز کارگو ارزون‌تر بود. پاسخگویی واتساپ هم عالیه.', date: '۱۴۰۴/۰۴/۱۵', verified: true, approved: true },
-  { id: 4, name: 'حسین نوری',   city: 'مشهد',   rating: 4, text: 'بسته‌ی من یه کم دیرتر رسید ولی کیفیت محصول عالی بود و پشتیبانی هم مرتب پیگیری می‌کرد. راضی‌ام.', date: '۱۴۰۴/۰۳/۲۲', verified: true, approved: true },
-  { id: 5, name: 'نگار کریمی',  city: 'شیراز',  rating: 5, text: 'کتونی‌هایی که گرفتم خیلی خوشگل و راحت بودن. دقیقاً همون چیزی که توی عکس تمو بود. مرسی از تیم خوبتون.', date: '۱۴۰۴/۰۳/۱۰', verified: true, approved: true },
-  { id: 6, name: 'امیر تهرانی', city: 'کرج',    rating: 5, text: 'دومین سفارشمه و مثل همیشه عالی. بازرسی ایروان واقعاً ارزش داره چون اگه مشکلی باشه همون‌جا حل می‌شه.', date: '۱۴۰۴/۰۲/۲۶', verified: true, approved: true }
+  { id: 1, name: 'سارا محمدی', city: 'تبریز', rating: 5, text: 'هودی دقیقاً مطابق عکس بود و بسته‌بندی تمیزی داشت.', date: '۱۴۰۴/۰۵/۱۲', verified: true, approved: true },
+  { id: 2, name: 'علی رضایی', city: 'تهران', rating: 5, text: 'گجت سالم به دستم رسید؛ تست ایروان خیال آدم را راحت می‌کند.', date: '۱۴۰۴/۰۴/۲۸', verified: true, approved: true },
+  { id: 3, name: 'مریم اکبری', city: 'اصفهان', rating: 5, text: 'قیمت نهایی شفاف بود و پاسخگویی واتساپ سریع انجام شد.', date: '۱۴۰۴/۰۴/۱۵', verified: true, approved: true },
+  { id: 4, name: 'حسین نوری', city: 'مشهد', rating: 4, text: 'سفارش کمی دیر رسید، اما پشتیبانی مرتب پیگیری کرد.', date: '۱۴۰۴/۰۳/۲۲', verified: true, approved: true },
+  { id: 5, name: 'نگار کریمی', city: 'شیراز', rating: 5, text: 'کتونی هم زیبا بود هم اندازه‌اش درست درآمد. راضی‌ام.', date: '۱۴۰۴/۰۳/۱۰', verified: true, approved: true },
+  { id: 6, name: 'امیر تهرانی', city: 'کرج', rating: 5, text: 'دومین سفارشم بود و مثل دفعه قبل بدون دردسر تحویل شد.', date: '۱۴۰۴/۰۲/۲۶', verified: true, approved: true },
+  { id: 7, name: 'الهام کریمی', city: 'رشت', rating: 5, text: 'سایز لباس درست بود و زمان تحویل هم طبق اعلام سایت بود.', date: '۱۴۰۴/۰۲/۱۸', verified: true, approved: true },
+  { id: 8, name: 'رضا احمدی', city: 'قم', rating: 4, text: 'برای خرید اول تجربه خوبی بود؛ مراحل سفارش واضح بود.', date: '۱۴۰۴/۰۲/۰۹', verified: true, approved: true },
+  { id: 9, name: 'نسترن حیدری', city: 'کرمان', rating: 5, text: 'کیفیت محصول بهتر از چیزی بود که انتظار داشتم.', date: '۱۴۰۴/۰۱/۲۷', verified: true, approved: true },
+  { id: 10, name: 'محمد مرادی', city: 'اهواز', rating: 5, text: 'بسته سالم و مرتب رسید؛ دوباره از همین مسیر خرید می‌کنم.', date: '۱۴۰۴/۰۱/۱۸', verified: true, approved: true }
 ];
 
 function getTestimonials() {
   const stored = Storage.get(STORAGE_KEYS.testimonials, null);
-  if (Array.isArray(stored) && stored.length) return stored;
+  if (Array.isArray(stored) && stored.length >= defaultTestimonials.length) return stored;
+  if (Array.isArray(stored) && stored.length) {
+    const existingIds = new Set(stored.map((testimonial) => testimonial.id));
+    const missing = defaultTestimonials.filter((testimonial) => !existingIds.has(testimonial.id));
+    const merged = stored.concat(missing).slice(0, defaultTestimonials.length);
+    Storage.set(STORAGE_KEYS.testimonials, merged);
+    return merged;
+  }
   Storage.set(STORAGE_KEYS.testimonials, defaultTestimonials);
   return defaultTestimonials;
 }
@@ -1440,11 +1539,8 @@ function updateTestimonialArrows() {
   if (!track) return;
 
   const total = track.querySelectorAll('.testimonial-card').length;
-  const atStart = testimonialSlider.index <= 0;
-  const atEnd = testimonialSlider.index >= total - 1;
-
-  if (prev) { prev.disabled = atStart; prev.setAttribute('aria-disabled', String(atStart)); }
-  if (next) { next.disabled = atEnd; next.setAttribute('aria-disabled', String(atEnd)); }
+  if (prev) { prev.disabled = total < 2; prev.setAttribute('aria-disabled', String(total < 2)); }
+  if (next) { next.disabled = total < 2; next.setAttribute('aria-disabled', String(total < 2)); }
 }
 
 /**
@@ -1534,7 +1630,9 @@ function goToTestimonial(index) {
 
 /** `step` is +1 for the next review and -1 for the previous one (RTL reading order). */
 function moveTestimonial(step) {
-  goToTestimonial(testimonialSlider.index + step);
+  const total = document.querySelectorAll('#testimonials-track .testimonial-card').length;
+  if (total < 2) return;
+  goToTestimonial((testimonialSlider.index + step + total) % total);
 }
 
 function initTestimonialsSlider() {
@@ -1544,6 +1642,11 @@ function initTestimonialsSlider() {
   if (!track) return;
 
   testimonialSlider.index = 0;
+  if (track.dataset.sliderReady === 'true') {
+    updateTestimonialArrows();
+    return;
+  }
+  track.dataset.sliderReady = 'true';
 
   // Touch/mouse dragging is handled natively by overflow scrolling; this keeps
   // the dots and arrow states in sync with the user's own swipes. Updates are
